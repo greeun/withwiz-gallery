@@ -26,3 +26,12 @@ export type {
 
 export { cn } from "./utils/cn";
 export { getVariantUrl, type ImageVariant } from "./utils/image-variants";
+
+// Typed error 계층 (Sprint 3 follow-up)
+export {
+  GalleryError,
+  GalleryNotFoundError,
+  CategoryNotFoundError,
+  CategoryInUseError,
+  PermissionDeniedError,
+} from "./errors";

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createGalleryService } from "../../src/services";
+import { GalleryNotFoundError } from "../../src/errors";
 import type { GalleryConfig } from "../../src/types";
 
 interface GalleryDelegateMock {
@@ -279,10 +280,24 @@ describe("createGalleryService", () => {
     expect(r.published).toBe(true);
   });
 
-  it("togglePublish throws when not found", async () => {
+  it("togglePublish throws GalleryNotFoundError when not found", async () => {
     ctx.gal.findUnique.mockResolvedValue(null);
     const svc = createGalleryService(ctx.config);
-    await expect(svc.togglePublish("missing")).rejects.toThrow();
+    await expect(svc.togglePublish("missing")).rejects.toBeInstanceOf(
+      GalleryNotFoundError,
+    );
+  });
+
+  it("togglePublish — thrown error carries id", async () => {
+    ctx.gal.findUnique.mockResolvedValue(null);
+    const svc = createGalleryService(ctx.config);
+    try {
+      await svc.togglePublish("missing-id-xyz");
+      throw new Error("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(GalleryNotFoundError);
+      expect((e as GalleryNotFoundError).id).toBe("missing-id-xyz");
+    }
   });
 
   it("count() returns prisma.count result", async () => {
