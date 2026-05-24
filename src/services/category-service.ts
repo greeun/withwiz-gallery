@@ -4,6 +4,7 @@ import type {
   CreateCategoryInput,
   UpdateCategoryInput,
 } from "../types";
+import { CategoryInUseError } from "../errors";
 
 /**
  * spec §9-2 의 categoryService.
@@ -59,9 +60,7 @@ export function createCategoryService(config: GalleryConfig) {
   async function remove(id: string): Promise<void> {
     const inUse = await galleryDelegate().count({ where: { categoryId: id } });
     if (inUse > 0) {
-      throw new Error(
-        `[@withwiz/gallery-kit] category in use: ${inUse} gallery item(s) reference this category (id=${id})`,
-      );
+      throw new CategoryInUseError(id, inUse);
     }
     await categoryDelegate().delete({ where: { id } });
   }

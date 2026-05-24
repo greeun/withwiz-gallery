@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createCategoryService } from "../../src/services/category-service";
+import { CategoryInUseError } from "../../src/errors";
 import type { GalleryConfig } from "../../src/types";
 
 interface CategoryDelegateMock {
@@ -106,8 +107,22 @@ describe("createCategoryService", () => {
   it("remove() blocks when in use (gallery count > 0)", async () => {
     ctx.gal.count.mockResolvedValue(3);
     const svc = createCategoryService(ctx.config);
-    await expect(svc.remove("c1")).rejects.toThrow(/in use|사용/i);
+    await expect(svc.remove("c1")).rejects.toBeInstanceOf(CategoryInUseError);
     expect(ctx.cat.delete).not.toHaveBeenCalled();
+  });
+
+  it("remove() throws CategoryInUseError with categoryId + galleryCount", async () => {
+    ctx.gal.count.mockResolvedValue(3);
+    const svc = createCategoryService(ctx.config);
+    try {
+      await svc.remove("c1");
+      throw new Error("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(CategoryInUseError);
+      const err = e as CategoryInUseError;
+      expect(err.categoryId).toBe("c1");
+      expect(err.galleryCount).toBe(3);
+    }
   });
 
   it("remove() proceeds when count is 0", async () => {

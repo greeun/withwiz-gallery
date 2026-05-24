@@ -6,6 +6,7 @@ import type {
   UpdateGalleryInput,
   PaginatedResult,
 } from "../types";
+import { GalleryNotFoundError } from "../errors";
 import { buildPaginatedResult } from "./helpers";
 
 export { buildPaginatedResult } from "./helpers";
@@ -244,7 +245,7 @@ export function createGalleryService(config: GalleryConfig) {
       select: { published: true },
     })) as { published: boolean } | null;
     if (!current) {
-      throw new Error(`[@withwiz/gallery-kit] gallery item not found: id=${id}`);
+      throw new GalleryNotFoundError(id);
     }
     const row = await galleryDelegate().update({
       where: { id },
