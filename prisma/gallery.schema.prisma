@@ -1,0 +1,62 @@
+// @withwiz/gallery-kit 가 제공하는 partial Prisma schema.
+// host 의 prisma/ 디렉토리에 multi-file 로 머지한다 (Prisma 7 multi-file schema GA).
+//
+// 사용법:
+//   1) host package.json 에 prisma schema 디렉토리 설정
+//        "prisma": { "schema": "./prisma" }
+//   2) host 의 prisma/ 디렉토리에 자기 schema.prisma 와 함께 이 파일을 복사 또는 symlink
+//        cp node_modules/@withwiz/gallery-kit/prisma/gallery.schema.prisma prisma/
+//   3) prisma generate / migrate 실행
+//        npx prisma generate
+//        npx prisma migrate dev --create-only
+//
+// Host-independence 원칙:
+//   - 본 partial 은 host 의 User/Admin/Account 등 어떤 모델도 가정하지 않는다.
+//   - Gallery 모델은 authorId 를 String 컬럼으로만 두며, Prisma 의 @relation 을 정의하지 않는다.
+//     → host 모델 이름이 무엇이든 (User/Admin/Account/Member) Prisma validate 가 통과한다.
+//     → 작성자 표시가 필요한 admin UI 는 application layer 가 별도 query 로 join 한다.
+//   - 카테고리 삭제 시 cascade 위험 차단: Gallery.category 의 onDelete = Restrict.
+//     사용 중 카테고리는 CategoryAdminManager 가 삭제 버튼을 비활성화한다.
+
+model GalleryCategory {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  labelKo   String   @map("label_ko")
+  labelEn   String?  @map("label_en")
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  galleries Gallery[]
+
+  @@index([isActive, sortOrder])
+  @@map("gallery_categories")
+}
+
+model Gallery {
+  id       String  @id @default(cuid())
+  imageUrl String  @map("image_url")
+  imageKey String? @map("image_key")
+  caption  String?
+
+  categoryId String          @map("category_id")
+  category   GalleryCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  sortOrder Int     @default(0) @map("sort_order")
+  featured  Boolean @default(false)
+  published Boolean @default(false)
+
+  // Host 의 User/Admin/Account 모델 이름을 가정하지 않기 위해 관계 정의 없이 컬럼만 둔다.
+  // 작성자 정보가 필요한 경우 application layer 가 별도 query 로 join.
+  authorId String @map("author_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([published, sortOrder])
+  @@index([published, featured])
+  @@index([published, categoryId])
+  @@index([authorId])
+  @@map("galleries")
+}
