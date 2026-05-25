@@ -26,7 +26,7 @@
  *   - 모든 라벨은 props.i18n 으로만 (fallback 한글).
  */
 
-import { useEffect, useRef, useState, type JSX } from "react";
+import { useEffect, type JSX } from "react";
 import { useGalleryLightbox, type LightboxImage } from "../hooks/useGalleryLightbox";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { cn } from "../utils/cn";
@@ -93,22 +93,13 @@ export function PublicGalleryMosaic(props: PublicGalleryMosaicProps): JSX.Elemen
     };
   }, [lightbox.isOpen]);
 
-  // useScrollReveal 의 ref 는 RefObject<HTMLElement | null> 광폭 타입.
-  // <section> element 에 마운트하기 위한 어댑터 ref.
-  const sectionRef = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    if (!scrollReveal) return;
-    // sectionRef.current 를 revealRef 에 동기화 (initial only — sectionRef 가 안정적이라 가정)
-    revealRef.current = sectionRef.current;
-  }, [scrollReveal, revealRef]);
-
   if (images.length === 0) return null;
 
   const showReveal = scrollReveal ? isVisible : true;
 
   return (
     <section
-      ref={sectionRef}
+      ref={revealRef}
       className={cn(
         "gallery-public-mosaic-section",
         showReveal && "gallery-public-mosaic-section--visible",
