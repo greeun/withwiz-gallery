@@ -1,5 +1,5 @@
 {
-  "name": "@withwiz/gallery-kit",
+  "name": "@withwiz/gallery",
   "version": "0.1.0",
   "description": "Headless gallery module — Prisma 7 + Next 16, host-agnostic. Drop-in admin + public surface.",
   "license": "MIT",

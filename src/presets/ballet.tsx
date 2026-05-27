@@ -1,5 +1,5 @@
 /**
- * @withwiz/gallery-kit/presets/ballet
+ * @withwiz/gallery/presets/ballet
  *
  * 발레용 reference public 컴포넌트. ballet 의
  *   `src/components/sections/Gallery.tsx`
@@ -7,9 +7,9 @@
  *
  * 사용 예 (host RSC + client mount):
  *
- *   import { PublicGalleryMosaic } from "@withwiz/gallery-kit/presets/ballet";
- *   import { getFeaturedGalleries } from "@withwiz/gallery-kit/server";
- *   import "@withwiz/gallery-kit/components/gallery.css";
+ *   import { PublicGalleryMosaic } from "@withwiz/gallery/presets/ballet";
+ *   import { getFeaturedGalleries } from "@withwiz/gallery/server";
+ *   import "@withwiz/gallery/components/gallery.css";
  *
  *   export default async function HomePage() {
  *     const featured = await getFeaturedGalleries(config, 7);

@@ -1,4 +1,4 @@
-# @withwiz/gallery-kit
+# @withwiz/gallery
 
 [English](./README.md) | **한국어**
 
@@ -6,7 +6,7 @@ Next.js 16 + Prisma 7 호스트에 독립적으로 동작하는 갤러리 모듈
 
 ## 상태
 
-**v0.1.0** — Sprint 1–6 완료 (`@withwiz/gallery-kit` 스캐폴딩 + validators + services + server layer + hooks/primitive UI + admin composite UI + Prisma partial + ballet preset + README). ballet 마이그레이션 (Sprint 7) 미실시.
+**v0.1.0** — Sprint 1–6 완료 (`@withwiz/gallery` 스캐폴딩 + validators + services + server layer + hooks/primitive UI + admin composite UI + Prisma partial + ballet preset + README). ballet 마이그레이션 (Sprint 7) 미실시.
 
 ## 주요 기능
 
@@ -33,7 +33,7 @@ npm install file:../node-packages/withwiz-gallery
 배포 후에는:
 
 ```bash
-npm install @withwiz/gallery-kit
+npm install @withwiz/gallery
 ```
 
 ### Peer dependencies
@@ -63,7 +63,7 @@ host 의 `prisma/` 디렉토리에 본 패키지의 partial schema 를 복사 �
 
 ```bash
 # host 측 작업
-cp node_modules/@withwiz/gallery-kit/prisma/gallery.schema.prisma prisma/
+cp node_modules/@withwiz/gallery/prisma/gallery.schema.prisma prisma/
 npx prisma generate
 npx prisma migrate dev --create-only
 ```
@@ -78,8 +78,8 @@ ballet 처럼 enum 기반 기존 스키마에서 마이그레이션하는 경우
 
 ```ts
 // host: lib/gallery-config.ts
-import { setGalleryConfig } from "@withwiz/gallery-kit/server";
-import type { GalleryConfig } from "@withwiz/gallery-kit/server";
+import { setGalleryConfig } from "@withwiz/gallery/server";
+import type { GalleryConfig } from "@withwiz/gallery/server";
 import { prisma } from "./prisma";
 import { withAdminApi } from "@/lib/api-middleware"; // host 의 인증 래퍼
 import { isR2Enabled, collectR2Keys, deleteR2Keys } from "@/lib/r2";
@@ -108,7 +108,7 @@ export const galleryConfig: GalleryConfig = {
     "form.caption": "캡션",
     "form.save": "저장",
     "form.cancel": "취소",
-    // ... 나머지 키는 @withwiz/gallery-kit/types 의 GalleryI18nKey 참조
+    // ... 나머지 키는 @withwiz/gallery/types 의 GalleryI18nKey 참조
   },
 };
 
@@ -121,7 +121,7 @@ setGalleryConfig(galleryConfig);
 
 ```ts
 // host: app/api/admin/galleries/route.ts
-import { createGalleryRoutes } from "@withwiz/gallery-kit/server";
+import { createGalleryRoutes } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 
 const { collection } = createGalleryRoutes(galleryConfig);
@@ -130,7 +130,7 @@ export const { GET, POST, DELETE } = collection;
 
 ```ts
 // host: app/api/admin/galleries/[id]/route.ts
-import { createGalleryRoutes } from "@withwiz/gallery-kit/server";
+import { createGalleryRoutes } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 
 const { item } = createGalleryRoutes(galleryConfig);
@@ -139,7 +139,7 @@ export const { GET, PUT, DELETE } = item;
 
 ```ts
 // host: app/api/admin/galleries/[id]/publish/route.ts
-import { createGalleryRoutes } from "@withwiz/gallery-kit/server";
+import { createGalleryRoutes } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 
 const { publishToggle } = createGalleryRoutes(galleryConfig);
@@ -148,7 +148,7 @@ export const { PATCH } = publishToggle;
 
 ```ts
 // host: app/api/admin/galleries/bulk/route.ts
-import { createGalleryRoutes } from "@withwiz/gallery-kit/server";
+import { createGalleryRoutes } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 
 const { bulk } = createGalleryRoutes(galleryConfig);
@@ -157,7 +157,7 @@ export const { POST, PATCH } = bulk;
 
 ```ts
 // host: app/api/admin/gallery-categories/route.ts
-import { createGalleryRoutes } from "@withwiz/gallery-kit/server";
+import { createGalleryRoutes } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 
 const { categoryCollection } = createGalleryRoutes(galleryConfig);
@@ -166,7 +166,7 @@ export const { GET, POST } = categoryCollection;
 
 ```ts
 // host: app/api/admin/gallery-categories/[id]/route.ts
-import { createGalleryRoutes } from "@withwiz/gallery-kit/server";
+import { createGalleryRoutes } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 
 const { categoryItem } = createGalleryRoutes(galleryConfig);
@@ -177,8 +177,8 @@ export const { GET, PUT, DELETE } = categoryItem;
 
 ```tsx
 // host: app/admin/galleries/page.tsx
-import { GalleryAdminManager } from "@withwiz/gallery-kit/components";
-import "@withwiz/gallery-kit/components/gallery.css";
+import { GalleryAdminManager } from "@withwiz/gallery/components";
+import "@withwiz/gallery/components/gallery.css";
 import "@/lib/gallery-config"; // setGalleryConfig 가 module side effect
 
 export default function GalleryAdminPage() {
@@ -188,7 +188,7 @@ export default function GalleryAdminPage() {
 
 ```tsx
 // host: app/admin/galleries/new/page.tsx
-import { GalleryAdminManager } from "@withwiz/gallery-kit/components";
+import { GalleryAdminManager } from "@withwiz/gallery/components";
 import "@/lib/gallery-config";
 
 export default function GalleryNewPage() {
@@ -198,7 +198,7 @@ export default function GalleryNewPage() {
 
 ```tsx
 // host: app/admin/galleries/[id]/page.tsx
-import { GalleryAdminManager } from "@withwiz/gallery-kit/components";
+import { GalleryAdminManager } from "@withwiz/gallery/components";
 import "@/lib/gallery-config";
 
 export default async function GalleryEditPage({
@@ -213,7 +213,7 @@ export default async function GalleryEditPage({
 
 ```tsx
 // host: app/admin/gallery-categories/page.tsx
-import { CategoryAdminManager } from "@withwiz/gallery-kit/components";
+import { CategoryAdminManager } from "@withwiz/gallery/components";
 import "@/lib/gallery-config";
 
 export default function CategoryAdminPage() {
@@ -225,10 +225,10 @@ export default function CategoryAdminPage() {
 
 ```tsx
 // host: app/page.tsx (RSC)
-import { PublicGalleryMosaic } from "@withwiz/gallery-kit/presets/ballet";
-import { getFeaturedGalleries } from "@withwiz/gallery-kit/server";
+import { PublicGalleryMosaic } from "@withwiz/gallery/presets/ballet";
+import { getFeaturedGalleries } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
-import "@withwiz/gallery-kit/components/gallery.css";
+import "@withwiz/gallery/components/gallery.css";
 
 export default async function HomePage() {
   const featured = await getFeaturedGalleries(galleryConfig, 7);
@@ -248,7 +248,7 @@ export default async function HomePage() {
 
 ## API 레퍼런스
 
-### `@withwiz/gallery-kit` (메인 entry)
+### `@withwiz/gallery` (메인 entry)
 
 ```ts
 import {
@@ -261,10 +261,10 @@ import {
   CategoryNotFoundError,
   CategoryInUseError,
   PermissionDeniedError,
-} from "@withwiz/gallery-kit";
+} from "@withwiz/gallery";
 ```
 
-### `@withwiz/gallery-kit/server`
+### `@withwiz/gallery/server`
 
 | Export | 시그니처 |
 |---|---|
@@ -287,7 +287,7 @@ import {
 - `CategoryInUseError`
 - `PermissionDeniedError`
 
-### `@withwiz/gallery-kit/components`
+### `@withwiz/gallery/components`
 
 | Export | 설명 |
 |---|---|
@@ -302,10 +302,10 @@ import {
 CSS (호스트가 명시 import):
 
 ```ts
-import "@withwiz/gallery-kit/components/gallery.css";
+import "@withwiz/gallery/components/gallery.css";
 ```
 
-### `@withwiz/gallery-kit/hooks`
+### `@withwiz/gallery/hooks`
 
 | Export | 시그니처 |
 |---|---|
@@ -313,10 +313,10 @@ import "@withwiz/gallery-kit/components/gallery.css";
 | `useImageDropZone(opts)` | 헤드리스 드롭존 — `inputProps / containerProps / files / rejectedReasons / clear` |
 | `useScrollReveal(opts?)` | IntersectionObserver 기반 fade-in — `{ ref, isVisible }` |
 
-### `@withwiz/gallery-kit/validators`
+### `@withwiz/gallery/validators`
 
 ```ts
-import { createGallerySchemas } from "@withwiz/gallery-kit/validators";
+import { createGallerySchemas } from "@withwiz/gallery/validators";
 
 const schemas = createGallerySchemas({
   batchMax: 20,
@@ -326,7 +326,7 @@ const schemas = createGallerySchemas({
 // / BulkUpdateSchema / CreateCategorySchema / UpdateCategorySchema / ReorderCategorySchema
 ```
 
-### `@withwiz/gallery-kit/types`
+### `@withwiz/gallery/types`
 
 ```ts
 import type {
@@ -347,14 +347,14 @@ import type {
   ApiContext,
   RouteHandler,
   ApiWrapper,
-} from "@withwiz/gallery-kit/types";
+} from "@withwiz/gallery/types";
 ```
 
-### `@withwiz/gallery-kit/presets/ballet`
+### `@withwiz/gallery/presets/ballet`
 
 ```ts
-import { PublicGalleryMosaic } from "@withwiz/gallery-kit/presets/ballet";
-import type { PublicGalleryMosaicProps } from "@withwiz/gallery-kit/presets/ballet";
+import { PublicGalleryMosaic } from "@withwiz/gallery/presets/ballet";
+import type { PublicGalleryMosaicProps } from "@withwiz/gallery/presets/ballet";
 ```
 
 Signature:
@@ -439,10 +439,10 @@ ballet 코드 (`src/components/sections/Gallery.tsx` 의 `gallery-mosaic` / `lig
    │                        │ host 로서 끌어 씀
 host app (ballet, yeroom)   │
    ↓                        │
-   └─→ @withwiz/gallery-kit ┘  (이 패키지 — 어떤 호스트에도 의존하지 않음)
+   └─→ @withwiz/gallery ┘  (이 패키지 — 어떤 호스트에도 의존하지 않음)
 ```
 
-`@withwiz/gallery-kit` 은 어떤 호스트 프로젝트 (ballet, yeroom 등)에도, 어떤 도메인 패키지 (`@withwiz/pms` 등)에도, 호스트의 도메인 모델 (`User`, `Admin`, `Account` 등) 에도 일절 의존하지 않는다. 호스트가 무엇을 쓰든 (Next 16 / Prisma 7 가정) `setGalleryConfig` 한 번으로 통합 가능하다.
+`@withwiz/gallery` 은 어떤 호스트 프로젝트 (ballet, yeroom 등)에도, 어떤 도메인 패키지 (`@withwiz/pms` 등)에도, 호스트의 도메인 모델 (`User`, `Admin`, `Account` 등) 에도 일절 의존하지 않는다. 호스트가 무엇을 쓰든 (Next 16 / Prisma 7 가정) `setGalleryConfig` 한 번으로 통합 가능하다.
 
 ## 저장소 구조
 
