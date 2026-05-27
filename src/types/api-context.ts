@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-/** gallery-kit 이 PrismaClient 에서 사용하는 메서드만 명시 (structural typing).
+/** gallery 이 PrismaClient 에서 사용하는 메서드만 명시 (structural typing).
  *  host 는 자기 PrismaClient 를 그대로 주입. modelName 가변성을 위해 delegate 는 index 로 접근. */
 export interface PrismaLike {
   $transaction<T>(operations: Promise<T>[]): Promise<T[]>;
@@ -8,7 +8,7 @@ export interface PrismaLike {
   readonly [delegate: string]: any;
 }
 
-/** gallery-kit route handler 가 사용하는 컨텍스트.
+/** gallery route handler 가 사용하는 컨텍스트.
  *  host 의 미들웨어가 IApiContext 호환 객체를 만들어 handler 에 전달한다고 가정. */
 export interface ApiContext {
   request: NextRequest;

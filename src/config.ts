@@ -9,7 +9,7 @@ export function setGalleryConfig(config: GalleryConfig): void {
 export function getGalleryConfig(): GalleryConfig {
   if (!_config) {
     throw new Error(
-      "[@withwiz/gallery-kit] GalleryConfig is not set. Call setGalleryConfig(config) at app bootstrap before using gallery-kit APIs.",
+      "[@withwiz/gallery] GalleryConfig is not set. Call setGalleryConfig(config) at app bootstrap before using gallery APIs.",
     );
   }
   return _config;

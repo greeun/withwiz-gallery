@@ -29,7 +29,7 @@ export {
   PermissionDeniedError,
 } from "../errors";
 
-// DI + 타입 재노출 — host 가 `@withwiz/gallery-kit/server` 한 곳에서 모든 server-side API 를 가져올 수 있게 함.
+// DI + 타입 재노출 — host 가 `@withwiz/gallery/server` 한 곳에서 모든 server-side API 를 가져올 수 있게 함.
 export { setGalleryConfig, getGalleryConfig } from "../config";
 export type {
   GalleryConfig,
