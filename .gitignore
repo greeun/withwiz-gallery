@@ -7,3 +7,7 @@ coverage/
 !.env.example
 .axt-profile.json
 .claude/
+
+# superpowers (auto-installed; do not track)
+.superpowers/
+docs/superpowers/
