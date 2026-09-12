@@ -102,6 +102,17 @@ export const galleryConfig: GalleryConfig = {
     collectKeys: collectR2Keys,
     deleteKeys: deleteR2Keys,
   },
+  // optional — omit to allow every apiWrapper-authenticated user everything
+  permissions: {
+    canEdit: (ctx, g) => ctx.user?.role === "owner" || g.authorId === ctx.user?.id,
+    canDelete: (ctx, g) => ctx.user?.role === "owner" || g.authorId === ctx.user?.id,
+    canManageCategories: (ctx) => ctx.user?.role === "owner",
+  },
+  // optional — safe defaults apply when omitted (see "Security notes")
+  validation: {
+    imageUrlHosts: ["cdn.example.com"],
+    imageKeyPattern: /^gallery\/[A-Za-z0-9._-]+$/,
+  },
   i18n: {
     "admin.title": "Gallery",
     "admin.newButton": "New image",
@@ -386,6 +397,15 @@ function PublicGalleryMosaic(props: {
 - **Storage / auth / revalidate are the host's responsibility** — this package only deals with keys/paths; actual R2/S3/local calls are delegated to the host via `config.storage.deleteKeys`, etc.
 - **`presets/ballet` does not import `next/image`, `next/navigation`, or `useI18n`** — images use plain `<img>`, labels come from props.
 
+## Security notes
+
+- **Authentication is entirely the host's `apiWrapper`.** Every admin route (including the list GET that returns unpublished items) trusts whatever the wrapper lets through. The wrapper must enforce an admin session and, because the admin components send cookies (`credentials: "include"`), CSRF protection.
+- **`permissions` hooks apply to bulk routes too.** `canDelete` gates the collection `DELETE` (ids) and `canEdit` gates `bulk PATCH`; every target must pass or the whole request is rejected with 403 (no partial success). `canManageCategories` gates category create / update / delete.
+- **`imageUrl` is protocol-restricted** to `https:` / `http:` by default (`javascript:` and `data:` are rejected). Set `validation.imageUrlProtocols` / `validation.imageUrlHosts` to tighten further.
+- **`imageKey` is validated before it reaches `storage.deleteKeys`.** The default pattern allows `[A-Za-z0-9._-/]`, forbids a leading slash, `//` and `..` segments, and caps at 512 chars. Pass `validation.imageKeyPattern` to enforce your bucket prefix; `storage.collectKeys` should still treat the key as untrusted.
+- **`search` is truncated** to `validation.searchMaxLength` (default 100) before hitting the database.
+- **Keep the peer `next` on a patched release.** The package pins nothing; run `npm audit` in the host.
+
 ## CSS customization
 
 Override the CSS variables from the host's root CSS.
@@ -455,7 +475,6 @@ node-packages/withwiz-gallery/
 │   ├── gallery.schema.prisma            # GalleryCategory + Gallery partial models
 │   └── migrations/
 │       └── 2026-05-24-enum-to-table.sql # ballet enum → table backfill
-├── docs/superpowers/{specs,plans}/      # design docs + sprint contracts/reports
 └── src/
     ├── index.ts              # main entry — config, types, errors, utils
     ├── config.ts

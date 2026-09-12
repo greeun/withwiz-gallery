@@ -8,6 +8,9 @@
  *   - 모든 mutation 종료 직전 `config.revalidate?.(path)` 를 `config.revalidatePaths` 각 path 에 대해 호출.
  *   - `config.permissions?.canEdit/canDelete` 가 함수면 호출 → false 시 403 반환.
  *     미설정이면 admin 전원 모든 권한 (spec §16 v0.1 정책).
+ *   - bulk (collection DELETE / bulk PATCH) 도 동일 훅을 대상 전원에 적용한다.
+ *     하나라도 거부되면 전체 403 (부분 성공 없음). 존재하지 않는 id 가 섞이면 404.
+ *   - `config.permissions?.canManageCategories` 가 함수면 카테고리 CUD 에 적용.
  *   - `ctx.params?.id` 는 host 미들웨어가 채워준다고 가정 (spec §6-1).
  *   - 카테고리 `remove` 의 in-use 에러는 service throw → handler 가 잡아 409 반환.
  */
@@ -85,13 +88,58 @@ function getRouteId(ctx: ApiContext): string | null {
   return typeof id === "string" && id.length > 0 ? id : null;
 }
 
+const DEFAULT_SEARCH_MAX_LENGTH = 100;
+
+function canManageCategories(config: GalleryConfig, ctx: ApiContext): boolean {
+  const fn = config.permissions?.canManageCategories;
+  return fn ? fn(ctx) === true : true;
+}
+
+type BulkPermissionCheck =
+  | { ok: true }
+  | { ok: false; response: Response };
+
+/**
+ * bulk 대상 전원에 대해 permission 훅을 적용한다.
+ *  - 훅 미설정: 통과.
+ *  - 대상 중 존재하지 않는 id: 404 (권한 검사 대상이 불명확하므로 거부).
+ *  - 하나라도 거부: 403.
+ */
+async function checkBulkPermission(
+  ctx: ApiContext,
+  ids: string[],
+  hook: ((ctx: ApiContext, gallery: { authorId: string }) => boolean) | undefined,
+  loadAuthorIds: (ids: string[]) => Promise<Array<{ id: string; authorId: string }>>,
+): Promise<BulkPermissionCheck> {
+  if (!hook) return { ok: true };
+  const unique = [...new Set(ids)];
+  const rows = await loadAuthorIds(unique);
+  if (rows.length !== unique.length) {
+    return {
+      ok: false,
+      response: jsonError("one or more gallery items not found", 404, "NotFound"),
+    };
+  }
+  for (const row of rows) {
+    if (!hook(ctx, { authorId: row.authorId })) {
+      return { ok: false, response: jsonError("forbidden", 403, "Forbidden") };
+    }
+  }
+  return { ok: true };
+}
+
 export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
   const service = createGalleryService(config);
   const categoryService = createCategoryService(config);
   const schemas = createGallerySchemas({
     batchMax: config.limits.batchMax,
     captionMaxLength: config.limits.captionMaxLength ?? 200,
+    imageUrlProtocols: config.validation?.imageUrlProtocols,
+    imageUrlHosts: config.validation?.imageUrlHosts,
+    imageKeyPattern: config.validation?.imageKeyPattern,
   });
+  const searchMaxLength =
+    config.validation?.searchMaxLength ?? DEFAULT_SEARCH_MAX_LENGTH;
 
   // ── /api/admin/galleries ─────────────────────────────
 
@@ -100,7 +148,8 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
     const { searchParams } = new URL(ctx.request.url);
     const categoryId = getSearchParam(ctx.request, "categoryId");
     const publishedRaw = getSearchParam(ctx.request, "published");
-    const search = getSearchParam(ctx.request, "search");
+    const searchRaw = getSearchParam(ctx.request, "search")?.trim();
+    const search = searchRaw ? searchRaw.slice(0, searchMaxLength) : undefined;
     const sortBy = parseSortKey<SortKey>(
       searchParams,
       VALID_SORT_KEYS,
@@ -143,6 +192,21 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
     const body = await ctx.request.json();
     const check = validateIds(body?.ids);
     if (!check.valid) return check.response;
+    if (check.ids.length > config.limits.batchMax) {
+      return jsonError(
+        `ids exceeds batchMax (${config.limits.batchMax})`,
+        400,
+        "InvalidIds",
+      );
+    }
+
+    const perm = await checkBulkPermission(
+      ctx,
+      check.ids,
+      config.permissions?.canDelete,
+      service.getAuthorIds,
+    );
+    if (!perm.ok) return perm.response;
 
     const { count } = await service.removeMany(check.ids);
     callRevalidate(config);
@@ -252,6 +316,15 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
     if (!validation.success) return validation.response;
 
     const { ids, published, featured } = validation.data;
+
+    const perm = await checkBulkPermission(
+      ctx,
+      ids,
+      config.permissions?.canEdit,
+      service.getAuthorIds,
+    );
+    if (!perm.ok) return perm.response;
+
     let count = 0;
 
     if (published !== undefined) {
@@ -285,6 +358,8 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
   });
 
   const categoryCollectionPOST = config.apiWrapper(async (ctx: ApiContext) => {
+    if (!canManageCategories(config, ctx)) return jsonError("forbidden", 403, "Forbidden");
+
     const body = await ctx.request.json();
     const validation = validateAndParse(schemas.CreateCategorySchema, body);
     if (!validation.success) return validation.response;
@@ -308,6 +383,7 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
   const categoryItemPUT = config.apiWrapper(async (ctx: ApiContext) => {
     const id = getRouteId(ctx);
     if (!id) return jsonError("missing route param: id", 400, "InvalidParams");
+    if (!canManageCategories(config, ctx)) return jsonError("forbidden", 403, "Forbidden");
 
     const body = await ctx.request.json();
     const validation = validateAndParse(schemas.UpdateCategorySchema, body);
@@ -324,6 +400,7 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
   const categoryItemDELETE = config.apiWrapper(async (ctx: ApiContext) => {
     const id = getRouteId(ctx);
     if (!id) return jsonError("missing route param: id", 400, "InvalidParams");
+    if (!canManageCategories(config, ctx)) return jsonError("forbidden", 403, "Forbidden");
 
     try {
       await categoryService.remove(id);

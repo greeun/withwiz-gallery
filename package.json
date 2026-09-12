@@ -1,6 +1,6 @@
 {
   "name": "@withwiz/gallery",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Headless gallery module — Prisma 7 + Next 16, host-agnostic. Drop-in admin + public surface.",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -44,7 +44,11 @@
       "require": "./dist/presets/ballet.js"
     }
   },
-  "files": ["dist", "prisma", "README.md"],
+  "files": [
+    "dist",
+    "prisma",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -63,7 +67,9 @@
     "sonner": ">=2"
   },
   "peerDependenciesMeta": {
-    "sonner": { "optional": true }
+    "sonner": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^25.6.2",
