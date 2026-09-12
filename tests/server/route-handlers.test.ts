@@ -224,6 +224,59 @@ describe("createGalleryRoutes.collection.DELETE", () => {
     expect(res.status).toBe(400);
     expect(h.revalidate).not.toHaveBeenCalled();
   });
+
+  it("returns 400 when ids exceed batchMax", async () => {
+    const routes = createGalleryRoutes(h.config);
+    const ids = Array.from({ length: 21 }, (_, i) => `id-${i}`);
+    const res = await h.callWith(routes.collection.DELETE, { body: { ids } });
+    expect(res.status).toBe(400);
+    expect(h.gal.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when canDelete denies any target (no partial delete)", async () => {
+    h = makeHarness({
+      permissions: { canDelete: (_ctx, g) => g.authorId === "user-1" },
+    });
+    h.gal.findMany.mockResolvedValue([
+      { id: "a", authorId: "user-1" },
+      { id: "b", authorId: "someone-else" },
+    ]);
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.collection.DELETE, {
+      body: { ids: ["a", "b"] },
+    });
+    expect(res.status).toBe(403);
+    expect(h.gal.deleteMany).not.toHaveBeenCalled();
+    expect(h.revalidate).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 when canDelete is set and some ids do not exist", async () => {
+    h = makeHarness({ permissions: { canDelete: () => true } });
+    h.gal.findMany.mockResolvedValue([{ id: "a", authorId: "user-1" }]);
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.collection.DELETE, {
+      body: { ids: ["a", "missing"] },
+    });
+    expect(res.status).toBe(404);
+    expect(h.gal.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("deletes when canDelete approves all targets", async () => {
+    h = makeHarness({
+      permissions: { canDelete: (_ctx, g) => g.authorId === "user-1" },
+    });
+    h.gal.findMany.mockResolvedValue([
+      { id: "a", authorId: "user-1" },
+      { id: "b", authorId: "user-1" },
+    ]);
+    h.gal.deleteMany.mockResolvedValue({ count: 2 });
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.collection.DELETE, {
+      body: { ids: ["a", "b"] },
+    });
+    expect(res.status).toBe(200);
+    expect(h.gal.deleteMany).toHaveBeenCalledTimes(1);
+  });
 });
 
 // ─── item ────────────────────────────────────────────────
@@ -496,6 +549,40 @@ describe("createGalleryRoutes.bulk.PATCH", () => {
     const json: any = await res.json();
     expect(json.data.count).toBe(0);
   });
+
+  it("returns 403 when canEdit denies any target", async () => {
+    h = makeHarness({
+      permissions: { canEdit: (_ctx, g) => g.authorId === "user-1" },
+    });
+    h.gal.findMany.mockResolvedValue([
+      { id: "ckaaaaaaaaaaaaaaaaaaaaaaa", authorId: "user-1" },
+      { id: "ckbbbbbbbbbbbbbbbbbbbbbbb", authorId: "other" },
+    ]);
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.bulk.PATCH, {
+      body: {
+        ids: ["ckaaaaaaaaaaaaaaaaaaaaaaa", "ckbbbbbbbbbbbbbbbbbbbbbbb"],
+        published: true,
+      },
+    });
+    expect(res.status).toBe(403);
+    expect(h.gal.updateMany).not.toHaveBeenCalled();
+    expect(h.revalidate).not.toHaveBeenCalled();
+  });
+
+  it("bulk-updates when canEdit approves all targets", async () => {
+    h = makeHarness({ permissions: { canEdit: () => true } });
+    h.gal.findMany.mockResolvedValue([
+      { id: "ckaaaaaaaaaaaaaaaaaaaaaaa", authorId: "user-1" },
+    ]);
+    h.gal.updateMany.mockResolvedValue({ count: 1 });
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.bulk.PATCH, {
+      body: { ids: ["ckaaaaaaaaaaaaaaaaaaaaaaa"], featured: true },
+    });
+    expect(res.status).toBe(200);
+    expect(h.gal.updateMany).toHaveBeenCalledTimes(1);
+  });
 });
 
 // ─── categoryCollection ──────────────────────────────────
@@ -643,6 +730,78 @@ describe("createGalleryRoutes.categoryItem.DELETE", () => {
     const routes = createGalleryRoutes(h.config);
     const res = await h.callWith(routes.categoryItem.DELETE, {});
     expect(res.status).toBe(400);
+  });
+});
+
+// ─── canManageCategories ─────────────────────────────────
+
+describe("createGalleryRoutes — permissions.canManageCategories", () => {
+  let h: Harness;
+  beforeEach(() => {
+    h = makeHarness({ permissions: { canManageCategories: () => false } });
+  });
+
+  it("returns 403 on category POST when denied", async () => {
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.categoryCollection.POST, {
+      body: { slug: "NEW", labelKo: "새" },
+    });
+    expect(res.status).toBe(403);
+    expect(h.cat.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 on category PUT when denied", async () => {
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.categoryItem.PUT, {
+      params: { id: "c1" },
+      body: { labelKo: "변경" },
+    });
+    expect(res.status).toBe(403);
+    expect(h.cat.update).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 on category DELETE when denied", async () => {
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.categoryItem.DELETE, {
+      params: { id: "c1" },
+    });
+    expect(res.status).toBe(403);
+    expect(h.cat.delete).not.toHaveBeenCalled();
+  });
+
+  it("still allows category GET when denied (read is not gated)", async () => {
+    h.cat.findMany.mockResolvedValue([]);
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.categoryCollection.GET, {});
+    expect(res.status).toBe(200);
+  });
+});
+
+// ─── search length cap ───────────────────────────────────
+
+describe("createGalleryRoutes.collection.GET — search length cap", () => {
+  it("truncates search to searchMaxLength (default 100)", async () => {
+    const h = makeHarness();
+    h.gal.findMany.mockResolvedValue([]);
+    h.gal.count.mockResolvedValue(0);
+    const routes = createGalleryRoutes(h.config);
+    await h.callWith(routes.collection.GET, {
+      url: `http://localhost/api/admin/galleries?search=${"x".repeat(500)}`,
+    });
+    const arg = h.gal.findMany.mock.calls[0][0];
+    expect(arg.where.caption.contains).toHaveLength(100);
+  });
+
+  it("respects config.validation.searchMaxLength", async () => {
+    const h = makeHarness({ validation: { searchMaxLength: 10 } });
+    h.gal.findMany.mockResolvedValue([]);
+    h.gal.count.mockResolvedValue(0);
+    const routes = createGalleryRoutes(h.config);
+    await h.callWith(routes.collection.GET, {
+      url: `http://localhost/api/admin/galleries?search=${"y".repeat(50)}`,
+    });
+    const arg = h.gal.findMany.mock.calls[0][0];
+    expect(arg.where.caption.contains).toHaveLength(10);
   });
 });
 
