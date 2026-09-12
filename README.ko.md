@@ -97,6 +97,17 @@ export const galleryConfig: GalleryConfig = {
   },
   revalidate: revalidatePath,
   revalidatePaths: ["/", "/home/v1"],
+  // 선택 — 생략하면 apiWrapper 를 통과한 사용자 전원에게 모든 권한 부여
+  permissions: {
+    canEdit: (ctx, g) => ctx.user?.role === "owner" || g.authorId === ctx.user?.id,
+    canDelete: (ctx, g) => ctx.user?.role === "owner" || g.authorId === ctx.user?.id,
+    canManageCategories: (ctx) => ctx.user?.role === "owner",
+  },
+  // 선택 — 생략하면 안전한 기본값 적용 ("보안 참고" 절 참조)
+  validation: {
+    imageUrlHosts: ["cdn.example.com"],
+    imageKeyPattern: /^gallery\/[A-Za-z0-9._-]+$/,
+  },
   storage: {
     isEnabled: isR2Enabled,
     collectKeys: collectR2Keys,
@@ -385,6 +396,15 @@ function PublicGalleryMosaic(props: {
 - **모든 인프라는 `GalleryConfig` 로 주입** — Prisma client / API wrapper / storage / revalidate / i18n / limits 모두 주입.
 - **Storage / auth / revalidate 는 호스트 책임** — 본 패키지는 키/경로만 다루고 실제 R2/S3/로컬 호출은 호스트의 `config.storage.deleteKeys` 등에 위임.
 - **`presets/ballet` 에서 `next/image`, `next/navigation`, `useI18n` 직접 의존 없음** — 이미지는 plain `<img>`, 라벨은 props.
+
+## 보안 참고
+
+- **인증은 전적으로 호스트의 `apiWrapper` 책임이다.** 비공개 항목까지 반환하는 목록 GET 을 포함해 모든 admin 라우트는 래퍼가 통과시킨 요청을 그대로 신뢰한다. 래퍼는 관리자 세션을 검증해야 하며, admin 컴포넌트가 쿠키를 함께 전송하므로(`credentials: "include"`) CSRF 방어도 갖춰야 한다.
+- **`permissions` 훅은 bulk 라우트에도 적용된다.** `canDelete` 는 collection `DELETE`(ids) 를, `canEdit` 는 `bulk PATCH` 를 검사한다. 대상 전원이 통과해야 하며 하나라도 거부되면 요청 전체가 403 으로 거부된다(부분 성공 없음). `canManageCategories` 는 카테고리 생성 / 수정 / 삭제를 검사한다.
+- **`imageUrl` 은 기본적으로 `https:` / `http:` 프로토콜만 허용한다** (`javascript:`, `data:` 거부). `validation.imageUrlProtocols` / `validation.imageUrlHosts` 로 더 좁힐 수 있다.
+- **`imageKey` 는 `storage.deleteKeys` 에 전달되기 전에 형식 검증을 거친다.** 기본 패턴은 `[A-Za-z0-9._-/]` 만 허용하고 선행 슬래시, `//`, `..` 세그먼트를 금지하며 512자로 제한한다. 버킷 접두사를 강제하려면 `validation.imageKeyPattern` 을 지정한다. `storage.collectKeys` 도 키를 신뢰하지 않는 방향으로 구현해야 한다.
+- **`search` 는 DB 조회 전에 `validation.searchMaxLength`(기본 100) 로 잘린다.**
+- **peer 의존성 `next` 는 패치된 릴리스를 유지한다.** 본 패키지는 버전을 고정하지 않으므로 호스트에서 `npm audit` 을 수행해야 한다.
 
 ## CSS 커스터마이즈
 
