@@ -8,6 +8,6 @@ coverage/
 .axt-profile.json*
 .claude/
 
-# superpowers (auto-installed; do not track)
+# internal tooling output (auto-installed; do not track)
 .superpowers/
 docs/superpowers/
