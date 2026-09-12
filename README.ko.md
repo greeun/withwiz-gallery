@@ -475,7 +475,6 @@ node-packages/withwiz-gallery/
 │   ├── gallery.schema.prisma            # GalleryCategory + Gallery 모델 partial
 │   └── migrations/
 │       └── 2026-05-24-enum-to-table.sql # ballet enum → table backfill
-├── docs/superpowers/{specs,plans}/      # 설계 문서 + sprint contracts/reports
 └── src/
     ├── index.ts              # main entry — config, types, errors, utils
     ├── config.ts
