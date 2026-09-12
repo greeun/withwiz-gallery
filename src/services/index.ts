@@ -117,6 +117,20 @@ export function createGalleryService(config: GalleryConfig) {
     return (row as GalleryDetail | null) ?? null;
   }
 
+  /**
+   * bulk 권한 검사용 — ids 에 해당하는 row 의 {id, authorId} 만 조회.
+   * 존재하지 않는 id 는 결과에서 빠진다 (caller 가 길이 비교로 판단).
+   */
+  async function getAuthorIds(
+    ids: string[],
+  ): Promise<Array<{ id: string; authorId: string }>> {
+    const rows = await galleryDelegate().findMany({
+      where: { id: { in: ids } },
+      select: { id: true, authorId: true },
+    });
+    return rows as Array<{ id: string; authorId: string }>;
+  }
+
   // ── Mutations ──────────────────────────────────────
 
   async function create(
@@ -276,6 +290,7 @@ export function createGalleryService(config: GalleryConfig) {
     listPublishedByCategory,
     listAll,
     getById,
+    getAuthorIds,
     create,
     createMany,
     update,
