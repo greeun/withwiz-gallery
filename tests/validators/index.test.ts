@@ -1,14 +1,106 @@
 import { describe, it, expect } from "vitest";
-import { createGallerySchemas } from "../../src/validators";
+import {
+  createGallerySchemas,
+  type CreateGallerySchemasOptions,
+} from "../../src/validators";
 
 const CUID = "clxxxxxxxxxxxxxxxxxxxxxxx"; // valid 25-char cuid
 
-function makeSchemas(overrides: Partial<{ batchMax: number; captionMaxLength: number }> = {}) {
+function makeSchemas(overrides: Partial<CreateGallerySchemasOptions> = {}) {
   return createGallerySchemas({
+    ...overrides,
     batchMax: overrides.batchMax ?? 20,
     captionMaxLength: overrides.captionMaxLength ?? 200,
   });
 }
+
+describe("CreateGallerySchema — imageUrl hardening", () => {
+  const base = { categoryId: CUID };
+
+  it("rejects javascript: scheme", () => {
+    const { CreateGallerySchema } = makeSchemas();
+    expect(
+      CreateGallerySchema.safeParse({ ...base, imageUrl: "javascript:alert(1)" }).success,
+    ).toBe(false);
+  });
+
+  it("rejects data: scheme", () => {
+    const { CreateGallerySchema } = makeSchemas();
+    expect(
+      CreateGallerySchema.safeParse({ ...base, imageUrl: "data:image/png;base64,AAAA" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("accepts http and https by default", () => {
+    const { CreateGallerySchema } = makeSchemas();
+    expect(
+      CreateGallerySchema.safeParse({ ...base, imageUrl: "http://cdn.example.com/a.webp" })
+        .success,
+    ).toBe(true);
+    expect(
+      CreateGallerySchema.safeParse({ ...base, imageUrl: "https://cdn.example.com/a.webp" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("honours imageUrlProtocols override (https only)", () => {
+    const { CreateGallerySchema } = makeSchemas({ imageUrlProtocols: ["https"] });
+    expect(
+      CreateGallerySchema.safeParse({ ...base, imageUrl: "http://cdn.example.com/a.webp" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("honours imageUrlHosts allowlist", () => {
+    const { CreateGallerySchema } = makeSchemas({ imageUrlHosts: ["cdn.example.com"] });
+    expect(
+      CreateGallerySchema.safeParse({ ...base, imageUrl: "https://cdn.example.com/a.webp" })
+        .success,
+    ).toBe(true);
+    expect(
+      CreateGallerySchema.safeParse({ ...base, imageUrl: "https://evil.example.org/a.webp" })
+        .success,
+    ).toBe(false);
+  });
+});
+
+describe("CreateGallerySchema — imageKey hardening", () => {
+  const base = { categoryId: CUID, imageUrl: "https://cdn.example.com/a.webp" };
+  const parse = (imageKey: string, opts?: Partial<CreateGallerySchemasOptions>) =>
+    makeSchemas(opts).CreateGallerySchema.safeParse({ ...base, imageKey }).success;
+
+  it("accepts a normal nested key", () => {
+    expect(parse("gallery/2026/abc_123-def.webp")).toBe(true);
+  });
+
+  it("rejects path traversal segments", () => {
+    expect(parse("../other/key.webp")).toBe(false);
+    expect(parse("gallery/../secret.webp")).toBe(false);
+    expect(parse("gallery/..")).toBe(false);
+  });
+
+  it("rejects leading slash and double slash", () => {
+    expect(parse("/gallery/a.webp")).toBe(false);
+    expect(parse("gallery//a.webp")).toBe(false);
+  });
+
+  it("rejects whitespace, control chars and empty string", () => {
+    expect(parse("gallery/a b.webp")).toBe(false);
+    expect(parse("gallery/a\nb.webp")).toBe(false);
+    expect(parse("")).toBe(false);
+  });
+
+  it("rejects keys over 512 chars", () => {
+    expect(parse("a".repeat(513))).toBe(false);
+    expect(parse("a".repeat(512))).toBe(true);
+  });
+
+  it("honours imageKeyPattern override", () => {
+    expect(parse("gallery/a.webp", { imageKeyPattern: /^uploads\// })).toBe(false);
+    expect(parse("uploads/a.webp", { imageKeyPattern: /^uploads\// })).toBe(true);
+  });
+});
 
 describe("createGallerySchemas() returns 7 schemas", () => {
   it("exposes all 7 expected schema keys", () => {

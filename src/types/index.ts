@@ -113,8 +113,24 @@ export interface GalleryConfig {
   apiWrapper: ApiWrapper;
   authorIdFromContext?: (ctx: ApiContext) => string;
   permissions?: {
+    /** 단건 PUT / publish toggle / bulk PATCH 에 적용. bulk 는 대상 전원이 통과해야 한다. */
     canEdit?: (ctx: ApiContext, gallery: { authorId: string }) => boolean;
+    /** 단건 DELETE / collection DELETE(ids) 에 적용. bulk 는 대상 전원이 통과해야 한다. */
     canDelete?: (ctx: ApiContext, gallery: { authorId: string }) => boolean;
+    /** 카테고리 생성 / 수정 / 삭제 에 적용. 미설정 시 apiWrapper 통과자 전원 허용. */
+    canManageCategories?: (ctx: ApiContext) => boolean;
+  };
+
+  /** 입력 검증 강화 옵션. 미설정 시 안전한 기본값 사용. */
+  validation?: {
+    /** imageUrl 에 허용할 프로토콜. 기본 ["https:", "http:"] (javascript:/data: 차단). */
+    imageUrlProtocols?: string[];
+    /** imageUrl 에 허용할 호스트 allowlist. 미설정 시 모든 호스트 허용. */
+    imageUrlHosts?: string[];
+    /** imageKey 형식. 기본: 영숫자/._-/ 만 허용, 선행 슬래시·`..` 세그먼트 금지, 최대 512자. */
+    imageKeyPattern?: RegExp;
+    /** admin 목록 search 파라미터 최대 길이. 기본 100. */
+    searchMaxLength?: number;
   };
 
   storage?: {
