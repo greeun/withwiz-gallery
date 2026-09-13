@@ -332,6 +332,18 @@ describe("createGalleryRoutes.item.PUT", () => {
     expect(h.revalidate).toHaveBeenCalledTimes(2);
   });
 
+  it("updates only the provided fields (omitted sortOrder/featured/published stay as-is)", async () => {
+    h.gal.findUnique.mockResolvedValue({ id: "g1", authorId: "u1" });
+    h.gal.update.mockResolvedValue({ id: "g1", caption: "updated" });
+    const routes = createGalleryRoutes(h.config);
+    await h.callWith(routes.item.PUT, {
+      params: { id: "g1" },
+      body: { caption: "updated" },
+    });
+    expect(h.gal.update).toHaveBeenCalledTimes(1);
+    expect(h.gal.update.mock.calls[0][0].data).toStrictEqual({ caption: "updated" });
+  });
+
   it("returns 404 when target not found", async () => {
     h.gal.findUnique.mockResolvedValue(null);
     const routes = createGalleryRoutes(h.config);
@@ -685,6 +697,18 @@ describe("createGalleryRoutes.categoryItem.PUT", () => {
     });
     expect(res.status).toBe(200);
     expect(h.revalidate).toHaveBeenCalledTimes(2);
+  });
+
+  it("updates only the provided fields (omitted sortOrder/isActive stay as-is)", async () => {
+    h.cat.findUnique.mockResolvedValue({ id: "c1" });
+    h.cat.update.mockResolvedValue({ id: "c1", labelKo: "수정" });
+    const routes = createGalleryRoutes(h.config);
+    await h.callWith(routes.categoryItem.PUT, {
+      params: { id: "c1" },
+      body: { labelKo: "수정" },
+    });
+    expect(h.cat.update).toHaveBeenCalledTimes(1);
+    expect(h.cat.update.mock.calls[0][0].data).toStrictEqual({ labelKo: "수정" });
   });
 
   it("returns 404 when category missing", async () => {
