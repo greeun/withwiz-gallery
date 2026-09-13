@@ -69,17 +69,27 @@ export function createGallerySchemas(opts: CreateGallerySchemasOptions) {
     .max(DEFAULT_IMAGE_KEY_MAX_LENGTH)
     .regex(imageKeyPattern, "imageKey 형식이 올바르지 않습니다");
 
-  const CreateGallerySchema = z.object({
+  // zod 4 의 .partial() 은 필드에 붙은 .default() 를 그대로 적용한다.
+  // Update 스키마를 Create 스키마에서 파생하면 지정하지 않은 필드가 기본값으로
+  // 덮어써지므로, 기본값은 Create 스키마에만 붙인다.
+  const galleryFields = {
     imageUrl: ImageUrlSchema,
     imageKey: ImageKeySchema.optional(),
     caption: z.string().max(opts.captionMaxLength).optional(),
     categoryId: z.string().cuid(),
-    sortOrder: z.number().int().nonnegative().default(0),
-    featured: z.boolean().default(false),
-    published: z.boolean().default(false),
+    sortOrder: z.number().int().nonnegative(),
+    featured: z.boolean(),
+    published: z.boolean(),
+  };
+
+  const CreateGallerySchema = z.object({
+    ...galleryFields,
+    sortOrder: galleryFields.sortOrder.default(0),
+    featured: galleryFields.featured.default(false),
+    published: galleryFields.published.default(false),
   });
 
-  const UpdateGallerySchema = CreateGallerySchema.partial();
+  const UpdateGallerySchema = z.object(galleryFields).partial();
 
   const BatchCreateGallerySchema = z.object({
     items: z.array(CreateGallerySchema).min(1).max(opts.batchMax),
@@ -91,7 +101,7 @@ export function createGallerySchemas(opts: CreateGallerySchemasOptions) {
     featured: z.boolean().optional(),
   });
 
-  const CreateCategorySchema = z.object({
+  const categoryFields = {
     slug: z
       .string()
       .min(1)
@@ -99,11 +109,17 @@ export function createGallerySchemas(opts: CreateGallerySchemasOptions) {
       .regex(/^[A-Z][A-Z0-9_]*$/, "slug 는 대문자/숫자/언더스코어만"),
     labelKo: z.string().min(1).max(64),
     labelEn: z.string().min(1).max(64).optional(),
-    sortOrder: z.number().int().nonnegative().default(0),
-    isActive: z.boolean().default(true),
+    sortOrder: z.number().int().nonnegative(),
+    isActive: z.boolean(),
+  };
+
+  const CreateCategorySchema = z.object({
+    ...categoryFields,
+    sortOrder: categoryFields.sortOrder.default(0),
+    isActive: categoryFields.isActive.default(true),
   });
 
-  const UpdateCategorySchema = CreateCategorySchema.partial();
+  const UpdateCategorySchema = z.object(categoryFields).partial();
 
   const ReorderCategorySchema = z.object({
     ids: z.array(z.string().cuid()).min(1),
