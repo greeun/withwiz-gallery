@@ -185,6 +185,13 @@ describe("UpdateGallerySchema", () => {
     const { UpdateGallerySchema } = makeSchemas();
     expect(UpdateGallerySchema.safeParse({ imageUrl: "nope" }).success).toBe(false);
   });
+
+  it("does not fill create defaults for omitted fields", () => {
+    const { UpdateGallerySchema } = makeSchemas();
+    const r = UpdateGallerySchema.safeParse({ caption: "new caption" });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data).toStrictEqual({ caption: "new caption" });
+  });
 });
 
 describe("BatchCreateGallerySchema", () => {
@@ -309,6 +316,13 @@ describe("UpdateCategorySchema", () => {
   it("still validates slug shape when provided", () => {
     const { UpdateCategorySchema } = makeSchemas();
     expect(UpdateCategorySchema.safeParse({ slug: "lower" }).success).toBe(false);
+  });
+
+  it("does not fill create defaults for omitted fields", () => {
+    const { UpdateCategorySchema } = makeSchemas();
+    const r = UpdateCategorySchema.safeParse({ labelKo: "수정" });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data).toStrictEqual({ labelKo: "수정" });
   });
 });
 
