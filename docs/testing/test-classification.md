@@ -4,17 +4,18 @@
 
 | 항목 | 내용 |
 |------|------|
-| 대상 | `@withwiz/gallery` 0.2.0 headless 갤러리 모듈 (서버 계층, React 컴포넌트·훅, ballet 프리셋) |
+| 대상 | `@withwiz/gallery` 0.2.1 headless 갤러리 모듈 (서버 계층, React 컴포넌트·훅, ballet 프리셋) |
 | 범위 | `src/` 전체 (errors, config, utils, validators, services, server, hooks, components, presets). `prisma/` 스키마와 SQL 마이그레이션은 테스트 대상에서 제외 |
 | 환경 | Vitest 4.1.7 (설치본, `package.json` 범위 `^4.1.5`) + jsdom 29.1.1 + @testing-library/react 16.3.2 + @vitejs/plugin-react 6.0.2, React 19.2.6, zod 4.4.3, Node v22.22.0. `vitest.config.ts`: `environment: "jsdom"`, `globals: false`, `include: tests/**/*.test.{ts,tsx}`, `setupFiles: tests/setup.ts` (테스트마다 `cleanup()`) |
 | 목표 커버리지 | 미설정 (`vitest.config.ts` 에 coverage 설정이 없고, coverage provider 패키지도 devDependencies 에 없음) |
-| 실측 기준 | 2026-09-13, 브랜치 `docs/test-classification` (기준 커밋 `29fd94c`), `package-lock.json` 기준 `npm ci` 후 `npx vitest run` |
-| 실행 결과 | 테스트 파일 23개 통과 / 테스트 244건: 통과 244, 실패 0, 스킵 0 (소요 2.14s) |
-| ID 체계 | 기존 ID 없음. 이 문서에서 SC/TC ID 를 처음 부여 |
+| 실측 기준 | 2026-09-15, 브랜치 `docs/test-classification` (develop `9dcc15b` = 0.2.1 을 병합한 커밋 `6145e20`), `package-lock.json` 기준 `npm ci` 후 `npm test` (`vitest run`) |
+| 실행 결과 | 테스트 파일 23개 통과 / 테스트 248건: 통과 248, 실패 0, 스킵 0 (소요 4.28s) |
+| ID 체계 | 2026-09-13 판에서 SC/TC ID 를 처음 부여. 갱신할 때는 기존 번호를 유지하고, 새 항목은 도메인별 번호를 이어서 부여 |
+| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15) |
 
 ### 분류 원칙
 
-- 테스트 케이스(`it`) 하나는 TC 하나에만 배정한다. 따라서 도메인별 테스트 수를 더하면 실측 합계 244건과 같다.
+- 테스트 케이스(`it`) 하나는 TC 하나에만 배정한다. 따라서 도메인별 테스트 수를 더하면 실측 합계 248건과 같다.
 - 테스트 파일은 이동하지 않는다. 한 파일에 여러 도메인이 섞인 `tests/validators/index.test.ts` 와 `tests/server/route-handlers.test.ts` 는 테스트 이름 필터(`-t`)로 도메인을 구분한다.
 - 보안 강화 커밋 `82f081f` 에서 추가된 검증(프로토콜·호스트 allowlist, imageKey 형식, 권한 훅, 입력 크기 제한)과 인증 누락 401 검증은 Security 로 재분류한다.
 - 도메인 경계는 다음 기준을 따른다.
@@ -25,6 +26,7 @@
   - Accessibility: ARIA 역할·상태·이름, 키보드 조작
   - Smoke: 공개 진입점 export 와 빌드 산출물
 - 🔲 계획 TC 가운데 "결함 확인용"으로 표시한 항목은 2026-09-13 에 워크트리 밖 임시 테스트로 실제 소스를 실행해 현재 동작을 확인했다. 이 항목들은 예상 결과(목표 동작)와 현재 코드 동작이 다르며, 두 가지를 모두 기재한다.
+- 결함이 수정되어 회귀 테스트가 추가된 결함 확인용 TC 는 ✅ 완료로 전환하고, 단계와 예상 결과를 실제 테스트 기준으로 다시 쓴다. 결함 당시의 동작은 해당 TC 의 "결함 이력"에 남긴다. 2026-09-15 기준 전환 대상은 TC-A-006 한 건이다.
 
 ---
 
@@ -62,7 +64,7 @@
 | SC-A-003 | bulk 생성·일괄 수정 라우트 | API | High | ✅ 완료 |
 | SC-A-004 | 카테고리 라우트 | API | High | ✅ 완료 |
 | SC-A-005 | typed error → HTTP 상태 매핑 (오류 처리) | API | High | ✅ 완료 |
-| SC-A-006 | 부분 수정 PUT 의 미지정 필드 보존 | API | Critical | 🔲 계획 |
+| SC-A-006 | 부분 수정 PUT 의 미지정 필드 보존 | API | Critical | ✅ 완료 |
 | SC-A-007 | 오류 응답 본문 계약·비매핑 예외 전파 | API | Medium | 🔲 계획 |
 | SC-E-001 | 관리자 화면 ↔ 실제 라우트 핸들러 왕복 여정 | E2E | High | 🔲 계획 |
 | SC-S-001 | imageUrl 프로토콜·호스트 allowlist (`javascript:`·`data:` 차단) | Security | Critical | ✅ 완료 |
@@ -91,7 +93,7 @@ SC 와 TC 는 같은 번호로 1:1 대응한다. 예를 들어 SC-U-006 의 상�
 
 **목적:** 오류 클래스, 설정, 유틸, 입력 스키마, 서비스, 훅, 컴포넌트를 모듈 단위로 격리해 검증한다. Prisma delegate 와 브라우저 API 는 모의 객체로 대체한다.
 
-**실행 명령:** 도메인별 npm 스크립트가 없으므로 파일과 이름 필터를 지정해 실행한다. 아래 명령은 2026-09-13 에 파일 17개, 테스트 156건을 실행했다.
+**실행 명령:** 도메인별 npm 스크립트가 없으므로 파일과 이름 필터를 지정해 실행한다. 아래 명령은 2026-09-15 에 파일 17개, 테스트 158건을 실행했다.
 
 ```bash
 npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/services tests/hooks tests/validators \
@@ -120,7 +122,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | `new CategoryInUseError("c-1", 3)` 생성 | `categoryId === "c-1"`, `galleryCount === 3`, `message === "Category c-1 is in use by 3 galleries"` |
 | 5 | `new PermissionDeniedError("delete", "c-9")` 생성 | `action === "delete"`, `message === "Permission denied: cannot delete c-9"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
 - **비고:** 서비스가 이 클래스를 던지는 동작은 TC-U-010, 라우트가 HTTP 상태로 변환하는 동작은 TC-A-005 에서 다룬다. `PermissionDeniedError` 는 export 만 되어 있고 라우트 핸들러에서는 사용되지 않는다. 라우트는 403 을 `jsonError(..., 403, "Forbidden")` 로 직접 반환한다.
 
 ---
@@ -141,7 +143,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 2 | `setGalleryConfig(cfg)` 후 `getGalleryConfig()` 호출 | 같은 인스턴스(`toBe`) 반환 |
 | 3 | 설정 후 `resetGalleryConfig()` 를 호출하고 다시 조회 | throw |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-15 실측)
 
 ---
 
@@ -164,7 +166,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | 확장자 없는 `"https://cdn.example.com/abc"` 에 `"sm"` 지정 | 원본 URL 그대로 반환 |
 | 6 | `getVariantUrl("/uploads/x.jpg", "thumb")` 호출 | `"/uploads/x_thumb.jpg"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 6개 (cn 2 + image-variants 4, 2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (cn 2 + image-variants 4, 2026-09-15 실측)
 
 ---
 
@@ -186,7 +188,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | `([1], 2, 1, 3)` 계산 | `hasPrev true`, `hasNext true` |
 | 5 | 나누어떨어지는 `([1,2], 5, 2, 10)` 계산 | `totalPages 5`, `hasNext false` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
 
 ---
 
@@ -209,7 +211,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `validateIds("nope")`, `validateIds([])` 호출 | 둘 다 `valid false` |
 | 6 | `parseSortKey(sortBy=evil, ["createdAt","sortOrder"], "sortOrder")` 호출 | 허용 목록 밖이므로 `"sortOrder"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 12개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 12개 (2026-09-15 실측)
 
 ---
 
@@ -229,11 +231,12 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 2 | 최소 페이로드(imageUrl + categoryId) 파싱 | 성공, 기본값 `sortOrder 0`, `featured false`, `published false` |
 | 3 | `captionMaxLength: 10` 에서 11자 caption, `categoryId: "not-cuid"`, `sortOrder: -1` 을 각각 파싱 | 모두 실패 |
 | 4 | `UpdateGallerySchema` 에 `{}` 와 `{ imageUrl: "nope" }` 파싱 | 빈 객체는 성공, 형식 오류는 실패 |
-| 5 | `batchMax: 2` 에서 items 3개, 그리고 빈 items 파싱 | 둘 다 실패 |
-| 6 | `BulkUpdateSchema` 에 `ids: ["xxx"]`, 그리고 `batchMax: 1` 에서 ids 2개 파싱 | 둘 다 실패 |
+| 5 | `UpdateGallerySchema` 에 `{ caption: "new caption" }` 파싱 | 성공, 결과가 `{ caption: "new caption" }` 와 정확히 일치 (`toStrictEqual`, Create 기본값 `sortOrder`·`featured`·`published` 미적용) |
+| 6 | `batchMax: 2` 에서 items 3개, 그리고 빈 items 파싱 | 둘 다 실패 |
+| 7 | `BulkUpdateSchema` 에 `ids: ["xxx"]`, 그리고 `batchMax: 1` 에서 ids 2개 파싱 | 둘 다 실패 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 17개 (2026-09-13 실측)
-- **비고:** `UpdateGallerySchema` 는 `CreateGallerySchema.partial()` 로 만들어진다. 현재 테스트는 부분 수정 결과에 기본값이 포함되는지 단언하지 않으며, 이 동작은 TC-A-006 에서 다룬다.
+- **자동화:** 가능 ✅ | **테스트 수:** 18개 (2026-09-15 실측)
+- **비고:** 0.2.1 부터 `UpdateGallerySchema` 는 기본값이 없는 공통 필드 정의(`galleryFields`)에 `.partial()` 을 적용해 만들고, 기본값은 `CreateGallerySchema` 에만 지정한다 (`src/validators/index.ts:72-92`). 5번은 이 수정과 함께 추가된 회귀 테스트이다 (`UpdateGallerySchema > does not fill create defaults for omitted fields`). 같은 결함을 라우트 경유로 확인하는 테스트는 TC-A-006 에 배정했다.
 
 ---
 
@@ -254,9 +257,11 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 3 | `slug` 를 `"performance"`, `"1ABC"`, 65자로 각각 파싱 | 모두 실패 (정규식 `^[A-Z][A-Z0-9_]*$`, 최대 64자) |
 | 4 | `labelKo: ""` 파싱 | 실패 |
 | 5 | `UpdateCategorySchema` 에 `{ slug: "lower" }` 파싱 | 실패 (부분 스키마에서도 형식 검증 유지) |
-| 6 | `ReorderCategorySchema` 에 `ids: []`, `ids: ["x"]` 파싱 | 둘 다 실패 |
+| 6 | `UpdateCategorySchema` 에 `{ labelKo: "수정" }` 파싱 | 성공, 결과가 `{ labelKo: "수정" }` 와 정확히 일치 (`toStrictEqual`, Create 기본값 `sortOrder`·`isActive` 미적용) |
+| 7 | `ReorderCategorySchema` 에 `ids: []`, `ids: ["x"]` 파싱 | 둘 다 실패 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 12개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 13개 (2026-09-15 실측)
+- **비고:** 0.2.1 부터 `UpdateCategorySchema` 는 기본값이 없는 공통 필드 정의(`categoryFields`)에 `.partial()` 을 적용해 만들고, 기본값은 `CreateCategorySchema` 에만 지정한다 (`src/validators/index.ts:104-122`). 6번은 이 수정과 함께 추가된 회귀 테스트이다 (`UpdateCategorySchema > does not fill create defaults for omitted fields`).
 
 ---
 
@@ -279,7 +284,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | storage 활성 상태에서 `remove("g1")` 호출 | `delete({ where: { id: "g1" } })` 후 `collectKeys("abc.webp")`, `deleteKeys` 호출 |
 | 6 | `modelName: "photo"` 설정 후 `listPublished()` 호출 | `prisma.photo.findMany` 호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 23개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 23개 (2026-09-15 실측)
 
 ---
 
@@ -302,7 +307,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `reorder(["c1","c2","c3"])` 호출 | `update` 3회, 첫 호출 `sortOrder 0`, 세 번째 호출 `sortOrder 2` |
 | 6 | `categoryModelName: "customCategory"` 설정 후 `list()` 호출 | `prisma.customCategory.findMany` 호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
 
 ---
 
@@ -323,7 +328,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 3 | count 3 에서 `remove("c1")` 호출 | `CategoryInUseError` 로 reject, `delete` 미호출 |
 | 4 | 3번 오류 객체의 필드 확인 | `categoryId === "c1"`, `galleryCount === 3` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 4개 (gallery-service 2 + category-service 2, 2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 4개 (gallery-service 2 + category-service 2, 2026-09-15 실측)
 - **비고:** 이 테스트는 오류 메시지 문구가 아니라 `toBeInstanceOf` 와 데이터 필드로 판별한다. 따라서 메시지 문구가 바뀌어도 판별 결과가 유지된다.
 
 ---
@@ -347,7 +352,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | 열린 상태에서 window 에 `ArrowRight`, `ArrowLeft`, `Escape` keydown 발생 | 인덱스 1 → 2 → 1 이동, `Escape` 에서 닫힘 |
 | 6 | `close()` 후 `ArrowRight` keydown 발생 | `currentIndex -1` 유지 (리스너 해제) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
 
 ---
 
@@ -370,7 +375,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `validate` 가 `{ ok: false, reason: "너무 작아요" }` 반환 | `onFiles` 미호출, 사유에 `너무 작아요` 포함 |
 | 6 | 거부된 drop 이후 허용 파일 drop | `rejectedReasons` 초기화, `onFiles` 1회 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
 
 ---
 
@@ -392,7 +397,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | `threshold: 0.5` 지정 | 생성자 옵션이 `{ threshold: 0.5 }` |
 | 5 | unmount | `disconnect()` 호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-15 실측)
 
 ---
 
@@ -415,7 +420,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `label="Published"` 지정 | `aria-label="Published"`, 화면에 텍스트 노출 |
 | 6 | `size="lg"`, `checked={true}` 지정 | 루트에 `gallery-toggle--lg`, 트랙에 `gallery-toggle--checked` 클래스 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 8개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 8개 (2026-09-15 실측)
 - **비고:** 기능 테스트 안에 `aria-checked`, `aria-label` 단언이 일부 포함되어 있지만 접근성 전용 검증은 아니다. 검증되지 않은 속성과 조건은 TC-AC-001 에 정리한다.
 
 ---
@@ -439,7 +444,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `accept={["image/png"]}` 에 gif drop | `role="alert"` 영역 노출 |
 | 6 | `disabled` 에서 png drop | `aria-disabled="true"`, `onFiles` 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
 
 ---
 
@@ -462,7 +467,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `ui.slots.managerToolbar` 와 `toolbar` prop 동시 전달 | slot 이 우선, prop 은 렌더되지 않음 |
 | 6 | homePreview 미전달 | `.gallery-manager__preview` 미렌더 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
 
 ---
 
@@ -485,7 +490,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | category select 에서 `cat-reh` 선택 후 Save | option 2개, payload `categoryId "cat-reh"` |
 | 6 | `multipleMode` 에서 파일 2개 선택, caption `공통`, sortOrder `10` 입력 후 Save | `onSubmitMany` 항목 caption `공통_1`·`공통_2`, sortOrder `10`·`11` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
 - **비고:** 1번 테스트 이름은 "저장 시 onSubmit 호출 payload 검증"이지만 실제 단언은 `onSubmit` 미호출이다. 이름과 단언이 일치하지 않으므로 리뷰 체크리스트에 정리 항목으로 남긴다.
 
 ---
@@ -508,7 +513,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | 타일 0 을 타일 2 로 dragStart → dragOver → drop → dragEnd | `onReorder(["c","b","a"])` 1회 |
 | 5 | 같은 위치에 drop | `onReorder` 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
 
 ---
 
@@ -539,7 +544,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 
 **목적:** 실제 구현끼리 결합한 흐름을 검증한다. 대상은 로더와 서비스, 공개 프리셋과 훅, 관리자 컴포넌트와 설정 DI·fetch 이다. Prisma delegate 와 fetch 응답은 모의 객체를 사용한다.
 
-**실행 명령:** 아래 명령은 2026-09-13 에 파일 4개, 테스트 25건을 실행했다.
+**실행 명령:** 아래 명령은 2026-09-15 에 파일 4개, 테스트 25건을 실행했다.
 
 ```bash
 npx vitest run tests/server/loaders tests/presets/ballet tests/components/GalleryAdminManager tests/components/CategoryAdminManager
@@ -565,7 +570,7 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 4 | `getRecentGalleries(config, 5)` 호출 | `orderBy { createdAt: "desc" }`, `take 5` |
 | 5 | `getGalleryCount(config, { published: true })` 호출 | `count({ where: { published: true } })`, 반환값 11 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
 
 ---
 
@@ -588,7 +593,7 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 5 | 닫기 버튼 클릭, next 후 prev 버튼 클릭 | 오버레이 제거, 이미지가 `/img1.jpg` 에서 `/img0.jpg` 로 변경 |
 | 6 | alt 없는 이미지와 `i18n.expandAria="확대해서 보기"` 렌더 | 타일 `aria-label="확대해서 보기"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-15 실측)
 
 ---
 
@@ -610,7 +615,7 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 4 | `initialSelectedId="a"` 로 마운트 후 삭제 버튼 클릭 (confirm true) | `/api/admin/galleries/a` 에 DELETE 호출 |
 | 5 | `initialMode="new"` 로 마운트 후 저장 버튼 클릭 | 예외 없이 진행 (단언은 `typeof postCalled === "boolean"` 뿐) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
 - **비고:** 모의 fetch 는 목록 응답 `data` 를 배열로 돌려주지만, 실제 `collection.GET` 은 `data: { items, meta }` 를 반환한다. 실제 형식의 응답을 받으면 목록이 비게 되며, 이 불일치는 TC-I-005 에서 다룬다. 5번 테스트는 이름("onSubmit 시 POST 호출")과 달리 POST 호출을 검증하지 않는다.
 
 ---
@@ -631,7 +636,7 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 2 | slug·labelKo 입력 후 저장 버튼 클릭 | POST 호출 |
 | 3 | 삭제 버튼 클릭 후 409 응답 | `.gallery-category-admin__error` 노출, 문구가 `/galleries|use|사용/i` 와 일치 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-15 실측)
 
 ---
 
@@ -699,7 +704,7 @@ createGalleryRoutes(config)
 
 **테스트 전략:** `apiWrapper` 모의 구현이 `globalThis.__GK_TEST_CTX` 에 담긴 `ApiContext` 를 핸들러에 전달한다. NextRequest 는 `{ url, json() }` 객체로 대체하고, 서비스는 실제 구현을 사용하며 Prisma delegate 만 모의한다.
 
-**실행 명령:** 아래 명령은 2026-09-13 에 파일 1개, 테스트 33건을 실행했다. 같은 파일에서 Security 로 재분류한 17건은 이름 필터로 제외된다.
+**실행 명령:** 아래 명령은 2026-09-15 에 파일 1개, 테스트 35건을 실행했다. 같은 파일에서 Security 로 재분류한 17건은 이름 필터로 제외된다.
 
 ```bash
 npx vitest run tests/server/route-handlers \
@@ -727,7 +732,7 @@ npx vitest run tests/server/route-handlers \
 | 5 | DELETE `ids ["a","b","c"]`, 그리고 `ids []` | 200·`data.count 3`, 빈 배열은 400·revalidate 미호출 |
 | 6 | `revalidate`·`revalidatePaths` 미설정 상태에서 POST | 201, revalidate 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
 
 ---
 
@@ -750,7 +755,7 @@ npx vitest run tests/server/route-handlers \
 | 5 | publishToggle.PATCH (`published false` 항목) | 200, `data.published true`, revalidate 2회 |
 | 6 | publishToggle.PATCH `params` 없음 | 400 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
 
 ---
 
@@ -772,7 +777,7 @@ npx vitest run tests/server/route-handlers \
 | 4 | bulk.PATCH `ids: []` | 400 |
 | 5 | bulk.PATCH 에서 published·featured 모두 생략 | 200, `data.count 0` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
 
 ---
 
@@ -794,7 +799,7 @@ npx vitest run tests/server/route-handlers \
 | 4 | categoryItem.PUT `{ labelKo: "수정" }`, 그리고 대상 없음 | 200·revalidate 2회, 404 |
 | 5 | categoryItem.DELETE gallery count 0, 그리고 `params` 없음 | 204·revalidate 2회, 400 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-15 실측)
 
 ---
 
@@ -814,31 +819,31 @@ npx vitest run tests/server/route-handlers \
 | 2 | `gallery.count → 5` 에서 categoryItem.DELETE | 서비스가 `CategoryInUseError` 를 던지고 라우트가 409 반환 |
 | 3 | 2번 요청 이후 delegate·revalidate 호출 확인 | `galleryCategory.delete`, revalidate 모두 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-15 실측)
 - **비고:** git 미추적 로컬 문서 `docs/superpowers/plans/sprint-03-followup-typed-errors.md` 에는 이 매핑이 원래 `message.includes("not found")` 같은 문자열 매칭이었고, 2026-05-25 에 `instanceof` 분기로 바뀌었다고 기록되어 있다. 서비스 예외를 문자열에 의존하지 않고 HTTP 상태로 매핑한 사례로서, 사전 조사 문서는 blog-system 의 상태 코드 유실 결함과 같은 부류의 문제를 이 패키지가 먼저 해결했다고 평가한다. 현재 테스트는 상태 코드만 단언하고 응답 본문(`error: "NotFound"`, `error: "CategoryInUse"`)은 단언하지 않으며, 본문 계약은 TC-A-007 에서 다룬다.
 
 ---
 
-### TC-A-006: 부분 수정 PUT 의 미지정 필드 보존 (결함 확인용) 🔲 계획
+### TC-A-006: 부분 수정 PUT 의 미지정 필드 보존
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/server/route-handlers.test.ts` (케이스 추가) |
-| **대상** | `UpdateGallerySchema = CreateGallerySchema.partial()` (`src/validators/index.ts:82`), `UpdateCategorySchema = CreateCategorySchema.partial()` (`:106`), `service.update` 필드 전달 (`src/services/index.ts:175-194`) |
+| **파일** | `tests/server/route-handlers.test.ts` (`createGalleryRoutes.item.PUT`, `createGalleryRoutes.categoryItem.PUT` 블록의 `updates only the provided fields ...` 2건) |
+| **대상** | `item.PUT` (`src/server/route-handlers.ts:228-247`) → `UpdateGallerySchema` (`src/validators/index.ts:92`) → `service.update` 필드 전달 (`src/services/index.ts:175-194`), `categoryItem.PUT` (`src/server/route-handlers.ts:383-398`) → `UpdateCategorySchema` (`src/validators/index.ts:122`) → `categoryService.update` (`src/services/category-service.ts:48-52`, `data` 를 그대로 전달) |
 | **우선순위** | Critical |
-| **전제조건** | 기존 항목 `{ id: "g1", authorId: "u1", published: true, featured: true, sortOrder: 5 }`, `update` 호출 인자 기록 |
-| **테스트 데이터** | 본문 `{ featured: true }`, `{ sortOrder: 2 }`, 카테고리 본문 `{ labelKo: "x" }` |
+| **전제조건** | route-handlers 하네스, permissions 미설정, `findUnique` 가 대상(`{ id: "g1", authorId: "u1" }`, `{ id: "c1" }`)을 반환, `update` 호출 인자를 `mock.calls` 로 확인 |
+| **테스트 데이터** | 갤러리 본문 `{ caption: "updated" }`, 카테고리 본문 `{ labelKo: "수정" }` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | item.PUT `{ featured: true }` | `gallery.update` 의 `data` 가 `{ featured: true }` 만 포함 |
-| 2 | item.PUT `{ sortOrder: 2 }` | `data` 가 `{ sortOrder: 2 }` 만 포함하고 `published`·`featured` 는 없음 |
-| 3 | categoryItem.PUT `{ labelKo: "x" }` | `galleryCategory.update` 의 `data` 가 `{ labelKo: "x" }` 만 포함 |
-| 4 | `UpdateGallerySchema.parse({ caption: "x" })` 직접 호출 | 결과에 `sortOrder`·`featured`·`published` 키 없음 |
+| 1 | item.PUT `params.id "g1"`, 본문 `{ caption: "updated" }` | `gallery.update` 1회, 호출 인자 `data` 가 `{ caption: "updated" }` 와 정확히 일치 (`toStrictEqual`, `sortOrder`·`featured`·`published` 키 없음) |
+| 2 | categoryItem.PUT `params.id "c1"`, 본문 `{ labelKo: "수정" }` | `galleryCategory.update` 1회, 호출 인자 `data` 가 `{ labelKo: "수정" }` 와 정확히 일치 (`sortOrder`·`isActive` 키 없음) |
 
-- **현재 코드 동작 (2026-09-13, 워크트리 밖 임시 테스트로 실제 소스를 실행해 확인):** zod 4.4.3 에서 `.partial()` 은 `.default()` 값을 그대로 적용한다. 1번 `data` 는 `{ sortOrder: 0, featured: true, published: false }`, 3번 `data` 는 `{ labelKo: "x", sortOrder: 0, isActive: true }`, 4번 결과는 `{ caption: "x", sortOrder: 0, featured: false, published: false }` 이다.
-- **영향:** `GalleryAdminManager` 의 별 토글은 `PUT { featured }` 를 보내고(`src/components/GalleryAdminManager.tsx:229-232`), 홈 프리뷰 재정렬은 `PUT { sortOrder }` 를 보낸다(`:241-246`). 두 요청 모두 대상 항목의 `published` 를 false 로 덮어쓰며, 별 토글은 `sortOrder` 를 0 으로, 재정렬은 `featured` 를 false 로 함께 덮어쓴다. 편집 폼 저장은 모든 필드를 보내므로 영향을 받지 않는다.
-- **자동화:** 가능 ✅ (현재 코드 기준으로 1~4번이 실패한다)
+- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-15 실측)
+- **비고:** 스키마만 단독으로 파싱하는 회귀 테스트 2건은 Unit 도메인이므로 TC-U-006 5번, TC-U-007 6번에 배정했다. 이 TC 는 라우트가 파싱 결과를 서비스와 delegate 까지 그대로 전달하는지 확인한다.
+- **결함 이력:** 2026-09-13 (0.2.0) 판에서는 결함 확인용 🔲 계획 TC 였다. 당시 `UpdateGallerySchema`·`UpdateCategorySchema` 는 `CreateGallerySchema.partial()`·`CreateCategorySchema.partial()` 이었고, zod 4.4.3 의 `.partial()` 은 필드에 붙은 `.default()` 를 그대로 적용했다. 그 결과 워크트리 밖 임시 테스트에서 `{ featured: true }` 본문의 `data` 는 `{ sortOrder: 0, featured: true, published: false }`, 카테고리 `{ labelKo: "x" }` 본문의 `data` 는 `{ labelKo: "x", sortOrder: 0, isActive: true }` 였다. 0.2.1 커밋 `d4c3134` 에서 기본값이 없는 필드 정의를 공통으로 두고 기본값은 Create 스키마에만 지정하도록 수정하면서, 이 TC 의 2건과 TC-U-006·TC-U-007 의 2건을 함께 추가했다.
+- **재현 확인 (2026-09-15):** 워크트리 밖 임시 복사본에서 `src/validators/index.ts` 만 `29fd94c` 판으로 되돌려 실행하면 회귀 테스트 4건이 모두 실패한다 (갤러리는 `caption` 외 3개 키, 카테고리는 `sortOrder: 0`·`isActive: true` 가 추가됨). 현재 코드에서는 4건 모두 통과한다.
+- **영향 해소:** 계획 단계에서 적었던 관리자 UI 요청 본문, 즉 별 토글의 `PUT { featured }` (`src/components/GalleryAdminManager.tsx:229-232`)와 홈 프리뷰 재정렬의 `PUT { sortOrder }` (`:241-246`)는 자동 테스트로 직접 검증하지 않는다. 같은 날 임시 테스트로 현재 `UpdateGallerySchema` 가 `{ featured: true }`, `{ sortOrder: 2 }` 를 각각 해당 키 하나만 남기고 파싱하는 것을 확인했다. 화면 조작부터 저장 결과까지 이어지는 검증은 TC-E-001 3·4번에 남는다.
 
 ---
 
@@ -893,7 +898,7 @@ npx vitest run tests/server/route-handlers \
 | 5 | CategoryAdminManager 에서 사용 중인 카테고리 삭제 | 409 응답, alert 에 `category.deleteConfirmInUse` 문구 |
 
 - **자동화:** 가능 ✅ (어댑터 작성 필요)
-- **선행 조건:** TC-I-005(목록 응답 형식)와 TC-A-006(부분 수정 기본값) 결함이 해소되어야 1·3·4번 예상 결과가 성립한다. 현재 코드에서는 1번 목록이 비어 있다.
+- **선행 조건:** TC-I-005(목록 응답 형식) 결함이 해소되어야 1·3·4번 예상 결과가 성립한다. 홈 프리뷰 타일도 같은 목록 응답에서 만들어지므로, 현재 코드에서는 1번 목록과 프리뷰가 모두 비어 있다. 3·4번의 `published`·`featured` 유지 조건을 막던 TC-A-006(부분 수정 기본값) 결함은 0.2.1 에서 해소되었다.
 
 ---
 
@@ -901,7 +906,7 @@ npx vitest run tests/server/route-handlers \
 
 **목적:** 입력 검증(URL 스킴, 저장소 키), 인가(권한 훅), 자원 사용 제한을 검증한다. 보안 강화 커밋 `82f081f` 에서 추가된 검증과 기존 401 검증을 파일 이동 없이 이 도메인으로 재분류했다. 기준은 OWASP Top 10 2021 이다.
 
-**실행 명령:** 아래 명령은 2026-09-13 에 파일 2개, 테스트 28건을 실행했다.
+**실행 명령:** 아래 명령은 2026-09-15 에 파일 2개, 테스트 28건을 실행했다.
 
 ```bash
 npx vitest run tests/validators tests/server/route-handlers \
@@ -928,7 +933,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 4 | `imageUrlProtocols: ["https"]` 에서 http URL 파싱 | 실패 |
 | 5 | `imageUrlHosts: ["cdn.example.com"]` 에서 `cdn.example.com`, `evil.example.org` 파싱 | 성공, 실패 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
 - **관련 요구사항:** OWASP A03:2021 Injection (URL 스킴을 이용한 스크립트 실행 차단)
 
 ---
@@ -952,7 +957,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 5 | 513자, 512자 키 파싱 | 실패, 성공 |
 | 6 | `imageKeyPattern: /^uploads\//` 에서 `gallery/a.webp`, `uploads/a.webp` 파싱 | 실패, 성공 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-15 실측)
 - **관련 요구사항:** OWASP A01:2021 Broken Access Control (경로 순회). imageKey 는 `config.storage.collectKeys`·`deleteKeys` 로 전달되므로(`src/services/index.ts:196-232`), 이 검증이 저장소 객체 삭제 범위를 제한한다.
 
 ---
@@ -975,7 +980,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 4 | bulk.PATCH 에서 두 대상 중 하나의 작성자가 다름 | 403, `updateMany`·revalidate 미호출 |
 | 5 | `canEdit: () => true`, `featured: true` 로 bulk.PATCH | 200, `updateMany` 1회 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
 - **관련 요구사항:** OWASP A01:2021 Broken Access Control
 
 ---
@@ -998,7 +1003,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 4 | item.DELETE, `canDelete: () => false` | 403, `delete` 미호출 |
 | 5 | item.DELETE, `canDelete: () => true`, 대상 없음 | 404 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
 - **관련 요구사항:** OWASP A01:2021 Broken Access Control, A07:2021 Identification and Authentication Failures
 
 ---
@@ -1020,7 +1025,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 3 | categoryItem.DELETE | 403, `delete` 미호출 |
 | 4 | categoryCollection.GET | 200 (조회는 게이트 대상이 아님) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 4개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 4개 (2026-09-15 실측)
 
 ---
 
@@ -1040,7 +1045,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 2 | collection.GET 에 500자 search | `findMany` where 의 `caption.contains` 길이 100 |
 | 3 | `validation.searchMaxLength: 10` 에서 50자 search | `caption.contains` 길이 10 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-15 실측)
 - **관련 요구사항:** OWASP A04:2021 Insecure Design (자원 소비 제한)
 
 ---
@@ -1297,7 +1302,7 @@ npx vitest run tests/accessibility
 
 **목적:** 공개 진입점이 import 가능하고 핵심 API 가 export 되는지 빠르게 확인한다. 사전 조사 문서 기준으로 6개 공유 패키지 가운데 smoke 테스트를 보유한 패키지는 이 패키지뿐이다.
 
-**실행 명령:** 아래 명령은 2026-09-13 에 파일 1개, 테스트 2건을 실행했다.
+**실행 명령:** 아래 명령은 2026-09-15 에 파일 1개, 테스트 2건을 실행했다.
 
 ```bash
 npx vitest run tests/smoke.test.ts
@@ -1321,7 +1326,7 @@ npx vitest run tests/smoke.test.ts
 | 2 | `kit.setGalleryConfig`, `kit.getGalleryConfig` 타입 확인 | 둘 다 `"function"` |
 | 3 | `kit.cn`, `kit.getVariantUrl` 타입 확인 | 둘 다 `"function"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-13 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-15 실측)
 - **비고:** `src/index.ts` 가 export 하는 오류 클래스 5개, 나머지 서브패스 진입점, dist 산출물은 확인하지 않는다.
 
 ---
@@ -1354,9 +1359,9 @@ npx vitest run tests/smoke.test.ts
 
 | 유형 | 현재 파일 수 | 현재 테스트 수 | SC 수 (✅/🔲) | TC 수 (✅/🔲) | 계획 파일 |
 |------|------------|-------------|--------------|--------------|----------|
-| **Unit** | 17개 | 156개 | 19 (18/1) | 19 (18/1) | 기존 1개에 케이스 추가 |
+| **Unit** | 17개 | 158개 | 19 (18/1) | 19 (18/1) | 기존 1개에 케이스 추가 |
 | **Integration** | 4개 | 25개 | 6 (4/2) | 6 (4/2) | 신규 1개, 기존 1개에 추가 |
-| **API** | 1개 | 33개 | 7 (5/2) | 7 (5/2) | 기존 1개에 추가 |
+| **API** | 1개 | 35개 | 7 (6/1) | 7 (6/1) | 기존 1개에 추가 |
 | **E2E** | 0개 | 0개 | 1 (0/1) | 1 (0/1) | 신규 1개 |
 | **Security** | 2개 | 28개 | 8 (6/2) | 8 (6/2) | 기존 1개에 추가 |
 | **Accessibility** | 0개 | 0개 | 7 (0/7) | 7 (0/7) | 신규 7개 |
@@ -1364,10 +1369,11 @@ npx vitest run tests/smoke.test.ts
 | **Load/Stress** | 0개 | 0개 | 0 | 0 | - |
 | **Smoke** | 1개 | 2개 | 2 (1/1) | 2 (1/1) | 신규 1개 |
 | **Chaos** | 0개 | 0개 | 0 | 0 | - |
-| **합계** | **23개** (중복 제외) | **244개** | **50 (34/16)** | **50 (34/16)** | |
+| **합계** | **23개** (중복 제외) | **248개** | **50 (35/15)** | **50 (35/15)** | |
 
 - 현재 파일 수는 해당 도메인 테스트를 1건 이상 포함한 파일 수이다. `tests/validators/index.test.ts` 는 Unit·Security 에, `tests/server/route-handlers.test.ts` 는 API·Security 에 함께 집계되므로 도메인별 파일 수의 합(25)은 실제 파일 수(23)보다 크다.
-- 도메인별 테스트 수(156 + 25 + 33 + 28 + 2)의 합은 실측 244건과 같다.
+- 도메인별 테스트 수(158 + 25 + 35 + 28 + 2)의 합은 실측 248건과 같다.
+- 2026-09-13 판 대비 증가한 4건은 0.2.1 회귀 테스트이며, 모두 기존 TC 에 배정했다 (TC-U-006 1건, TC-U-007 1건, TC-A-006 2건). 새 SC·TC 는 없다.
 
 ### 테스트 파일 배정표
 
@@ -1379,7 +1385,7 @@ npx vitest run tests/smoke.test.ts
 | `tests/utils/image-variants.test.ts` | 4 | Unit | TC-U-003 |
 | `tests/services/helpers.test.ts` | 5 | Unit | TC-U-004 |
 | `tests/utils/api-helpers.test.ts` | 12 | Unit | TC-U-005 |
-| `tests/validators/index.test.ts` | 40 | Unit 29, Security 11 | TC-U-006 (17), TC-U-007 (12), TC-S-001 (5), TC-S-002 (6) |
+| `tests/validators/index.test.ts` | 42 | Unit 31, Security 11 | TC-U-006 (18), TC-U-007 (13), TC-S-001 (5), TC-S-002 (6) |
 | `tests/services/gallery-service.test.ts` | 25 | Unit | TC-U-008 (23), TC-U-010 (2) |
 | `tests/services/category-service.test.ts` | 11 | Unit | TC-U-009 (9), TC-U-010 (2) |
 | `tests/hooks/useGalleryLightbox.test.tsx` | 9 | Unit | TC-U-011 |
@@ -1394,7 +1400,7 @@ npx vitest run tests/smoke.test.ts
 | `tests/presets/ballet.test.tsx` | 10 | Integration | TC-I-002 |
 | `tests/components/GalleryAdminManager.test.tsx` | 5 | Integration | TC-I-003 |
 | `tests/components/CategoryAdminManager.test.tsx` | 3 | Integration | TC-I-004 |
-| `tests/server/route-handlers.test.ts` | 50 | API 33, Security 17 | TC-A-001 (7), TC-A-002 (9), TC-A-003 (5), TC-A-004 (10), TC-A-005 (2), TC-S-003 (5), TC-S-004 (5), TC-S-005 (4), TC-S-006 (3) |
+| `tests/server/route-handlers.test.ts` | 52 | API 35, Security 17 | TC-A-001 (7), TC-A-002 (9), TC-A-003 (5), TC-A-004 (10), TC-A-005 (2), TC-A-006 (2), TC-S-003 (5), TC-S-004 (5), TC-S-005 (4), TC-S-006 (3) |
 | `tests/smoke.test.ts` | 2 | Smoke | TC-SM-001 |
 
 `tests/setup.ts` 는 테스트 파일이 아니라 `setupFiles` 로 등록된 정리 코드(`afterEach(cleanup)`)이므로 배정 대상에서 제외한다.
@@ -1407,8 +1413,8 @@ npx vitest run tests/smoke.test.ts
 
 | 도메인 | 판정 (사전 조사) | 이 문서 반영 | 근거 |
 |--------|----------------|------------|------|
-| Unit | 적용 | ✅ 18 / 🔲 1 | 오류 클래스, 스키마, 서비스, 훅, 컴포넌트를 모의 객체로 격리할 수 있으며 현재 156건이 있다 |
-| API | 적용 | ✅ 5 / 🔲 2 | `createGalleryRoutes` 가 6개 경로 그룹에 핸들러 14개를 제공하며, 호스트는 이를 그대로 라우트로 export 한다 |
+| Unit | 적용 | ✅ 18 / 🔲 1 | 오류 클래스, 스키마, 서비스, 훅, 컴포넌트를 모의 객체로 격리할 수 있으며 현재 158건이 있다 |
+| API | 적용 | ✅ 6 / 🔲 1 | `createGalleryRoutes` 가 6개 경로 그룹에 핸들러 14개를 제공하며, 호스트는 이를 그대로 라우트로 export 한다 |
 | Integration | 제한적 | ✅ 4 / 🔲 2 | Prisma·apiWrapper·fetch 를 모두 호스트가 주입하므로 결합 범위가 로더와 서비스, 컴포넌트와 설정·fetch 로 한정된다. 다만 클라이언트와 라우트 사이 응답 형식 불일치가 확인되어 계획 TC 를 추가했다 |
 | E2E | 제한적 | 🔲 1 | 페이지와 브라우저 흐름은 호스트 책임이다. 패키지 안에서는 jsdom 과 실제 라우트 핸들러를 연결한 왕복 흐름까지만 검증할 수 있다 |
 | Security | 적용(재분류) | ✅ 6 / 🔲 2 | 보안 강화 커밋 `82f081f` 의 검증과 401 검증 28건을 파일 이동 없이 Security 로 재분류했다 |
@@ -1429,17 +1435,18 @@ npx vitest run tests/smoke.test.ts
 
 | 순위 | TC | 항목 | 우선순위 | 선행 조건 |
 |------|----|------|---------|----------|
-| 1 | TC-A-006 | 부분 수정 PUT 이 `published`·`featured`·`sortOrder`·`isActive` 기본값을 덮어씀 (결함 확인용) | Critical | 없음. 현재 코드로 실패를 재현할 수 있고, 통과하려면 스키마 수정이 필요하다 |
-| 2 | TC-I-005 | `GalleryAdminManager` 목록 응답 형식, `CategoryAdminManager` 오류 본문 경로 불일치 (결함 확인용) | Critical | 서버 기준과 클라이언트 기준 가운데 맞출 쪽 결정 |
-| 3 | TC-AC-001~006 | ARIA·키보드 구현분에 대한 자동 접근성 검증 (사전 조사 문서 우선순위 갭 5번) | High·Medium | 없음 (testing-library 설치됨). TC-AC-003 6번은 포커스 관리 정책 결정, TC-AC-006 은 결함 수정 여부 결정 |
-| 4 | TC-I-006 | `GalleryAdminManager` 새 항목 생성 경로에 업로드 함수가 없음 (결함 확인용) | High | 업로드 함수 주입 방식 결정 |
-| 5 | TC-S-007 | 라우트 경유 URL·키 검증과 `config.validation` 전달 | High | 없음 |
-| 6 | TC-E-001 | 관리자 화면과 실제 라우트 핸들러 왕복 여정 | High | TC-A-006·TC-I-005 해소, fetch → 라우트 어댑터 작성 |
-| 7 | TC-U-019 | GalleryEditForm 이미지 선택·업로드 오류 경로 | Medium | 없음 |
-| 8 | TC-A-007 | 오류 응답 본문 계약과 비매핑 예외 전파 | Medium | 없음 |
-| 9 | TC-S-008 | 인증 식별자 추출·권한 검사 경계값 | Medium | 없음 |
-| 10 | TC-SM-002 | 서브패스 exports 와 dist 산출물 검증 | Medium | 테스트 절차에 빌드 단계 추가 |
-| 11 | TC-AC-007 | axe 규칙 기반 자동 검사 | Medium | `axe-core` 또는 `vitest-axe` devDependency 추가 (`package.json` 수정) |
+| 1 | TC-I-005 | `GalleryAdminManager` 목록 응답 형식, `CategoryAdminManager` 오류 본문 경로 불일치 (결함 확인용) | Critical | 서버 기준과 클라이언트 기준 가운데 맞출 쪽 결정 |
+| 2 | TC-AC-001~006 | ARIA·키보드 구현분에 대한 자동 접근성 검증 (사전 조사 문서 우선순위 갭 5번) | High·Medium | 없음 (testing-library 설치됨). TC-AC-003 6번은 포커스 관리 정책 결정, TC-AC-006 은 결함 수정 여부 결정 |
+| 3 | TC-I-006 | `GalleryAdminManager` 새 항목 생성 경로에 업로드 함수가 없음 (결함 확인용) | High | 업로드 함수 주입 방식 결정 |
+| 4 | TC-S-007 | 라우트 경유 URL·키 검증과 `config.validation` 전달 | High | 없음 |
+| 5 | TC-E-001 | 관리자 화면과 실제 라우트 핸들러 왕복 여정 | High | TC-I-005 해소, fetch → 라우트 어댑터 작성 |
+| 6 | TC-U-019 | GalleryEditForm 이미지 선택·업로드 오류 경로 | Medium | 없음 |
+| 7 | TC-A-007 | 오류 응답 본문 계약과 비매핑 예외 전파 | Medium | 없음 |
+| 8 | TC-S-008 | 인증 식별자 추출·권한 검사 경계값 | Medium | 없음 |
+| 9 | TC-SM-002 | 서브패스 exports 와 dist 산출물 검증 | Medium | 테스트 절차에 빌드 단계 추가 |
+| 10 | TC-AC-007 | axe 규칙 기반 자동 검사 | Medium | `axe-core` 또는 `vitest-axe` devDependency 추가 (`package.json` 수정) |
+
+2026-09-13 판에서 1순위였던 TC-A-006(부분 수정 PUT 이 `published`·`featured`·`sortOrder`·`isActive` 기본값을 덮어씀)은 0.2.1 에서 결함이 수정되고 회귀 테스트 4건이 추가되어 갭에서 제외했다. 관리자 UI 요청 본문(`{ featured }`, `{ sortOrder }`)을 화면 조작부터 확인하는 검증은 5순위 TC-E-001 에 포함되어 있다.
 
 테스트 인프라에도 다음 공백이 있다.
 
@@ -1450,15 +1457,16 @@ npx vitest run tests/smoke.test.ts
 
 ## 리뷰 체크리스트
 
-- [x] 테스트 파일 23개가 모두 TC 에 배정됨 (2026-09-13 문서와 `tests/` 목록 대조, 누락 0개)
-- [x] 테스트 244건이 각각 TC 하나에만 배정됨 (도메인 합계와 실측 합계 일치)
-- [x] 도메인별 실행 명령과 파일 내 분할 필터로 건수를 재현함 (Unit 156, Integration 25, API 33, Security 28, Smoke 2)
+- [x] 테스트 파일 23개가 모두 TC 에 배정됨 (2026-09-15 문서와 `tests/` 목록 대조, 누락 0개)
+- [x] 테스트 248건이 각각 TC 하나에만 배정됨 (도메인 합계와 실측 합계 일치)
+- [x] 도메인별 실행 명령과 파일 내 분할 필터로 건수를 재현함 (2026-09-15: Unit 158, Integration 25, API 35, Security 28, Smoke 2)
+- [x] 0.2.1 변경을 반영함: 회귀 테스트 4건을 TC-U-006·TC-U-007·TC-A-006 에 배정하고 TC-A-006 을 완료로 전환함. 수정 전 스키마(`29fd94c`)로 4건 실패를 재현함
 - [x] 완료 TC 의 단계·예상 결과를 실제 테스트 이름과 단언에서 발췌함
 - [x] 계획 TC 에 소스 위치를 명시하고, 결함 확인용 항목은 임시 실행으로 현재 동작을 확인함
 - [x] 보안 기준(OWASP Top 10 2021)과 접근성 기준(WCAG 2.1)을 명시함
 - [ ] 테스트 이름과 단언이 일치하지 않는 2건 정리 필요: `GalleryEditForm` "새 모드 (value=null) … onSubmit 호출 payload 검증"(실제 단언은 미호출), `GalleryAdminManager` "새로 생성 … POST 호출"(실제 단언은 `typeof postCalled === "boolean"`)
 - [ ] 테스트 이름 필터 기반 도메인 구분은 테스트 이름이 바뀌면 깨지므로, 도메인별 스크립트 추가 또는 디렉토리 정리 여부 결정 필요
 - [ ] 커버리지 설정과 목표값 결정 필요
-- [ ] 결함 확인용 TC 4건(TC-A-006, TC-I-005, TC-I-006, TC-AC-006)의 수정 여부 결정 필요
+- [ ] 남은 결함 확인용 TC 3건(TC-I-005, TC-I-006, TC-AC-006)의 수정 여부 결정 필요 (TC-A-006 은 0.2.1 에서 수정 완료)
 - [ ] 접근성 계획 TC(TC-AC-001~007) 구현 필요
 - [ ] 도메인 적용성 판정에 남긴 확인 필요 사항 2건(`togglePublish` 동시 토글, 저장소 삭제 실패 시 순서) 검토 필요
