@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   type ChangeEvent,
@@ -89,6 +90,14 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
   const [refreshKey, setRefreshKey] = useState(0);
   const [saving, setSaving] = useState(false);
   const mountedRef = useRef(true);
+  // 같은 화면에 여러 번 마운트되어도 label ↔ input 연결 id 가 겹치지 않도록 useId 로 만든다.
+  const fieldIdBase = useId();
+  const fieldIds = {
+    slug: `${fieldIdBase}-slug`,
+    labelKo: `${fieldIdBase}-labelKo`,
+    labelEn: `${fieldIdBase}-labelEn`,
+    sortOrder: `${fieldIdBase}-sortOrder`,
+  };
 
   useEffect(() => {
     mountedRef.current = true;
@@ -233,8 +242,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           {form.id ? "Edit category" : "New category"}
         </div>
         <div className="gallery-category-admin__field">
-          <label className="gallery-category-admin__field-label">{t(i18n, "category.slug")}</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.slug}>{t(i18n, "category.slug")}</label>
           <input
+            id={fieldIds.slug}
             name="slug"
             className="gallery-category-admin__input"
             value={form.slug}
@@ -243,8 +253,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           />
         </div>
         <div className="gallery-category-admin__field">
-          <label className="gallery-category-admin__field-label">{t(i18n, "category.labelKo")}</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.labelKo}>{t(i18n, "category.labelKo")}</label>
           <input
+            id={fieldIds.labelKo}
             name="labelKo"
             className="gallery-category-admin__input"
             value={form.labelKo}
@@ -252,8 +263,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           />
         </div>
         <div className="gallery-category-admin__field">
-          <label className="gallery-category-admin__field-label">{t(i18n, "category.labelEn")}</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.labelEn}>{t(i18n, "category.labelEn")}</label>
           <input
+            id={fieldIds.labelEn}
             name="labelEn"
             className="gallery-category-admin__input"
             value={form.labelEn}
@@ -261,8 +273,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           />
         </div>
         <div className="gallery-category-admin__field gallery-category-admin__field--row">
-          <label className="gallery-category-admin__field-label">Sort order</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.sortOrder}>Sort order</label>
           <input
+            id={fieldIds.sortOrder}
             type="number"
             name="sortOrder"
             className="gallery-category-admin__input"

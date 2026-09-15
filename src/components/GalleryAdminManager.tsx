@@ -288,6 +288,7 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
       <input
         type="search"
         className="gallery-manager__search"
+        aria-label={t(i18n, "admin.searchPlaceholder")}
         placeholder={t(i18n, "admin.searchPlaceholder")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -317,17 +318,20 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
           className={cn("gallery-list-item", selectedId === item.id && "gallery-list-item--active")}
           onClick={() => handleSelect(item.id)}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.imageUrl} alt="" className="gallery-list-item__thumb" />
-          <div className="gallery-list-item__body">
-            <div className="gallery-list-item__caption">
-              {item.caption || "(no caption)"}
-            </div>
-            <div className="gallery-list-item__meta">
-              {item.featured ? "★ " : ""}
-              {item.published ? "공개" : "비공개"} · 순서 {item.sortOrder}
-            </div>
-          </div>
+          {/* 키보드 접근용 네이티브 button. Enter·Space 로 발생한 click 이 li 의 onClick 으로 전파되어 항목을 선택한다. */}
+          <button type="button" className="gallery-list-item__select">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={item.imageUrl} alt="" className="gallery-list-item__thumb" />
+            <span className="gallery-list-item__body">
+              <span className="gallery-list-item__caption">
+                {item.caption || "(no caption)"}
+              </span>
+              <span className="gallery-list-item__meta">
+                {item.featured ? "★ " : ""}
+                {item.published ? "공개" : "비공개"} · 순서 {item.sortOrder}
+              </span>
+            </span>
+          </button>
         </li>
       ))}
     </ul>
