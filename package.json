@@ -1,6 +1,7 @@
 {
   "name": "@withwiz/gallery",
   "version": "0.2.1",
+  "packageManager": "npm@11.16.0",
   "description": "Headless gallery module — Prisma 7 + Next 16, host-agnostic. Drop-in admin + public surface.",
   "license": "MIT",
   "main": "./dist/index.js",
