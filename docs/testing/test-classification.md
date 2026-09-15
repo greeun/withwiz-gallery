@@ -4,29 +4,31 @@
 
 | 항목 | 내용 |
 |------|------|
-| 대상 | `@withwiz/gallery` 0.2.1 headless 갤러리 모듈 (서버 계층, React 컴포넌트·훅, ballet 프리셋) |
+| 대상 | `@withwiz/gallery` 0.2.1 headless 갤러리 모듈 (서버 계층, React 컴포넌트·훅, ballet 프리셋). 2026-09-16 판은 0.2.1 에 결함 수정 3건을 더한 브랜치 `fix/residual-defects` 기준이며 버전은 올리지 않았다 |
 | 범위 | `src/` 전체 (errors, config, utils, validators, services, server, hooks, components, presets). `prisma/` 스키마와 SQL 마이그레이션은 테스트 대상에서 제외 |
 | 환경 | Vitest 4.1.7 (설치본, `package.json` 범위 `^4.1.5`) + jsdom 29.1.1 + @testing-library/react 16.3.2 + @vitejs/plugin-react 6.0.2, React 19.2.6, zod 4.4.3, Node v22.22.0. `vitest.config.ts`: `environment: "jsdom"`, `globals: false`, `include: tests/**/*.test.{ts,tsx}`, `setupFiles: tests/setup.ts` (테스트마다 `cleanup()`) |
 | 목표 커버리지 | 미설정 (`vitest.config.ts` 에 coverage 설정이 없고, coverage provider 패키지도 devDependencies 에 없음) |
-| 실측 기준 | 2026-09-15, 브랜치 `docs/test-classification` (develop `9dcc15b` = 0.2.1 을 병합한 커밋 `6145e20`), `package-lock.json` 기준 `npm ci` 후 `npm test` (`vitest run`) |
-| 실행 결과 | 테스트 파일 23개 통과 / 테스트 248건: 통과 248, 실패 0, 스킵 0 (소요 4.28s) |
+| 실측 기준 | 2026-09-16, 브랜치 `fix/residual-defects` (develop `7d439ed` 에서 분기, 결함 수정 커밋 `bf72aa8`·`e9cbd7a`·`addd6b7` 이후), `package-lock.json` 기준 `npm ci` 후 `npm test` (`vitest run`) |
+| 실행 결과 | 테스트 파일 26개 통과 / 테스트 273건: 통과 273, 실패 0, 스킵 0 (소요 2.24s) |
 | ID 체계 | 2026-09-13 판에서 SC/TC ID 를 처음 부여. 갱신할 때는 기존 번호를 유지하고, 새 항목은 도메인별 번호를 이어서 부여 |
-| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15) |
+| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15). 2026-09-16 결함 수정 반영: 관리자 컴포넌트의 응답 형식 해석(`bf72aa8`), 업로드 함수 전달(`e9cbd7a`), 폼 컨트롤 이름과 목록 항목 키보드 선택(`addd6b7`)을 수정하고, TC-I-005·TC-I-006·TC-AC-006 을 ✅ 완료로 전환하고 TC-U-019·TC-E-001 을 구현 (파일 26개, 273건, ✅ 40 / 🔲 10) |
 
 ### 분류 원칙
 
-- 테스트 케이스(`it`) 하나는 TC 하나에만 배정한다. 따라서 도메인별 테스트 수를 더하면 실측 합계 248건과 같다.
+- 테스트 케이스(`it`) 하나는 TC 하나에만 배정한다. 따라서 도메인별 테스트 수를 더하면 실측 합계 273건과 같다.
+- `tests/helpers/` 의 `in-memory-prisma.ts`(메모리 기반 Prisma 가짜 객체)와 `route-fetch.ts`(fetch → 실제 라우트 핸들러 어댑터)는 2026-09-16 에 추가한 테스트 도우미이며 테스트 파일이 아니다.
 - 테스트 파일은 이동하지 않는다. 한 파일에 여러 도메인이 섞인 `tests/validators/index.test.ts` 와 `tests/server/route-handlers.test.ts` 는 테스트 이름 필터(`-t`)로 도메인을 구분한다.
 - 보안 강화 커밋 `82f081f` 에서 추가된 검증(프로토콜·호스트 allowlist, imageKey 형식, 권한 훅, 입력 크기 제한)과 인증 누락 401 검증은 Security 로 재분류한다.
 - 도메인 경계는 다음 기준을 따른다.
   - Unit: 모듈 하나를 Prisma delegate·fetch 모의 객체로 격리한 검증
   - Integration: 두 개 이상 모듈을 실제 구현으로 결합한 흐름
   - API: `createGalleryRoutes` 가 반환하는 라우트 핸들러의 HTTP 상태·응답 계약
+  - E2E: 관리자 컴포넌트를 fetch 어댑터로 실제 라우트 핸들러·서비스·메모리 기반 Prisma 가짜 객체에 연결한 화면 왕복 흐름 (jsdom 범위)
   - Security: 입력 검증, 인가, 자원 사용 제한
   - Accessibility: ARIA 역할·상태·이름, 키보드 조작
   - Smoke: 공개 진입점 export 와 빌드 산출물
-- 🔲 계획 TC 가운데 "결함 확인용"으로 표시한 항목은 2026-09-13 에 워크트리 밖 임시 테스트로 실제 소스를 실행해 현재 동작을 확인했다. 이 항목들은 예상 결과(목표 동작)와 현재 코드 동작이 다르며, 두 가지를 모두 기재한다.
-- 결함이 수정되어 회귀 테스트가 추가된 결함 확인용 TC 는 ✅ 완료로 전환하고, 단계와 예상 결과를 실제 테스트 기준으로 다시 쓴다. 결함 당시의 동작은 해당 TC 의 "결함 이력"에 남긴다. 2026-09-15 기준 전환 대상은 TC-A-006 한 건이다.
+- 🔲 계획 TC 가운데 "결함 확인용"으로 표시한 항목은 2026-09-13 에 워크트리 밖 임시 테스트로 실제 소스를 실행해 현재 동작을 확인했다. 이 항목들은 계획 당시 예상 결과(목표 동작)와 코드 동작이 달라서 두 가지를 모두 기재했다.
+- 결함이 수정되어 회귀 테스트가 추가된 결함 확인용 TC 는 ✅ 완료로 전환하고, 단계와 예상 결과를 실제 테스트 기준으로 다시 쓴다. 결함 당시의 동작은 해당 TC 의 "결함 이력"에 남긴다. 전환 대상은 2026-09-15 의 TC-A-006 과 2026-09-16 의 TC-I-005·TC-I-006·TC-AC-006 으로 모두 네 건이며, 남은 결함 확인용 TC 는 없다.
 
 ---
 
@@ -52,13 +54,13 @@
 | SC-U-016 | GalleryManagerLayout 슬롯·클래스 병합 검증 | Unit | Medium | ✅ 완료 |
 | SC-U-017 | GalleryEditForm 단일·다중 저장 검증 | Unit | High | ✅ 완료 |
 | SC-U-018 | GalleryHomePreview 재정렬·별 토글 검증 | Unit | Medium | ✅ 완료 |
-| SC-U-019 | GalleryEditForm 이미지 선택·업로드 오류 경로 검증 | Unit | Medium | 🔲 계획 |
+| SC-U-019 | GalleryEditForm 이미지 선택·업로드 오류 경로 검증 | Unit | Medium | ✅ 완료 |
 | SC-I-001 | RSC 로더 → 서비스 위임 | Integration | Medium | ✅ 완료 |
 | SC-I-002 | 공개 모자이크 ↔ 라이트박스·스크롤 훅 결합 | Integration | High | ✅ 완료 |
 | SC-I-003 | GalleryAdminManager ↔ 설정 DI·fetch 흐름 | Integration | High | ✅ 완료 |
 | SC-I-004 | CategoryAdminManager ↔ fetch·409 안내 | Integration | Medium | ✅ 완료 |
-| SC-I-005 | 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 계약 | Integration | Critical | 🔲 계획 |
-| SC-I-006 | GalleryAdminManager 새 항목 생성·featured 상한 | Integration | High | 🔲 계획 |
+| SC-I-005 | 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 계약 | Integration | Critical | ✅ 완료 |
+| SC-I-006 | GalleryAdminManager 새 항목 생성·featured 상한 | Integration | High | ✅ 완료 |
 | SC-A-001 | 갤러리 컬렉션 라우트 (GET·POST·DELETE) | API | Critical | ✅ 완료 |
 | SC-A-002 | 갤러리 단건·공개 토글 라우트 | API | Critical | ✅ 완료 |
 | SC-A-003 | bulk 생성·일괄 수정 라우트 | API | High | ✅ 완료 |
@@ -66,7 +68,7 @@
 | SC-A-005 | typed error → HTTP 상태 매핑 (오류 처리) | API | High | ✅ 완료 |
 | SC-A-006 | 부분 수정 PUT 의 미지정 필드 보존 | API | Critical | ✅ 완료 |
 | SC-A-007 | 오류 응답 본문 계약·비매핑 예외 전파 | API | Medium | 🔲 계획 |
-| SC-E-001 | 관리자 화면 ↔ 실제 라우트 핸들러 왕복 여정 | E2E | High | 🔲 계획 |
+| SC-E-001 | 관리자 화면 ↔ 실제 라우트 핸들러 왕복 여정 | E2E | High | ✅ 완료 |
 | SC-S-001 | imageUrl 프로토콜·호스트 allowlist (`javascript:`·`data:` 차단) | Security | Critical | ✅ 완료 |
 | SC-S-002 | imageKey 형식 검증 (경로 순회 차단) | Security | Critical | ✅ 완료 |
 | SC-S-003 | bulk 대상 전원 권한 검사 (403, 부분 성공 없음) | Security | Critical | ✅ 완료 |
@@ -80,7 +82,7 @@
 | SC-AC-003 | 공개 모자이크 타일·라이트박스 대화상자 | Accessibility | High | 🔲 계획 |
 | SC-AC-004 | GalleryHomePreview 별 토글 상태 | Accessibility | Medium | 🔲 계획 |
 | SC-AC-005 | 관리자 오류 알림·보조 버튼 이름 | Accessibility | Medium | 🔲 계획 |
-| SC-AC-006 | 폼 컨트롤 접근 가능한 이름·키보드 도달성 | Accessibility | High | 🔲 계획 |
+| SC-AC-006 | 폼 컨트롤 접근 가능한 이름·키보드 도달성 | Accessibility | High | ✅ 완료 |
 | SC-AC-007 | axe 규칙 기반 자동 검사 | Accessibility | Medium | 🔲 계획 |
 | SC-SM-001 | 소스 공개 진입점 export | Smoke | Medium | ✅ 완료 |
 | SC-SM-002 | 서브패스 exports·dist 산출물 | Smoke | Medium | 🔲 계획 |
@@ -93,7 +95,7 @@ SC 와 TC 는 같은 번호로 1:1 대응한다. 예를 들어 SC-U-006 의 상�
 
 **목적:** 오류 클래스, 설정, 유틸, 입력 스키마, 서비스, 훅, 컴포넌트를 모듈 단위로 격리해 검증한다. Prisma delegate 와 브라우저 API 는 모의 객체로 대체한다.
 
-**실행 명령:** 도메인별 npm 스크립트가 없으므로 파일과 이름 필터를 지정해 실행한다. 아래 명령은 2026-09-15 에 파일 17개, 테스트 158건을 실행했다.
+**실행 명령:** 도메인별 npm 스크립트가 없으므로 파일과 이름 필터를 지정해 실행한다. 아래 명령은 2026-09-16 에 파일 17개, 테스트 163건을 실행했다.
 
 ```bash
 npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/services tests/hooks tests/validators \
@@ -122,7 +124,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | `new CategoryInUseError("c-1", 3)` 생성 | `categoryId === "c-1"`, `galleryCount === 3`, `message === "Category c-1 is in use by 3 galleries"` |
 | 5 | `new PermissionDeniedError("delete", "c-9")` 생성 | `action === "delete"`, `message === "Permission denied: cannot delete c-9"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-16 실측)
 - **비고:** 서비스가 이 클래스를 던지는 동작은 TC-U-010, 라우트가 HTTP 상태로 변환하는 동작은 TC-A-005 에서 다룬다. `PermissionDeniedError` 는 export 만 되어 있고 라우트 핸들러에서는 사용되지 않는다. 라우트는 403 을 `jsonError(..., 403, "Forbidden")` 로 직접 반환한다.
 
 ---
@@ -143,7 +145,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 2 | `setGalleryConfig(cfg)` 후 `getGalleryConfig()` 호출 | 같은 인스턴스(`toBe`) 반환 |
 | 3 | 설정 후 `resetGalleryConfig()` 를 호출하고 다시 조회 | throw |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-16 실측)
 
 ---
 
@@ -166,7 +168,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | 확장자 없는 `"https://cdn.example.com/abc"` 에 `"sm"` 지정 | 원본 URL 그대로 반환 |
 | 6 | `getVariantUrl("/uploads/x.jpg", "thumb")` 호출 | `"/uploads/x_thumb.jpg"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 6개 (cn 2 + image-variants 4, 2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (cn 2 + image-variants 4, 2026-09-16 실측)
 
 ---
 
@@ -188,7 +190,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | `([1], 2, 1, 3)` 계산 | `hasPrev true`, `hasNext true` |
 | 5 | 나누어떨어지는 `([1,2], 5, 2, 10)` 계산 | `totalPages 5`, `hasNext false` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 
 ---
 
@@ -211,7 +213,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `validateIds("nope")`, `validateIds([])` 호출 | 둘 다 `valid false` |
 | 6 | `parseSortKey(sortBy=evil, ["createdAt","sortOrder"], "sortOrder")` 호출 | 허용 목록 밖이므로 `"sortOrder"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 12개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 12개 (2026-09-16 실측)
 
 ---
 
@@ -235,7 +237,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 6 | `batchMax: 2` 에서 items 3개, 그리고 빈 items 파싱 | 둘 다 실패 |
 | 7 | `BulkUpdateSchema` 에 `ids: ["xxx"]`, 그리고 `batchMax: 1` 에서 ids 2개 파싱 | 둘 다 실패 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 18개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 18개 (2026-09-16 실측)
 - **비고:** 0.2.1 부터 `UpdateGallerySchema` 는 기본값이 없는 공통 필드 정의(`galleryFields`)에 `.partial()` 을 적용해 만들고, 기본값은 `CreateGallerySchema` 에만 지정한다 (`src/validators/index.ts:72-92`). 5번은 이 수정과 함께 추가된 회귀 테스트이다 (`UpdateGallerySchema > does not fill create defaults for omitted fields`). 같은 결함을 라우트 경유로 확인하는 테스트는 TC-A-006 에 배정했다.
 
 ---
@@ -260,7 +262,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 6 | `UpdateCategorySchema` 에 `{ labelKo: "수정" }` 파싱 | 성공, 결과가 `{ labelKo: "수정" }` 와 정확히 일치 (`toStrictEqual`, Create 기본값 `sortOrder`·`isActive` 미적용) |
 | 7 | `ReorderCategorySchema` 에 `ids: []`, `ids: ["x"]` 파싱 | 둘 다 실패 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 13개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 13개 (2026-09-16 실측)
 - **비고:** 0.2.1 부터 `UpdateCategorySchema` 는 기본값이 없는 공통 필드 정의(`categoryFields`)에 `.partial()` 을 적용해 만들고, 기본값은 `CreateCategorySchema` 에만 지정한다 (`src/validators/index.ts:104-122`). 6번은 이 수정과 함께 추가된 회귀 테스트이다 (`UpdateCategorySchema > does not fill create defaults for omitted fields`).
 
 ---
@@ -284,7 +286,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | storage 활성 상태에서 `remove("g1")` 호출 | `delete({ where: { id: "g1" } })` 후 `collectKeys("abc.webp")`, `deleteKeys` 호출 |
 | 6 | `modelName: "photo"` 설정 후 `listPublished()` 호출 | `prisma.photo.findMany` 호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 23개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 23개 (2026-09-16 실측)
 
 ---
 
@@ -307,7 +309,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `reorder(["c1","c2","c3"])` 호출 | `update` 3회, 첫 호출 `sortOrder 0`, 세 번째 호출 `sortOrder 2` |
 | 6 | `categoryModelName: "customCategory"` 설정 후 `list()` 호출 | `prisma.customCategory.findMany` 호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-16 실측)
 
 ---
 
@@ -328,7 +330,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 3 | count 3 에서 `remove("c1")` 호출 | `CategoryInUseError` 로 reject, `delete` 미호출 |
 | 4 | 3번 오류 객체의 필드 확인 | `categoryId === "c1"`, `galleryCount === 3` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 4개 (gallery-service 2 + category-service 2, 2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 4개 (gallery-service 2 + category-service 2, 2026-09-16 실측)
 - **비고:** 이 테스트는 오류 메시지 문구가 아니라 `toBeInstanceOf` 와 데이터 필드로 판별한다. 따라서 메시지 문구가 바뀌어도 판별 결과가 유지된다.
 
 ---
@@ -352,7 +354,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | 열린 상태에서 window 에 `ArrowRight`, `ArrowLeft`, `Escape` keydown 발생 | 인덱스 1 → 2 → 1 이동, `Escape` 에서 닫힘 |
 | 6 | `close()` 후 `ArrowRight` keydown 발생 | `currentIndex -1` 유지 (리스너 해제) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-16 실측)
 
 ---
 
@@ -375,7 +377,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `validate` 가 `{ ok: false, reason: "너무 작아요" }` 반환 | `onFiles` 미호출, 사유에 `너무 작아요` 포함 |
 | 6 | 거부된 drop 이후 허용 파일 drop | `rejectedReasons` 초기화, `onFiles` 1회 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-16 실측)
 
 ---
 
@@ -397,7 +399,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | `threshold: 0.5` 지정 | 생성자 옵션이 `{ threshold: 0.5 }` |
 | 5 | unmount | `disconnect()` 호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-16 실측)
 
 ---
 
@@ -420,7 +422,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `label="Published"` 지정 | `aria-label="Published"`, 화면에 텍스트 노출 |
 | 6 | `size="lg"`, `checked={true}` 지정 | 루트에 `gallery-toggle--lg`, 트랙에 `gallery-toggle--checked` 클래스 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 8개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 8개 (2026-09-16 실측)
 - **비고:** 기능 테스트 안에 `aria-checked`, `aria-label` 단언이 일부 포함되어 있지만 접근성 전용 검증은 아니다. 검증되지 않은 속성과 조건은 TC-AC-001 에 정리한다.
 
 ---
@@ -444,7 +446,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `accept={["image/png"]}` 에 gif drop | `role="alert"` 영역 노출 |
 | 6 | `disabled` 에서 png drop | `aria-disabled="true"`, `onFiles` 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-16 실측)
 
 ---
 
@@ -467,7 +469,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | `ui.slots.managerToolbar` 와 `toolbar` prop 동시 전달 | slot 이 우선, prop 은 렌더되지 않음 |
 | 6 | homePreview 미전달 | `.gallery-manager__preview` 미렌더 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-16 실측)
 
 ---
 
@@ -490,8 +492,8 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 5 | category select 에서 `cat-reh` 선택 후 Save | option 2개, payload `categoryId "cat-reh"` |
 | 6 | `multipleMode` 에서 파일 2개 선택, caption `공통`, sortOrder `10` 입력 후 Save | `onSubmitMany` 항목 caption `공통_1`·`공통_2`, sortOrder `10`·`11` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
-- **비고:** 1번 테스트 이름은 "저장 시 onSubmit 호출 payload 검증"이지만 실제 단언은 `onSubmit` 미호출이다. 이름과 단언이 일치하지 않으므로 리뷰 체크리스트에 정리 항목으로 남긴다.
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-16 실측)
+- **비고:** 1번 테스트 이름은 "저장 시 onSubmit 호출 payload 검증"이지만 실제 단언은 `onSubmit` 미호출이다. 이름과 단언이 일치하지 않으므로 리뷰 체크리스트에 정리 항목으로 남긴다. 같은 조건에서 표시되는 오류 문구는 2026-09-16 에 구현한 TC-U-019 2번이 단언한다.
 
 ---
 
@@ -513,41 +515,42 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | 4 | 타일 0 을 타일 2 로 dragStart → dragOver → drop → dragEnd | `onReorder(["c","b","a"])` 1회 |
 | 5 | 같은 위치에 drop | `onReorder` 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 
 ---
 
-### TC-U-019: GalleryEditForm 이미지 선택·업로드 오류 경로 🔲 계획
+### TC-U-019: GalleryEditForm 이미지 선택·업로드 오류 경로
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/components/GalleryEditForm.test.tsx` (케이스 추가) |
-| **대상** | `src/components/GalleryEditForm.tsx:163-228` (`handleFiles`, `handleSubmit`), `:318-336` (다중 이미지 제거 버튼) |
+| **파일** | `tests/components/GalleryEditForm.test.tsx` (`GalleryEditForm — TC-U-019 이미지 선택·업로드 오류 경로` 블록) |
+| **대상** | `src/components/GalleryEditForm.tsx:171-236` (`handleFiles`, `handleSubmit`), `:326-344` (다중 이미지 제거 버튼) |
 | **우선순위** | Medium |
-| **전제조건** | 카테고리 1개, 드롭존에 `DataTransfer` 모의 객체로 drop |
-| **테스트 데이터** | `a.png`, `onImageSelect` 가 `{ url, key }` 를 반환하거나 `Error("upload failed")` 로 reject |
+| **전제조건** | 카테고리 2개(`cat-perf`, `cat-reh`), 드롭존에 `DataTransfer` 모의 객체로 drop |
+| **테스트 데이터** | `a.png`, `up.png`, `1.png`~`3.png`. `onImageSelect` 는 `{ url, key }` 를 반환하거나 `Error("upload failed")` 로 reject |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | 새 모드, `onImageSelect` 미전달 상태에서 png drop | `role="alert"` 텍스트가 `onImageSelect prop missing — host must provide upload handler` |
+| 1 | 새 모드, `onImageSelect` 미전달 상태에서 `a.png` drop | `role="alert"` 텍스트가 `onImageSelect prop missing — host must provide upload handler` |
 | 2 | 새 모드에서 이미지 없이 Save 클릭 | `role="alert"` 텍스트가 `Image is required`, `onSubmit` 미호출 |
-| 3 | `onImageSelect` 가 `Error("upload failed")` 로 reject | `role="alert"` 텍스트가 `upload failed` |
-| 4 | 단일 모드에서 `onImageSelect` 가 `{ url, key }` 반환 후 Save | payload 의 `imageUrl`·`imageKey` 가 반환값과 같음 |
-| 5 | 다중 모드 이미지 3개 중 첫 제거 버튼(`aria-label="remove"`) 클릭 | 타일 2개, 드롭존 미리보기 `src` 가 두 번째 이미지 URL |
+| 3 | `onImageSelect` 가 `Error("upload failed")` 로 reject | `role="alert"` 텍스트가 `upload failed`, 드롭존 미리보기 없음 |
+| 4 | 단일 모드에서 `onImageSelect` 가 `{ url: "https://cdn.test/up.png", key: "gallery/up.png" }` 반환 후 Save | 미리보기 `src` 가 반환 URL, `onSubmit` 1회, payload 의 `imageUrl`·`imageKey` 가 반환값과 같음 |
+| 5 | 다중 모드에서 이미지 3개 drop 후 첫 제거 버튼(`aria-label="remove"`) 클릭 | 타일이 3개에서 2개로 줄고, 드롭존 미리보기 `src` 가 `https://cdn.test/2.png` |
 
-- **자동화:** 가능 ✅
-- **근거:** 1·2번은 2026-09-13 jsdom 임시 테스트로 표시 문구를 확인했다. 3~5번은 위 소스 범위를 읽고 작성했다. 기존 TC-U-017 의 1번 테스트는 2번과 같은 조건이지만 오류 표시를 단언하지 않는다.
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
+- **비고:** 2026-09-16 에 `GalleryAdminManager` 의 업로드 함수 전달 결함(TC-I-006)을 수정하면서, 편집 폼 쪽 업로드 경로를 함께 고정하려고 구현했다. 5건 모두 결함이 없던 기존 `GalleryEditForm` 동작을 확인하므로 수정 전 코드에서도 통과한다. 1번 오류 문구는 편집 폼을 단독으로 쓰거나 `GalleryAdminManager` 에 `onImageSelect` 를 전달하지 않았을 때 표시된다.
 
 ---
 
 ## 2. Integration Tests (통합 테스트)
 
-**목적:** 실제 구현끼리 결합한 흐름을 검증한다. 대상은 로더와 서비스, 공개 프리셋과 훅, 관리자 컴포넌트와 설정 DI·fetch 이다. Prisma delegate 와 fetch 응답은 모의 객체를 사용한다.
+**목적:** 실제 구현끼리 결합한 흐름을 검증한다. 대상은 로더와 서비스, 공개 프리셋과 훅, 관리자 컴포넌트와 설정 DI·fetch, 관리자 컴포넌트와 실제 라우트 핸들러이다. TC-I-005 를 제외하면 Prisma delegate 와 fetch 응답은 모의 객체를 사용한다. TC-I-005 는 fetch 를 `createGalleryRoutes` 핸들러에 연결하고 메모리 기반 Prisma 가짜 객체를 사용한다.
 
-**실행 명령:** 아래 명령은 2026-09-15 에 파일 4개, 테스트 25건을 실행했다.
+**실행 명령:** 아래 명령은 2026-09-16 에 파일 5개, 테스트 34건을 실행했다.
 
 ```bash
-npx vitest run tests/server/loaders tests/presets/ballet tests/components/GalleryAdminManager tests/components/CategoryAdminManager
+npx vitest run tests/server/loaders tests/presets/ballet tests/components/GalleryAdminManager tests/components/CategoryAdminManager \
+  tests/integration
 ```
 
 ---
@@ -570,7 +573,7 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 4 | `getRecentGalleries(config, 5)` 호출 | `orderBy { createdAt: "desc" }`, `take 5` |
 | 5 | `getGalleryCount(config, { published: true })` 호출 | `count({ where: { published: true } })`, 반환값 11 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-16 실측)
 
 ---
 
@@ -593,7 +596,7 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 5 | 닫기 버튼 클릭, next 후 prev 버튼 클릭 | 오버레이 제거, 이미지가 `/img1.jpg` 에서 `/img0.jpg` 로 변경 |
 | 6 | alt 없는 이미지와 `i18n.expandAria="확대해서 보기"` 렌더 | 타일 `aria-label="확대해서 보기"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-16 실측)
 
 ---
 
@@ -613,10 +616,11 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 2 | `.gallery-manager__new-btn` 클릭 | `.gallery-edit-form` 노출 |
 | 3 | `initialSelectedId="a"` 로 마운트 후 저장 버튼 클릭 | `/api/admin/galleries/a` 에 PUT 호출 |
 | 4 | `initialSelectedId="a"` 로 마운트 후 삭제 버튼 클릭 (confirm true) | `/api/admin/galleries/a` 에 DELETE 호출 |
-| 5 | `initialMode="new"` 로 마운트 후 저장 버튼 클릭 | 예외 없이 진행 (단언은 `typeof postCalled === "boolean"` 뿐) |
+| 5 | `initialMode="new"`, 업로드 함수 없이 마운트 후 png drop, 이어서 저장 버튼 클릭 | alert 가 `onImageSelect prop missing — host must provide upload handler` 에서 `Image is required` 로 바뀌고 POST 0회 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
-- **비고:** 모의 fetch 는 목록 응답 `data` 를 배열로 돌려주지만, 실제 `collection.GET` 은 `data: { items, meta }` 를 반환한다. 실제 형식의 응답을 받으면 목록이 비게 되며, 이 불일치는 TC-I-005 에서 다룬다. 5번 테스트는 이름("onSubmit 시 POST 호출")과 달리 POST 호출을 검증하지 않는다.
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
+- **비고:** 모의 fetch 는 목록 응답 `data` 를 배열로 돌려준다. 2026-09-15 판까지 컴포넌트는 이 배열 형식만 목록으로 사용해서, 실제 `collection.GET` 형식(`data: { items, meta }`)을 받으면 목록이 비었다. 2026-09-16 수정 이후 컴포넌트는 두 형식을 모두 받으며, 실제 형식은 TC-I-005 가 검증한다. 이 파일의 1~4번은 호스트 자체 라우트처럼 배열을 반환하는 경우의 호환을 계속 확인한다.
+- **테스트 변경 이력:** 5번 테스트는 2026-09-15 판까지 "새로 생성 — onSubmit 시 POST 호출" 이라는 이름으로 `typeof postCalled === "boolean"` 만 단언했다. 2026-09-16 에 업로드 함수가 없는 경로의 실제 동작을 단언하도록 바꾸고, 이름도 "새로 생성 — 업로드 함수가 없으면 저장을 막고 POST 를 호출하지 않는다" 로 맞췄다. TC 배정과 건수는 그대로이다.
 
 ---
 
@@ -636,53 +640,56 @@ npx vitest run tests/server/loaders tests/presets/ballet tests/components/Galler
 | 2 | slug·labelKo 입력 후 저장 버튼 클릭 | POST 호출 |
 | 3 | 삭제 버튼 클릭 후 409 응답 | `.gallery-category-admin__error` 노출, 문구가 `/galleries|use|사용/i` 와 일치 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-16 실측)
 
 ---
 
-### TC-I-005: 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 계약 (결함 확인용) 🔲 계획
+### TC-I-005: 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 계약
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/integration/admin-route-contract.test.tsx` (신규) |
-| **대상** | `GalleryAdminManager` 목록 로드 (`src/components/GalleryAdminManager.tsx:89-104`) ↔ `collection.GET` 응답 (`src/server/route-handlers.ts:166-175`), `CategoryAdminManager.handleSave` 오류 표시 (`src/components/CategoryAdminManager.tsx:140-143`) ↔ `jsonError` 본문 (`src/server/route-handlers.ts:60-65`) |
+| **파일** | `tests/integration/admin-route-contract.test.tsx` |
+| **대상** | `GalleryAdminManager` 목록 로드 (`src/components/GalleryAdminManager.tsx:53-58` `extractListItems`, `:102-117`) ↔ `collection.GET` 응답 (`src/server/route-handlers.ts:166-175`), `CategoryAdminManager` 오류 표시 (`src/components/CategoryAdminManager.tsx:73-79` `errorMessageOf`, `:163`, `:188`) ↔ `jsonError` 본문 (`src/server/route-handlers.ts:60-65`) |
 | **우선순위** | Critical |
-| **전제조건** | fetch 를 `createGalleryRoutes(config)` 핸들러에 연결하거나, 핸들러가 실제로 반환하는 본문 형식을 그대로 모의 응답으로 사용 |
-| **테스트 데이터** | 목록 응답 `{ success: true, data: { items: [1건], meta: {...} } }`, 카테고리 저장 403 응답 `{ success: false, error: "Forbidden", message: "forbidden" }`, 삭제 409 응답 `{ success: false, error: "CategoryInUse", message: "..." }` |
+| **전제조건** | `tests/helpers/route-fetch.ts` 의 fetch 어댑터가 URL·method 로 `createGalleryRoutes(config)` 의 실제 핸들러를 선택하고, Prisma 는 `tests/helpers/in-memory-prisma.ts` 의 메모리 기반 가짜 객체를 사용한다. 테스트용 apiWrapper 는 호스트 어댑터처럼 `routeCtx.params` 를 `ctx.params` 로 전달하고, 미인증이면 호스트 미들웨어 형식(`error: { code, message }`)의 401 을 반환한다 |
+| **테스트 데이터** | 카테고리 id `cperformance0001` (스키마의 cuid 형식), 갤러리 `g1` (caption `첫 공연`), 권한 거부 설정 `permissions.canManageCategories: () => false`, 입력 slug `NEW_SLUG` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | 실제 `collection.GET` 형식의 응답으로 `GalleryAdminManager` 마운트 | `.gallery-list-item` 1개, `.gallery-manager__count` 텍스트 `1` |
-| 2 | 실제 형식의 409 응답으로 카테고리 삭제 | `role="alert"` 에 `category.deleteConfirmInUse` 문구 |
-| 3 | 실제 형식의 403 응답으로 카테고리 저장 | `role="alert"` 에 서버 `message` 값 `forbidden` 반영 |
+| 1 | 실제 `collection.GET` 응답으로 `GalleryAdminManager` 마운트 | `.gallery-list-item` 1개, `.gallery-manager__count` 텍스트 `1`, caption `첫 공연` 표시 |
+| 2 | 1번과 같은 조건에서 `GET /api/admin/galleries` 응답 본문 확인 | status 200, 본문 `{ success: true, data: { items: [g1], meta: { total: 1, ... } } }` (라우트 형식이 유지되는지 확인) |
+| 3 | 사용 중인 카테고리 삭제 (실제 409) | `role="alert"` 텍스트가 `category.deleteConfirmInUse` 기본 문구, 응답 본문 `error: "CategoryInUse"` |
+| 4 | 권한 거부 상태에서 카테고리 저장 (실제 403) | `role="alert"` 텍스트가 서버 `message` 값 `forbidden`, 응답 본문 `{ success: false, error: "Forbidden", message: "forbidden" }` |
+| 5 | 목록 로드 후 미인증 상태로 카테고리 저장 (테스트 apiWrapper 의 401, `error: { code: "UNAUTHORIZED", message: "login required" }`) | `role="alert"` 텍스트가 `login required` (기존 `error.message` 해석 유지) |
 
-- **현재 코드 동작 (2026-09-13 jsdom 임시 테스트로 확인):** 1번에서 `.gallery-list-item` 은 0개이고 `.gallery-manager__count` 는 `0` 이다. 컴포넌트가 `json.data` 가 배열일 때만 목록으로 사용하기 때문이다. 3번과 같은 본문 구조(`error` 문자열 + 최상위 `message`)를 status 400 으로 확인한 결과, alert 문구는 `Save failed (400)` 이었다. 컴포넌트는 `json.error.message` 를 읽지만 서버 본문에서 `error` 는 문자열이다. 2번은 status 만 사용하므로 현재 코드에서도 성립한다.
-- **자동화:** 가능 ✅ (현재 코드 기준으로 1·3번이 실패한다)
-- **선행 조건:** 응답 형식을 서버 기준과 클라이언트 기준 가운데 어느 쪽으로 맞출지 결정해야 한다.
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
+- **결함 이력:** 2026-09-13 (0.2.0)·2026-09-15 (0.2.1) 판에서는 결함 확인용 🔲 계획 TC 였다. 당시 `GalleryAdminManager` 는 `json.data` 가 배열일 때만 목록으로 사용해서, 실제 `collection.GET` 응답을 받으면 `.gallery-list-item` 이 0개이고 `.gallery-manager__count` 는 `0` 이었다. `CategoryAdminManager` 는 `json.error.message` 만 읽었는데 라우트 본문의 `error` 는 코드 문자열이어서, 403 응답에 `Save failed (403)` 을 표시했다. 2026-09-16 커밋 `bf72aa8` 에서 라우트 응답 형식은 그대로 두고 컴포넌트 해석을 맞췄다. 목록은 `data.items` 를 읽고 기존 배열 형식도 계속 받는다. 오류 메시지는 `error.message`(호스트 미들웨어 형식)를 먼저 찾고, 없으면 최상위 `message`(라우트 형식)를 찾는다.
+- **재현 확인 (2026-09-16):** 같은 브랜치에서 `src/` 변경만 되돌리고 이 파일과 TC-E-001 을 실행하면 이 TC 의 1·4번과 TC-E-001 의 1~4번, 모두 6건이 실패한다. 현재 코드에서는 모두 통과한다.
+- **맞출 쪽 결정:** 라우트 응답 형식을 바꾸면 라우트를 직접 소비하는 호스트 코드에 영향을 줄 수 있으므로, 서버 형식을 기준으로 클라이언트 해석을 맞췄다. 호스트 dts-ballet-homepage 는 카테고리 라우트(`categoryCollection`, `categoryItem`)와 `CategoryAdminManager` 를 사용하고, 갤러리 목록 라우트와 관리 화면은 자체 구현을 사용한다.
 
 ---
 
-### TC-I-006: GalleryAdminManager 새 항목 생성·featured 상한 (결함 확인용) 🔲 계획
+### TC-I-006: GalleryAdminManager 새 항목 생성·featured 상한
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/components/GalleryAdminManager.test.tsx` (케이스 추가) |
-| **대상** | `GalleryAdminManager` 가 `GalleryEditForm` 에 전달하는 props (`src/components/GalleryAdminManager.tsx:254-271`), `handleToggleFeatured` 상한 분기 (`:221-236`) |
+| **파일** | `tests/components/GalleryAdminManager.test.tsx` (`GalleryAdminManager — TC-I-006 새 항목 생성·featured 상한` 블록) |
+| **대상** | `GalleryAdminManagerProps.onImageSelect` (`src/components/GalleryAdminManager.tsx:29`) 와 `GalleryEditForm` 에 전달하는 props (`:266-284`), `canToggleFeatured` 계산 (`:276`) |
 | **우선순위** | High |
 | **전제조건** | `limits.maxFeatured 7`, fetch 모의 (기존 테스트와 같은 배열 형식) |
-| **테스트 데이터** | png 파일 1개, featured·published 항목 7개 + featured false 항목 `x` |
+| **테스트 데이터** | png 파일 `a.png`, `onImageSelect` 반환값 `{ url: "https://cdn.test/uploaded/a.png", key: "gallery/a.png" }`, featured·published 항목 7개(`f1`~`f7`) + 항목 `x` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | `initialMode="new"` 로 마운트 후 png drop | 업로드 결과가 드롭존 미리보기에 표시 |
-| 2 | 이어서 저장 버튼 클릭 | `/api/admin/galleries` 에 POST 1회 |
-| 3 | 항목 8개, `initialSelectedId="x"` 로 마운트 | featured 스위치 `aria-disabled="true"`, `Featured cap reached — uncheck others first` 안내 표시 |
-| 4 | 3번과 같은 조건에서 `x` 가 featured true | featured 스위치에 `aria-disabled` 속성 없음 |
+| 1 | `initialMode="new"`, `onImageSelect` 전달 후 `a.png` drop | `onImageSelect` 가 해당 파일로 1회 호출, 드롭존 미리보기 `src` 가 업로드 URL, alert 없음 |
+| 2 | 이어서 저장 버튼 클릭 | `/api/admin/galleries` 에 POST 1회, 본문 `imageUrl`·`imageKey` 가 업로드 결과, `categoryId` 가 첫 카테고리 |
+| 3 | 항목 8개(`x` 는 featured false), `initialSelectedId="x"` 로 마운트 | featured 스위치 `aria-disabled="true"`, `Featured cap reached — uncheck others first` 안내 표시 |
+| 4 | 3번과 같은 조건에서 `x` 가 featured true | featured 스위치에 `aria-disabled` 속성 없음, 안내 미표시 |
 
-- **현재 코드 동작 (2026-09-13 jsdom 임시 테스트로 1·2번 확인):** 1번에서 alert 에 `onImageSelect prop missing — host must provide upload handler` 가 표시된다. 2번에서는 alert 가 `Image is required` 로 바뀌고 fetch 는 GET 2회만 발생한다. `GalleryAdminManagerProps` 에 업로드 함수를 받는 prop 이 없고, `GalleryEditForm` 에 `onImageSelect` 를 전달하지 않기 때문이다. 3·4번은 `canToggleFeatured` 계산식(`featuredCount < maxFeatured || selectedItem.featured`)을 읽고 작성했다.
-- **참고:** `handleToggleFeatured` 의 상한 분기(`window.alert`)는 `next === true` 일 때만 실행된다. 그런데 `GalleryHomePreview` 에는 featured 항목만 전달되므로 별 버튼 클릭은 항상 `next === false` 가 되어, 현재 UI 에서는 이 분기에 도달하지 않는다.
-- **자동화:** 가능 ✅
-- **선행 조건:** 업로드 함수 주입 방식(prop 추가 또는 `GalleryConfig` 확장)을 결정해야 1·2번 예상 결과를 확정할 수 있다.
+- **자동화:** 가능 ✅ | **테스트 수:** 4개 (2026-09-16 실측)
+- **결함 이력:** 2026-09-13·2026-09-15 판에서는 결함 확인용 🔲 계획 TC 였다. `GalleryAdminManagerProps` 에 업로드 함수를 받는 prop 이 없고 `GalleryEditForm` 에 `onImageSelect` 를 전달하지 않았다. 그래서 관리자 화면에서 png 를 drop 하면 alert 에 `onImageSelect prop missing — host must provide upload handler` 가 표시되고, 저장은 `Image is required` 로 막혔으며 fetch 는 GET 2회만 발생했다. 2026-09-16 커밋 `e9cbd7a` 에서 선택 prop `onImageSelect` 를 추가하고 편집 폼에 그대로 전달했다. 수정 전 코드에서는 1·2번이 실패하고 3·4번은 통과했으며, 3·4번의 상한 계산에는 결함이 없었다.
+- **주입 방식 결정:** `GalleryConfig` 를 확장하지 않고 컴포넌트 prop 을 택했다. `GalleryEditForm` 의 기존 prop 과 이름·시그니처가 같고, 공개 API 에는 선택 항목만 추가되기 때문이다. Server Component 페이지에서는 함수를 전달할 수 없으므로 호스트는 Client Component 로 감싸야 하며, README 에 예시를 추가했다. 전달하지 않았을 때의 동작은 수정 전과 같고 TC-I-003 5번이 이 경로를 확인한다.
+- **비고:** `handleToggleFeatured` 의 상한 분기(`window.alert`, `src/components/GalleryAdminManager.tsx:233-248`)는 `next === true` 일 때만 실행된다. 그런데 `GalleryHomePreview` 에는 featured 항목만 전달되므로 별 버튼 클릭은 항상 `next === false` 가 되어, 현재 UI 에서는 이 분기에 도달하지 않는다. 사용자에게 드러나는 결함이 아니므로 수정하지 않았다. 새 항목 일괄 생성으로 상한을 넘을 수 있는 문제는 우선순위 갭의 확인 필요 사항에 적었다.
 
 ---
 
@@ -704,7 +711,7 @@ createGalleryRoutes(config)
 
 **테스트 전략:** `apiWrapper` 모의 구현이 `globalThis.__GK_TEST_CTX` 에 담긴 `ApiContext` 를 핸들러에 전달한다. NextRequest 는 `{ url, json() }` 객체로 대체하고, 서비스는 실제 구현을 사용하며 Prisma delegate 만 모의한다.
 
-**실행 명령:** 아래 명령은 2026-09-15 에 파일 1개, 테스트 35건을 실행했다. 같은 파일에서 Security 로 재분류한 17건은 이름 필터로 제외된다.
+**실행 명령:** 아래 명령은 2026-09-16 에 파일 1개, 테스트 35건을 실행했다. 같은 파일에서 Security 로 재분류한 17건은 이름 필터로 제외된다.
 
 ```bash
 npx vitest run tests/server/route-handlers \
@@ -732,7 +739,7 @@ npx vitest run tests/server/route-handlers \
 | 5 | DELETE `ids ["a","b","c"]`, 그리고 `ids []` | 200·`data.count 3`, 빈 배열은 400·revalidate 미호출 |
 | 6 | `revalidate`·`revalidatePaths` 미설정 상태에서 POST | 201, revalidate 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 7개 (2026-09-16 실측)
 
 ---
 
@@ -755,7 +762,7 @@ npx vitest run tests/server/route-handlers \
 | 5 | publishToggle.PATCH (`published false` 항목) | 200, `data.published true`, revalidate 2회 |
 | 6 | publishToggle.PATCH `params` 없음 | 400 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 9개 (2026-09-16 실측)
 
 ---
 
@@ -777,7 +784,7 @@ npx vitest run tests/server/route-handlers \
 | 4 | bulk.PATCH `ids: []` | 400 |
 | 5 | bulk.PATCH 에서 published·featured 모두 생략 | 200, `data.count 0` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 
 ---
 
@@ -799,7 +806,7 @@ npx vitest run tests/server/route-handlers \
 | 4 | categoryItem.PUT `{ labelKo: "수정" }`, 그리고 대상 없음 | 200·revalidate 2회, 404 |
 | 5 | categoryItem.DELETE gallery count 0, 그리고 `params` 없음 | 204·revalidate 2회, 400 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-16 실측)
 
 ---
 
@@ -819,7 +826,7 @@ npx vitest run tests/server/route-handlers \
 | 2 | `gallery.count → 5` 에서 categoryItem.DELETE | 서비스가 `CategoryInUseError` 를 던지고 라우트가 409 반환 |
 | 3 | 2번 요청 이후 delegate·revalidate 호출 확인 | `galleryCategory.delete`, revalidate 모두 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-16 실측)
 - **비고:** git 미추적 로컬 문서 `docs/superpowers/plans/sprint-03-followup-typed-errors.md` 에는 이 매핑이 원래 `message.includes("not found")` 같은 문자열 매칭이었고, 2026-05-25 에 `instanceof` 분기로 바뀌었다고 기록되어 있다. 서비스 예외를 문자열에 의존하지 않고 HTTP 상태로 매핑한 사례로서, 사전 조사 문서는 blog-system 의 상태 코드 유실 결함과 같은 부류의 문제를 이 패키지가 먼저 해결했다고 평가한다. 현재 테스트는 상태 코드만 단언하고 응답 본문(`error: "NotFound"`, `error: "CategoryInUse"`)은 단언하지 않으며, 본문 계약은 TC-A-007 에서 다룬다.
 
 ---
@@ -839,11 +846,11 @@ npx vitest run tests/server/route-handlers \
 | 1 | item.PUT `params.id "g1"`, 본문 `{ caption: "updated" }` | `gallery.update` 1회, 호출 인자 `data` 가 `{ caption: "updated" }` 와 정확히 일치 (`toStrictEqual`, `sortOrder`·`featured`·`published` 키 없음) |
 | 2 | categoryItem.PUT `params.id "c1"`, 본문 `{ labelKo: "수정" }` | `galleryCategory.update` 1회, 호출 인자 `data` 가 `{ labelKo: "수정" }` 와 정확히 일치 (`sortOrder`·`isActive` 키 없음) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-16 실측)
 - **비고:** 스키마만 단독으로 파싱하는 회귀 테스트 2건은 Unit 도메인이므로 TC-U-006 5번, TC-U-007 6번에 배정했다. 이 TC 는 라우트가 파싱 결과를 서비스와 delegate 까지 그대로 전달하는지 확인한다.
 - **결함 이력:** 2026-09-13 (0.2.0) 판에서는 결함 확인용 🔲 계획 TC 였다. 당시 `UpdateGallerySchema`·`UpdateCategorySchema` 는 `CreateGallerySchema.partial()`·`CreateCategorySchema.partial()` 이었고, zod 4.4.3 의 `.partial()` 은 필드에 붙은 `.default()` 를 그대로 적용했다. 그 결과 워크트리 밖 임시 테스트에서 `{ featured: true }` 본문의 `data` 는 `{ sortOrder: 0, featured: true, published: false }`, 카테고리 `{ labelKo: "x" }` 본문의 `data` 는 `{ labelKo: "x", sortOrder: 0, isActive: true }` 였다. 0.2.1 커밋 `d4c3134` 에서 기본값이 없는 필드 정의를 공통으로 두고 기본값은 Create 스키마에만 지정하도록 수정하면서, 이 TC 의 2건과 TC-U-006·TC-U-007 의 2건을 함께 추가했다.
 - **재현 확인 (2026-09-15):** 워크트리 밖 임시 복사본에서 `src/validators/index.ts` 만 `29fd94c` 판으로 되돌려 실행하면 회귀 테스트 4건이 모두 실패한다 (갤러리는 `caption` 외 3개 키, 카테고리는 `sortOrder: 0`·`isActive: true` 가 추가됨). 현재 코드에서는 4건 모두 통과한다.
-- **영향 해소:** 계획 단계에서 적었던 관리자 UI 요청 본문, 즉 별 토글의 `PUT { featured }` (`src/components/GalleryAdminManager.tsx:229-232`)와 홈 프리뷰 재정렬의 `PUT { sortOrder }` (`:241-246`)는 자동 테스트로 직접 검증하지 않는다. 같은 날 임시 테스트로 현재 `UpdateGallerySchema` 가 `{ featured: true }`, `{ sortOrder: 2 }` 를 각각 해당 키 하나만 남기고 파싱하는 것을 확인했다. 화면 조작부터 저장 결과까지 이어지는 검증은 TC-E-001 3·4번에 남는다.
+- **영향 해소:** 계획 단계에서 적었던 관리자 UI 요청 본문, 즉 별 토글의 `PUT { featured }` 와 홈 프리뷰 재정렬의 `PUT { sortOrder }` (`src/components/GalleryAdminManager.tsx:233-263`)는 2026-09-15 판까지 자동 테스트로 직접 검증하지 않았다. 대신 같은 날 임시 테스트로 `UpdateGallerySchema` 가 `{ featured: true }`, `{ sortOrder: 2 }` 를 각각 해당 키 하나만 남기고 파싱하는 것을 확인했다. 2026-09-16 에 TC-E-001 3·4번이 구현되어, 화면 조작으로 보낸 두 요청이 실제 라우트와 서비스를 거쳐 저장된 뒤에도 `published`·`featured` 가 유지되는 것을 자동 테스트로 확인한다.
 
 ---
 
@@ -868,6 +875,7 @@ npx vitest run tests/server/route-handlers \
 
 - **자동화:** 가능 ✅
 - **근거:** 2번 본문과 6번 재throw 동작은 2026-09-13 임시 테스트로 확인했다. 나머지는 위 소스 범위를 읽고 작성했다.
+- **비고:** 2026-09-16 에 추가한 TC-I-005 는 컴포넌트를 거쳐 409 본문의 `error: "CategoryInUse"` 와 403 본문 `{ success: false, error: "Forbidden", message: "forbidden" }` 을 단언한다. 라우트 단위의 본문 계약(1·2번 메시지, 3번 401, 4~6번)은 여전히 이 TC 의 범위이다.
 
 ---
 
@@ -875,30 +883,35 @@ npx vitest run tests/server/route-handlers \
 
 **목적:** 관리자 화면 조작이 실제 라우트 핸들러와 서비스를 거쳐 화면에 다시 반영되는 전체 흐름을 검증한다. 이 패키지는 페이지와 브라우저 실행 환경을 제공하지 않으므로, 실제 브라우저·DB 를 사용하는 E2E 는 호스트 책임으로 두고 jsdom 과 메모리 기반 delegate 로 범위를 제한한다.
 
-**실행 명령:** 현재 해당 테스트가 없다. 계획 파일은 `tests/e2e/` 아래에 두며 기존 `include` 패턴으로 실행된다.
+**실행 명령:** 아래 명령은 2026-09-16 에 파일 1개, 테스트 5건을 실행했다. 파일은 `tests/e2e/` 아래에 두며 기존 `include` 패턴으로 실행된다. 실제 라우트 핸들러를 연결하는 도우미는 `tests/helpers/` 에 있다.
+
+```bash
+npx vitest run tests/e2e
+```
 
 ---
 
-### TC-E-001: 관리자 화면 ↔ 실제 라우트 핸들러 왕복 여정 🔲 계획
+### TC-E-001: 관리자 화면 ↔ 실제 라우트 핸들러 왕복 여정
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/e2e/admin-roundtrip.test.tsx` (신규) |
+| **파일** | `tests/e2e/admin-roundtrip.test.tsx` |
 | **대상** | `GalleryAdminManager`, `CategoryAdminManager` + `createGalleryRoutes` + `createGalleryService`, `createCategoryService` |
 | **우선순위** | High |
-| **전제조건** | URL·method 로 `createGalleryRoutes(config)` 핸들러를 선택하고 `params.id` 를 추출하는 fetch 어댑터, 메모리 배열 기반 Prisma delegate |
-| **테스트 데이터** | 카테고리 1개, 갤러리 3개 (그중 2개가 featured·published) |
+| **전제조건** | `tests/helpers/route-fetch.ts` fetch 어댑터(URL·method 로 핸들러 선택, `params.id` 추출), `tests/helpers/in-memory-prisma.ts` 메모리 배열 기반 Prisma 가짜 객체. 테스트마다 같은 초기 데이터로 새로 시작한다 |
+| **테스트 데이터** | 카테고리 `cperformance0001` 1개, 갤러리 `g1`(caption `A`, sortOrder 1, featured·published), `g2`(`B`, 2, featured·published), `g3`(`C`, 3, featured·published 모두 false) |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | GalleryAdminManager 마운트 | 목록 항목 3개, 홈 프리뷰 타일 2개 |
-| 2 | 목록 항목 선택 → caption 변경 → 저장 | PUT 이후 재조회된 목록에 변경된 caption 표시 |
-| 3 | 홈 프리뷰 타일 0 과 1 재정렬 | 두 항목 `sortOrder` 가 새 순서(1, 2)로 갱신, `published`·`featured` 유지, 프리뷰 타일 2개 유지 |
-| 4 | 프리뷰 별 버튼 클릭 (featured 해제) | 해당 항목 `featured false`, `published true` 유지 |
-| 5 | CategoryAdminManager 에서 사용 중인 카테고리 삭제 | 409 응답, alert 에 `category.deleteConfirmInUse` 문구 |
+| 1 | GalleryAdminManager 마운트 | 목록 항목 3개, 홈 프리뷰 타일 2개 (alt 순서 `A`, `B`) |
+| 2 | 목록 항목 `C` 선택 → caption `C 수정` 입력 → 저장 | `PUT /api/admin/galleries/g3` 200, 재조회된 목록에 `C 수정` 표시, 저장된 행의 `featured`·`published` 는 false 유지 |
+| 3 | 홈 프리뷰 타일 0 을 타일 1 로 drag·drop | 프리뷰 alt 순서가 `B`, `A` 로 바뀌고, `g2.sortOrder 1`·`g1.sortOrder 2`, 두 항목의 `featured`·`published` 는 true 유지, PUT 2회 모두 200 |
+| 4 | 프리뷰 첫 타일의 별 버튼(`unfeature`) 클릭 | `g1` 이 `featured false`·`published true`·`sortOrder 1`, 프리뷰 타일 1개, 목록 항목 3개 유지 |
+| 5 | CategoryAdminManager 에서 사용 중인 카테고리 삭제 | DELETE 409, alert 텍스트 `This category has galleries — remove or move them first`, 카테고리 1개 유지 |
 
-- **자동화:** 가능 ✅ (어댑터 작성 필요)
-- **선행 조건:** TC-I-005(목록 응답 형식) 결함이 해소되어야 1·3·4번 예상 결과가 성립한다. 홈 프리뷰 타일도 같은 목록 응답에서 만들어지므로, 현재 코드에서는 1번 목록과 프리뷰가 모두 비어 있다. 3·4번의 `published`·`featured` 유지 조건을 막던 TC-A-006(부분 수정 기본값) 결함은 0.2.1 에서 해소되었다.
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
+- **결함 이력:** 계획 단계에서는 TC-I-005 결함 때문에 1·3·4번 예상 결과가 성립하지 않았다. 홈 프리뷰 타일도 같은 목록 응답에서 만들어지므로 목록과 프리뷰가 모두 비어 있었다. 2026-09-16 커밋 `bf72aa8` 에서 목록 응답 해석을 수정하면서 이 파일을 함께 추가했고, 수정 전 코드에서는 1~4번이 실패하고 5번만 통과했다. 3·4번의 `published`·`featured` 유지 조건을 막던 TC-A-006(부분 수정 기본값) 결함은 0.2.1 에서 해소되었다.
+- **비고:** 스키마가 `categoryId` 에 cuid 형식을 요구하므로 테스트 데이터 id 를 `cperformance0001` 로 지정했다. 처음에 `cat-1` 로 작성했을 때 2번의 PUT 이 400 `ValidationError` 를 받았는데도 화면은 오류를 표시하지 않고 폼을 닫았다. 이 동작은 우선순위 갭의 확인 필요 사항에 적었다.
 
 ---
 
@@ -906,7 +919,7 @@ npx vitest run tests/server/route-handlers \
 
 **목적:** 입력 검증(URL 스킴, 저장소 키), 인가(권한 훅), 자원 사용 제한을 검증한다. 보안 강화 커밋 `82f081f` 에서 추가된 검증과 기존 401 검증을 파일 이동 없이 이 도메인으로 재분류했다. 기준은 OWASP Top 10 2021 이다.
 
-**실행 명령:** 아래 명령은 2026-09-15 에 파일 2개, 테스트 28건을 실행했다.
+**실행 명령:** 아래 명령은 2026-09-16 에 파일 2개, 테스트 28건을 실행했다.
 
 ```bash
 npx vitest run tests/validators tests/server/route-handlers \
@@ -933,7 +946,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 4 | `imageUrlProtocols: ["https"]` 에서 http URL 파싱 | 실패 |
 | 5 | `imageUrlHosts: ["cdn.example.com"]` 에서 `cdn.example.com`, `evil.example.org` 파싱 | 성공, 실패 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 - **관련 요구사항:** OWASP A03:2021 Injection (URL 스킴을 이용한 스크립트 실행 차단)
 
 ---
@@ -957,7 +970,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 5 | 513자, 512자 키 파싱 | 실패, 성공 |
 | 6 | `imageKeyPattern: /^uploads\//` 에서 `gallery/a.webp`, `uploads/a.webp` 파싱 | 실패, 성공 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-16 실측)
 - **관련 요구사항:** OWASP A01:2021 Broken Access Control (경로 순회). imageKey 는 `config.storage.collectKeys`·`deleteKeys` 로 전달되므로(`src/services/index.ts:196-232`), 이 검증이 저장소 객체 삭제 범위를 제한한다.
 
 ---
@@ -980,7 +993,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 4 | bulk.PATCH 에서 두 대상 중 하나의 작성자가 다름 | 403, `updateMany`·revalidate 미호출 |
 | 5 | `canEdit: () => true`, `featured: true` 로 bulk.PATCH | 200, `updateMany` 1회 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 - **관련 요구사항:** OWASP A01:2021 Broken Access Control
 
 ---
@@ -1003,7 +1016,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 4 | item.DELETE, `canDelete: () => false` | 403, `delete` 미호출 |
 | 5 | item.DELETE, `canDelete: () => true`, 대상 없음 | 404 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 - **관련 요구사항:** OWASP A01:2021 Broken Access Control, A07:2021 Identification and Authentication Failures
 
 ---
@@ -1025,7 +1038,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 3 | categoryItem.DELETE | 403, `delete` 미호출 |
 | 4 | categoryCollection.GET | 200 (조회는 게이트 대상이 아님) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 4개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 4개 (2026-09-16 실측)
 
 ---
 
@@ -1045,7 +1058,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 | 2 | collection.GET 에 500자 search | `findMany` where 의 `caption.contains` 길이 100 |
 | 3 | `validation.searchMaxLength: 10` 에서 50자 search | `caption.contains` 길이 10 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 3개 (2026-09-16 실측)
 - **관련 요구사항:** OWASP A04:2021 Insecure Design (자원 소비 제한)
 
 ---
@@ -1101,7 +1114,7 @@ npx vitest run tests/validators tests/server/route-handlers \
 
 **목적:** 공개 API 로 export 하는 컴포넌트 7개와 공개 프리셋 1개의 ARIA 역할·상태·이름, 키보드 조작을 WCAG 2.1 Level AA 기준으로 검증한다.
 
-**실행 명령:** 현재 접근성 전용 테스트는 0건이다. 계획 파일은 `tests/accessibility/` 아래에 두며, 기존 `include` 패턴(`tests/**/*.test.{ts,tsx}`)으로 추가 설정 없이 실행된다.
+**실행 명령:** 아래 명령은 2026-09-16 에 파일 1개, 테스트 6건(TC-AC-006)을 실행했다. 파일은 `tests/accessibility/` 아래에 두며, 기존 `include` 패턴(`tests/**/*.test.{ts,tsx}`)으로 추가 설정 없이 실행된다.
 
 ```bash
 npx vitest run tests/accessibility
@@ -1117,20 +1130,20 @@ npx vitest run tests/accessibility
 | PublicGalleryMosaic | 타일 `aria-label` 의 i18n 대체값 | TC-I-002 |
 | useGalleryLightbox | window `Escape`·`ArrowLeft`·`ArrowRight` 처리 | TC-U-011 |
 
-이 단언들은 기능 테스트 안에 흩어져 있다. 접근성 전용 스위트, axe 규칙 검사, 속성의 반대 조건(예: 비활성이 아닐 때 `aria-disabled` 부재) 검증은 없다.
+이 단언들은 기능 테스트 안에 흩어져 있다. 2026-09-16 에 폼 컨트롤 이름과 목록 항목 버튼을 확인하는 접근성 전용 테스트(TC-AC-006)가 추가되었지만, axe 규칙 검사는 아직 없다. 속성의 반대 조건 검증은 TC-I-006 4번(featured 스위치의 `aria-disabled` 부재)에만 있다.
 
-### ARIA·키보드 구현 전수 목록 (2026-09-13 소스 확인)
+### ARIA·키보드 구현 전수 목록 (2026-09-13 소스 확인, 2026-09-16 수정분 반영)
 
 | 컴포넌트 (소스 위치) | 구현 | 기존 자동 검증 |
 |--------------------|------|--------------|
 | `ToggleSwitch.tsx:43-64` | `role="switch"`, `aria-checked={checked}`, `aria-disabled={disabled \|\| undefined}`, `aria-label={label}`, 네이티브 `disabled`, Space·Enter keyDown(`preventDefault`), thumb `aria-hidden="true"` | 일부 |
 | `ImageDropZone.tsx:76-129` | 숨김 input `aria-hidden="true"`·`tabIndex=-1`, 드롭존 `role="button"`·`tabIndex={disabled ? -1 : 0}`·`aria-disabled`, Enter·Space 로 `input.click()`, 미리보기 `alt=""`, 거부 목록 `role="alert"` | 일부 |
 | `GalleryHomePreview.tsx:136-172` | 이미지 `alt={caption ?? ""}`, 별 버튼 `aria-label` (`"unfeature"`/`"feature"`, i18n 미적용)·`aria-pressed`. 타일 키보드 재정렬은 없음 (소스 주석 "키보드 접근성은 v0.2") | 없음 |
-| `GalleryEditForm.tsx:249-391` | 스위치 이름 `Featured`·`Published`, 오류 `role="alert"`, 다중 이미지 제거 버튼 `aria-label="remove"`. caption·category·sortOrder 컨트롤에는 연결된 label 이 없고 `div.gallery-edit-form__section-title` 만 있음 | 일부 |
-| `CategoryAdminManager.tsx:188-269` | 오류 `role="alert"`, 삭제 버튼 `aria-label="delete"`, 스위치 이름 `Active`. `<label>` 4개에 `htmlFor` 가 없고 input 을 감싸지 않음 | 없음 |
-| `GalleryAdminManager.tsx:273-321` | 검색 input 에 placeholder 만 있음, 목록 `li` 에 `onClick` 만 있고 role·tabIndex·키 처리 없음, 썸네일 `alt=""` | 없음 |
+| `GalleryEditForm.tsx:257-403` | 스위치 이름 `Featured`·`Published`, 오류 `role="alert"`, 다중 이미지 제거 버튼 `aria-label="remove"`. caption·category·sortOrder 컨트롤은 섹션 제목 `div.gallery-edit-form__section-title` 에 `useId` 기반 id 를 두고 `aria-labelledby` 로 연결 (2026-09-16) | 일부, 이름은 TC-AC-006 |
+| `CategoryAdminManager.tsx:209-294` | 오류 `role="alert"`, 삭제 버튼 `aria-label="delete"`, 스위치 이름 `Active`. `<label>` 4개와 input 을 `useId` 기반 `htmlFor`·`id` 로 연결 (2026-09-16) | label 연결은 TC-AC-006 |
+| `GalleryAdminManager.tsx:286-338` | 검색 input 에 `aria-label`(`admin.searchPlaceholder`)과 placeholder, 목록 `li` 안에 네이티브 `button`(`.gallery-list-item__select`)을 두고 `li` 의 `onClick` 으로 선택, 썸네일 `alt=""` (2026-09-16) | TC-AC-006 |
 | `presets/ballet.tsx:100-211` | section `aria-label`, 타일 `role="button"`·`tabIndex=0`·`aria-label={alt ?? expandAria}`·Enter·Space, 아이콘 `aria-hidden`, 라이트박스 `role="dialog"`·`aria-modal="true"`·`aria-label`, 닫기·이전·다음 버튼 `aria-label`, 열린 동안 body `overflow: hidden`. 포커스 이동·포커스 가두기·포커스 복귀 코드는 없음 | 일부 |
-| `gallery.css` | `:focus-visible` 외곽선 4곳 (`.gallery-toggle__track`, `.gallery-dropzone`, `.gallery-edit-form__input`, `.gallery-public-mosaic__item`) | jsdom 에서 검증 불가 |
+| `gallery.css` | `:focus-visible` 외곽선 5곳 (`.gallery-toggle__track`, `.gallery-dropzone`, `.gallery-list-item__select`, `.gallery-edit-form__input`, `.gallery-public-mosaic__item`) | jsdom 에서 검증 불가 |
 
 ---
 
@@ -1235,7 +1248,7 @@ npx vitest run tests/accessibility
 | 항목 | 내용 |
 |------|------|
 | **파일** | `tests/accessibility/admin-alerts.a11y.test.tsx` (신규) |
-| **대상** | `src/components/GalleryEditForm.tsx:249-336`, `src/components/CategoryAdminManager.tsx:188-269` |
+| **대상** | `src/components/GalleryEditForm.tsx:257-344`, `src/components/CategoryAdminManager.tsx:209-294` |
 | **우선순위** | Medium |
 | **전제조건** | CategoryAdminManager 는 `setGalleryConfig` 와 fetch 모의 필요 |
 | **기준** | WCAG 2.1 SC 4.1.3 (Status Messages), 4.1.2 (Name, Role, Value) |
@@ -1254,25 +1267,28 @@ npx vitest run tests/accessibility
 
 ---
 
-### TC-AC-006: 폼 컨트롤 접근 가능한 이름·키보드 도달성 (결함 확인용) 🔲 계획
+### TC-AC-006: 폼 컨트롤 접근 가능한 이름·키보드 도달성
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/accessibility/form-labels.a11y.test.tsx` (신규) |
-| **대상** | `src/components/CategoryAdminManager.tsx:223-263`, `src/components/GalleryEditForm.tsx:343-391`, `src/components/GalleryAdminManager.tsx:273-321` |
+| **파일** | `tests/accessibility/form-labels.a11y.test.tsx` |
+| **대상** | `src/components/CategoryAdminManager.tsx:92-100`, `:244-288` (label ↔ input), `src/components/GalleryEditForm.tsx:130-136`, `:351-403` (섹션 제목 ↔ 컨트롤), `src/components/GalleryAdminManager.tsx:286-338` (검색 input, 목록 항목 button) |
 | **우선순위** | High |
-| **전제조건** | 관리자 컴포넌트는 `setGalleryConfig` 와 fetch 모의 필요 |
+| **전제조건** | 관리자 컴포넌트는 `setGalleryConfig` 와 fetch 모의 필요. 이름 확인 도우미는 `textbox`·`searchbox`·`combobox`·`spinbutton`·`switch` 역할마다 전체 컨트롤 수와 이름이 비어 있지 않은 컨트롤 수가 같은지 비교한다 |
 | **기준** | WCAG 2.1 SC 1.3.1 (Info and Relationships), 4.1.2 (Name, Role, Value), 2.1.1 (Keyboard) |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | CategoryAdminManager 에서 `getByLabelText("Slug (uppercase)")` | slug input 반환 |
-| 2 | GalleryEditForm 에서 `getByLabelText("Caption")`, `"Category"`, `"Sort order"` | 각 컨트롤 반환 |
-| 3 | GalleryAdminManager 에서 `getByRole("searchbox", { name: /search/i })` | 검색 input 반환 |
-| 4 | GalleryAdminManager 목록 항목의 키보드 조작 | 버튼이거나 `tabindex`·Enter 처리를 갖춰 키보드로 선택 가능 |
+| 1 | CategoryAdminManager 에서 `getByLabelText("Slug (uppercase)")`, `"Label (Ko)"`, `"Label (En)"`, `"Sort order"` | 각각 `slug`·`labelKo`·`labelEn`·`sortOrder` input 반환, 이름 대상 역할의 컨트롤이 모두 이름을 가짐 |
+| 2 | host i18n `category.slug "식별자"`, `category.labelKo "한글 라벨"` 으로 렌더 | 바뀐 label 텍스트로 같은 input 반환 |
+| 3 | GalleryEditForm 에서 `getByLabelText("Caption")`, `"Category"`, `"Sort order"` | 각각 caption input, category select, sortOrder input 반환, 이름 대상 역할의 컨트롤이 모두 이름을 가짐 |
+| 4 | GalleryEditForm 2개와 CategoryAdminManager 2개를 한 문서에 렌더 | 문서 안 `id` 중복 0건, 영역마다 `within(...).getByLabelText` 가 자기 영역의 컨트롤 반환 |
+| 5 | GalleryAdminManager 에서 `getByRole("searchbox", { name: /search/i })` | `.gallery-manager__search` 반환, 이름 대상 역할의 컨트롤이 모두 이름을 가짐 |
+| 6 | GalleryAdminManager 두 번째 목록 항목에서 이름이 `/cap-b/` 인 button 을 찾아 focus 후 click | `type="button"`, 비활성 아님, `tabIndex 0`, `document.activeElement` 가 해당 버튼, click 후 편집 폼 caption `cap-b` 와 항목의 `gallery-list-item--active` 클래스 |
 
-- **현재 코드 동작 (2026-09-13 jsdom 임시 테스트로 1·3번과 2번의 `Caption` 확인):** 1번 조회는 실패한다. `<label>` 에 `htmlFor` 가 없고 input 을 감싸지도 않기 때문이다. 2번 `Caption` 조회도 실패한다. GalleryEditForm 은 label 대신 `div.gallery-edit-form__section-title` 을 사용하며, `Category`·`Sort order` 도 같은 마크업 구조이다. 3번 조회도 실패한다. 검색 input 에는 placeholder 만 있다. 4번은 소스 확인 결과 `li` 에 `onClick` 만 있고 role·tabIndex·키 처리가 없다.
-- **자동화:** 가능 ✅ (현재 코드 기준으로 1~4번이 실패한다)
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (2026-09-16 실측)
+- **결함 이력:** 2026-09-13·2026-09-15 판에서는 결함 확인용 🔲 계획 TC 였다. CategoryAdminManager 의 `<label>` 에는 `htmlFor` 가 없고 input 을 감싸지도 않았다. GalleryEditForm 은 label 대신 `div.gallery-edit-form__section-title` 만 사용했다. GalleryAdminManager 검색 input 에는 placeholder 만 있었고, 목록 `li` 에는 `onClick` 만 있고 role·tabIndex·키 처리가 없었다. 2026-09-16 커밋 `addd6b7` 에서 CategoryAdminManager 는 `useId` 기반 `htmlFor`·`id` 로, GalleryEditForm 은 섹션 제목 `id` 와 `aria-labelledby` 로 연결했다. GalleryEditForm 은 DOM 구조와 CSS 를 유지하려고 제목 요소를 `label` 로 바꾸지 않았다. 검색 input 에는 `aria-label` 을 지정하고, 목록 항목 내용은 네이티브 `button` 으로 감쌌다. 수정 전 코드에서는 6건이 모두 실패했다.
+- **비고:** jsdom 은 네이티브 `button` 의 Enter·Space → click 변환을 구현하지 않으므로, 6번은 버튼 역할·포커스 가능 여부와 click 선택까지 확인한다. 실제 키 입력 검증에는 브라우저 환경이 필요하다. 목록 항목 버튼은 `li` 의 `onClick` 으로 전파되는 click 을 사용하므로 기존처럼 `li` 를 직접 클릭해도 선택된다. 버튼 안에는 phrasing content 만 둘 수 있어 내용의 `div` 를 `span` 으로 바꾸고, `gallery.css` 에 `display: block` 과 버튼 스타일 초기화를 추가했다. 검색 input 이름은 새 i18n 키를 만들지 않고 기존 `admin.searchPlaceholder` 값을 사용한다.
 
 ---
 
@@ -1290,7 +1306,7 @@ npx vitest run tests/accessibility
 |---|------|---------|
 | 1 | ToggleSwitch(label 지정), ImageDropZone 기본 렌더 후 axe 실행 | 위반 0건 |
 | 2 | PublicGalleryMosaic 렌더, 라이트박스를 연 상태에서 axe 실행 | 위반 0건 |
-| 3 | GalleryEditForm, CategoryAdminManager, GalleryAdminManager 렌더 후 axe 실행 | 위반 0건 (TC-AC-006 항목 해소가 선행되어야 한다) |
+| 3 | GalleryEditForm, CategoryAdminManager, GalleryAdminManager 렌더 후 axe 실행 | 위반 0건 (선행 조건이던 TC-AC-006 은 2026-09-16 에 해소) |
 | 4 | jsdom 에서 판정할 수 없는 규칙(색 대비 등) 처리 | 비활성화할 규칙 목록을 테스트 코드에 명시 |
 
 - **자동화:** 가능 ✅ (의존성 추가 후)
@@ -1302,7 +1318,7 @@ npx vitest run tests/accessibility
 
 **목적:** 공개 진입점이 import 가능하고 핵심 API 가 export 되는지 빠르게 확인한다. 사전 조사 문서 기준으로 6개 공유 패키지 가운데 smoke 테스트를 보유한 패키지는 이 패키지뿐이다.
 
-**실행 명령:** 아래 명령은 2026-09-15 에 파일 1개, 테스트 2건을 실행했다.
+**실행 명령:** 아래 명령은 2026-09-16 에 파일 1개, 테스트 2건을 실행했다.
 
 ```bash
 npx vitest run tests/smoke.test.ts
@@ -1326,7 +1342,7 @@ npx vitest run tests/smoke.test.ts
 | 2 | `kit.setGalleryConfig`, `kit.getGalleryConfig` 타입 확인 | 둘 다 `"function"` |
 | 3 | `kit.cn`, `kit.getVariantUrl` 타입 확인 | 둘 다 `"function"` |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-15 실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 2개 (2026-09-16 실측)
 - **비고:** `src/index.ts` 가 export 하는 오류 클래스 5개, 나머지 서브패스 진입점, dist 산출물은 확인하지 않는다.
 
 ---
@@ -1359,21 +1375,22 @@ npx vitest run tests/smoke.test.ts
 
 | 유형 | 현재 파일 수 | 현재 테스트 수 | SC 수 (✅/🔲) | TC 수 (✅/🔲) | 계획 파일 |
 |------|------------|-------------|--------------|--------------|----------|
-| **Unit** | 17개 | 158개 | 19 (18/1) | 19 (18/1) | 기존 1개에 케이스 추가 |
-| **Integration** | 4개 | 25개 | 6 (4/2) | 6 (4/2) | 신규 1개, 기존 1개에 추가 |
+| **Unit** | 17개 | 163개 | 19 (19/0) | 19 (19/0) | - |
+| **Integration** | 5개 | 34개 | 6 (6/0) | 6 (6/0) | - |
 | **API** | 1개 | 35개 | 7 (6/1) | 7 (6/1) | 기존 1개에 추가 |
-| **E2E** | 0개 | 0개 | 1 (0/1) | 1 (0/1) | 신규 1개 |
+| **E2E** | 1개 | 5개 | 1 (1/0) | 1 (1/0) | - |
 | **Security** | 2개 | 28개 | 8 (6/2) | 8 (6/2) | 기존 1개에 추가 |
-| **Accessibility** | 0개 | 0개 | 7 (0/7) | 7 (0/7) | 신규 7개 |
+| **Accessibility** | 1개 | 6개 | 7 (1/6) | 7 (1/6) | 신규 6개 |
 | **Performance** | 0개 | 0개 | 0 | 0 | - |
 | **Load/Stress** | 0개 | 0개 | 0 | 0 | - |
 | **Smoke** | 1개 | 2개 | 2 (1/1) | 2 (1/1) | 신규 1개 |
 | **Chaos** | 0개 | 0개 | 0 | 0 | - |
-| **합계** | **23개** (중복 제외) | **248개** | **50 (35/15)** | **50 (35/15)** | |
+| **합계** | **26개** (중복 제외) | **273개** | **50 (40/10)** | **50 (40/10)** | |
 
-- 현재 파일 수는 해당 도메인 테스트를 1건 이상 포함한 파일 수이다. `tests/validators/index.test.ts` 는 Unit·Security 에, `tests/server/route-handlers.test.ts` 는 API·Security 에 함께 집계되므로 도메인별 파일 수의 합(25)은 실제 파일 수(23)보다 크다.
-- 도메인별 테스트 수(158 + 25 + 35 + 28 + 2)의 합은 실측 248건과 같다.
-- 2026-09-13 판 대비 증가한 4건은 0.2.1 회귀 테스트이며, 모두 기존 TC 에 배정했다 (TC-U-006 1건, TC-U-007 1건, TC-A-006 2건). 새 SC·TC 는 없다.
+- 현재 파일 수는 해당 도메인 테스트를 1건 이상 포함한 파일 수이다. `tests/validators/index.test.ts` 는 Unit·Security 에, `tests/server/route-handlers.test.ts` 는 API·Security 에 함께 집계되므로 도메인별 파일 수의 합(28)은 실제 파일 수(26)보다 크다.
+- 도메인별 테스트 수(163 + 34 + 35 + 5 + 28 + 6 + 2)의 합은 실측 273건과 같다.
+- 2026-09-15 판에서 증가한 4건은 0.2.1 회귀 테스트이며, 모두 기존 TC 에 배정했다 (TC-U-006 1건, TC-U-007 1건, TC-A-006 2건). 새 SC·TC 는 없다.
+- 2026-09-16 판에서 증가한 25건은 결함 수정과 함께 추가한 테스트이며, 새 SC·TC 없이 기존 계획 TC 에 배정했다 (TC-U-019 5건, TC-I-005 5건, TC-I-006 4건, TC-E-001 5건, TC-AC-006 6건). TC-I-003 5번 테스트 1건은 단언과 이름을 바꿨지만 건수는 같다. 새 테스트 파일은 `tests/integration/admin-route-contract.test.tsx`, `tests/e2e/admin-roundtrip.test.tsx`, `tests/accessibility/form-labels.a11y.test.tsx` 3개이다.
 
 ### 테스트 파일 배정표
 
@@ -1394,16 +1411,19 @@ npx vitest run tests/smoke.test.ts
 | `tests/components/ToggleSwitch.test.tsx` | 8 | Unit | TC-U-014 |
 | `tests/components/ImageDropZone.test.tsx` | 7 | Unit | TC-U-015 |
 | `tests/components/GalleryManagerLayout.test.tsx` | 7 | Unit | TC-U-016 |
-| `tests/components/GalleryEditForm.test.tsx` | 7 | Unit | TC-U-017 |
+| `tests/components/GalleryEditForm.test.tsx` | 12 | Unit | TC-U-017 (7), TC-U-019 (5) |
 | `tests/components/GalleryHomePreview.test.tsx` | 5 | Unit | TC-U-018 |
 | `tests/server/loaders.test.ts` | 7 | Integration | TC-I-001 |
 | `tests/presets/ballet.test.tsx` | 10 | Integration | TC-I-002 |
-| `tests/components/GalleryAdminManager.test.tsx` | 5 | Integration | TC-I-003 |
+| `tests/components/GalleryAdminManager.test.tsx` | 9 | Integration | TC-I-003 (5), TC-I-006 (4) |
 | `tests/components/CategoryAdminManager.test.tsx` | 3 | Integration | TC-I-004 |
+| `tests/integration/admin-route-contract.test.tsx` | 5 | Integration | TC-I-005 |
 | `tests/server/route-handlers.test.ts` | 52 | API 35, Security 17 | TC-A-001 (7), TC-A-002 (9), TC-A-003 (5), TC-A-004 (10), TC-A-005 (2), TC-A-006 (2), TC-S-003 (5), TC-S-004 (5), TC-S-005 (4), TC-S-006 (3) |
+| `tests/e2e/admin-roundtrip.test.tsx` | 5 | E2E | TC-E-001 |
+| `tests/accessibility/form-labels.a11y.test.tsx` | 6 | Accessibility | TC-AC-006 |
 | `tests/smoke.test.ts` | 2 | Smoke | TC-SM-001 |
 
-`tests/setup.ts` 는 테스트 파일이 아니라 `setupFiles` 로 등록된 정리 코드(`afterEach(cleanup)`)이므로 배정 대상에서 제외한다.
+`tests/setup.ts` 는 테스트 파일이 아니라 `setupFiles` 로 등록된 정리 코드(`afterEach(cleanup)`)이므로 배정 대상에서 제외한다. `tests/helpers/in-memory-prisma.ts`, `tests/helpers/route-fetch.ts` 도 테스트 도우미이므로 제외한다.
 
 ---
 
@@ -1413,12 +1433,12 @@ npx vitest run tests/smoke.test.ts
 
 | 도메인 | 판정 (사전 조사) | 이 문서 반영 | 근거 |
 |--------|----------------|------------|------|
-| Unit | 적용 | ✅ 18 / 🔲 1 | 오류 클래스, 스키마, 서비스, 훅, 컴포넌트를 모의 객체로 격리할 수 있으며 현재 158건이 있다 |
+| Unit | 적용 | ✅ 19 / 🔲 0 | 오류 클래스, 스키마, 서비스, 훅, 컴포넌트를 모의 객체로 격리할 수 있으며 현재 163건이 있다 |
 | API | 적용 | ✅ 6 / 🔲 1 | `createGalleryRoutes` 가 6개 경로 그룹에 핸들러 14개를 제공하며, 호스트는 이를 그대로 라우트로 export 한다 |
-| Integration | 제한적 | ✅ 4 / 🔲 2 | Prisma·apiWrapper·fetch 를 모두 호스트가 주입하므로 결합 범위가 로더와 서비스, 컴포넌트와 설정·fetch 로 한정된다. 다만 클라이언트와 라우트 사이 응답 형식 불일치가 확인되어 계획 TC 를 추가했다 |
-| E2E | 제한적 | 🔲 1 | 페이지와 브라우저 흐름은 호스트 책임이다. 패키지 안에서는 jsdom 과 실제 라우트 핸들러를 연결한 왕복 흐름까지만 검증할 수 있다 |
+| Integration | 제한적 | ✅ 6 / 🔲 0 | Prisma·apiWrapper·fetch 를 모두 호스트가 주입하므로 결합 범위가 로더와 서비스, 컴포넌트와 설정·fetch 로 한정된다. 클라이언트와 라우트 사이 응답 형식 불일치가 확인되어 계획 TC 를 추가했고, 2026-09-16 에 fetch 어댑터로 관리자 컴포넌트와 실제 라우트 핸들러를 연결한 계약 검증을 구현했다 |
+| E2E | 제한적 | ✅ 1 | 페이지와 브라우저 흐름은 호스트 책임이다. 패키지 안에서는 jsdom 과 실제 라우트 핸들러를 연결한 왕복 흐름까지만 검증할 수 있으며, 2026-09-16 에 이 범위의 5건을 구현했다 |
 | Security | 적용(재분류) | ✅ 6 / 🔲 2 | 보안 강화 커밋 `82f081f` 의 검증과 401 검증 28건을 파일 이동 없이 Security 로 재분류했다 |
-| Accessibility | 적용, 0건 | 🔲 7 | 컴포넌트 7개와 프리셋 1개를 공개 API 로 내보내고 ARIA·키보드 처리를 구현했지만 접근성 전용 검증은 0건이다 |
+| Accessibility | 적용, 0건 | ✅ 1 / 🔲 6 | 컴포넌트 7개와 프리셋 1개를 공개 API 로 내보내고 ARIA·키보드 처리를 구현했지만, 접근성 전용 검증은 2026-09-16 에 추가한 폼 컨트롤 이름·목록 항목 버튼 6건뿐이다 |
 | Performance | 제한적 | SC 없음 | 서버 계층은 쿼리 인자를 조립해 호스트 Prisma 에 위임하므로 쿼리 성능은 호스트 DB 책임이다. 클라이언트 계산도 `slice`·`filter` 수준이어서 측정 기준을 세울 경로가 없다 |
 | Load/Stress | 미적용 | SC 없음 | 패키지는 잠금이나 조건부 갱신 같은 동시성 제어를 두지 않고 Prisma 호출을 그대로 위임한다 |
 | Smoke | 적용(구현됨) | ✅ 1 / 🔲 1 | `tests/smoke.test.ts` 2건은 소스 진입점만 확인하며, `exports` 8개 키와 dist 후처리는 검증하지 않는다 |
@@ -1435,18 +1455,20 @@ npx vitest run tests/smoke.test.ts
 
 | 순위 | TC | 항목 | 우선순위 | 선행 조건 |
 |------|----|------|---------|----------|
-| 1 | TC-I-005 | `GalleryAdminManager` 목록 응답 형식, `CategoryAdminManager` 오류 본문 경로 불일치 (결함 확인용) | Critical | 서버 기준과 클라이언트 기준 가운데 맞출 쪽 결정 |
-| 2 | TC-AC-001~006 | ARIA·키보드 구현분에 대한 자동 접근성 검증 (사전 조사 문서 우선순위 갭 5번) | High·Medium | 없음 (testing-library 설치됨). TC-AC-003 6번은 포커스 관리 정책 결정, TC-AC-006 은 결함 수정 여부 결정 |
-| 3 | TC-I-006 | `GalleryAdminManager` 새 항목 생성 경로에 업로드 함수가 없음 (결함 확인용) | High | 업로드 함수 주입 방식 결정 |
-| 4 | TC-S-007 | 라우트 경유 URL·키 검증과 `config.validation` 전달 | High | 없음 |
-| 5 | TC-E-001 | 관리자 화면과 실제 라우트 핸들러 왕복 여정 | High | TC-I-005 해소, fetch → 라우트 어댑터 작성 |
-| 6 | TC-U-019 | GalleryEditForm 이미지 선택·업로드 오류 경로 | Medium | 없음 |
-| 7 | TC-A-007 | 오류 응답 본문 계약과 비매핑 예외 전파 | Medium | 없음 |
-| 8 | TC-S-008 | 인증 식별자 추출·권한 검사 경계값 | Medium | 없음 |
-| 9 | TC-SM-002 | 서브패스 exports 와 dist 산출물 검증 | Medium | 테스트 절차에 빌드 단계 추가 |
-| 10 | TC-AC-007 | axe 규칙 기반 자동 검사 | Medium | `axe-core` 또는 `vitest-axe` devDependency 추가 (`package.json` 수정) |
+| 1 | TC-AC-001~005 | ARIA·키보드 구현분에 대한 자동 접근성 검증 (사전 조사 문서 우선순위 갭 5번) | High·Medium | 없음 (testing-library 설치됨). TC-AC-003 6번은 포커스 관리 정책 결정 |
+| 2 | TC-S-007 | 라우트 경유 URL·키 검증과 `config.validation` 전달 | High | 없음 |
+| 3 | TC-A-007 | 오류 응답 본문 계약과 비매핑 예외 전파 | Medium | 없음 |
+| 4 | TC-S-008 | 인증 식별자 추출·권한 검사 경계값 | Medium | 없음 |
+| 5 | TC-SM-002 | 서브패스 exports 와 dist 산출물 검증 | Medium | 테스트 절차에 빌드 단계 추가 |
+| 6 | TC-AC-007 | axe 규칙 기반 자동 검사 | Medium | `axe-core` 또는 `vitest-axe` devDependency 추가 (`package.json` 수정) |
 
-2026-09-13 판에서 1순위였던 TC-A-006(부분 수정 PUT 이 `published`·`featured`·`sortOrder`·`isActive` 기본값을 덮어씀)은 0.2.1 에서 결함이 수정되고 회귀 테스트 4건이 추가되어 갭에서 제외했다. 관리자 UI 요청 본문(`{ featured }`, `{ sortOrder }`)을 화면 조작부터 확인하는 검증은 5순위 TC-E-001 에 포함되어 있다.
+2026-09-15 판의 1순위 TC-I-005, 3순위 TC-I-006, 5순위 TC-E-001, 6순위 TC-U-019 와 2순위에 묶여 있던 TC-AC-006 은 2026-09-16 에 결함 수정(`bf72aa8`, `e9cbd7a`, `addd6b7`)과 함께 구현되어 갭에서 제외했다. 2026-09-13 판에서 1순위였던 TC-A-006(부분 수정 PUT 이 `published`·`featured`·`sortOrder`·`isActive` 기본값을 덮어씀)은 0.2.1 에서 결함이 수정되고 회귀 테스트 4건이 추가되어 갭에서 제외했다. 관리자 UI 요청 본문(`{ featured }`, `{ sortOrder }`)을 화면 조작부터 확인하는 검증은 TC-E-001 3·4번으로 구현되었다.
+
+2026-09-16 결함 수정 중에 다음 사항을 확인했다. 결함 확인용 TC 의 범위 밖이고 동작 설계 결정이 필요하므로 수정하지 않았다.
+
+- **저장 실패 응답을 확인하지 않음:** `GalleryAdminManager` 의 `handleSubmit`·`handleSubmitMany`·`handleDelete`·`handleToggleFeatured`·`handleReorder` 는 응답의 `res.ok` 를 확인하지 않는다 (`src/components/GalleryAdminManager.tsx:176-263`). TC-E-001 을 작성하면서 PUT 이 400 `ValidationError` 를 받았을 때 화면이 오류를 표시하지 않고 폼을 닫은 뒤 목록을 다시 불러오는 것을 실제 실행으로 확인했다. 입력한 내용은 사라진다. 오류 표시 위치와 문구를 정해야 한다.
+- **목록이 첫 페이지 20건으로 제한됨:** `GalleryAdminManager` 는 `/api/admin/galleries` 를 쿼리 없이 요청하고, `collection.GET` 은 `limit` 기본값 20 으로 첫 페이지만 반환한다 (`src/utils/api-helpers.ts:8-15`). 임시 테스트에서 항목 25개 가운데 25번째만 featured·published 로 두면, 목록과 개수 표시는 20 이고 홈 프리뷰 타일은 0개였다. 클라이언트 검색과 featured 개수 계산도 첫 페이지 기준이 된다. 전체 페이지를 불러올지 페이지 UI 를 둘지 결정해야 한다.
+- **일괄 생성으로 featured 상한을 넘을 수 있음:** 새 모드의 `canToggleFeatured` 는 `featuredCount < maxFeatured` 만 확인한다 (`src/components/GalleryAdminManager.tsx:276`). featured 가 6개인 상태에서 featured·published 로 이미지 3개를 일괄 생성하면 9개가 되며, 서버 라우트에도 상한 검사가 없다. 소스로만 확인했고 실행으로 재현하지는 않았다.
 
 테스트 인프라에도 다음 공백이 있다.
 
@@ -1457,16 +1479,18 @@ npx vitest run tests/smoke.test.ts
 
 ## 리뷰 체크리스트
 
-- [x] 테스트 파일 23개가 모두 TC 에 배정됨 (2026-09-15 문서와 `tests/` 목록 대조, 누락 0개)
-- [x] 테스트 248건이 각각 TC 하나에만 배정됨 (도메인 합계와 실측 합계 일치)
-- [x] 도메인별 실행 명령과 파일 내 분할 필터로 건수를 재현함 (2026-09-15: Unit 158, Integration 25, API 35, Security 28, Smoke 2)
+- [x] 테스트 파일 26개가 모두 TC 에 배정됨 (2026-09-16 문서와 `tests/` 목록 대조, 누락 0개)
+- [x] 테스트 273건이 각각 TC 하나에만 배정됨 (도메인 합계와 실측 합계 일치)
+- [x] 도메인별 실행 명령과 파일 내 분할 필터로 건수를 재현함 (2026-09-16: Unit 163, Integration 34, API 35, E2E 5, Security 28, Accessibility 6, Smoke 2)
 - [x] 0.2.1 변경을 반영함: 회귀 테스트 4건을 TC-U-006·TC-U-007·TC-A-006 에 배정하고 TC-A-006 을 완료로 전환함. 수정 전 스키마(`29fd94c`)로 4건 실패를 재현함
+- [x] 2026-09-16 결함 수정 3건을 반영함: TC-I-005·TC-I-006·TC-AC-006 을 완료로 전환하고 TC-U-019·TC-E-001 을 구현함. 수정 전 코드로 TC-I-005·TC-E-001 6건, TC-I-006 2건, TC-AC-006 6건의 실패를 확인함
 - [x] 완료 TC 의 단계·예상 결과를 실제 테스트 이름과 단언에서 발췌함
 - [x] 계획 TC 에 소스 위치를 명시하고, 결함 확인용 항목은 임시 실행으로 현재 동작을 확인함
 - [x] 보안 기준(OWASP Top 10 2021)과 접근성 기준(WCAG 2.1)을 명시함
-- [ ] 테스트 이름과 단언이 일치하지 않는 2건 정리 필요: `GalleryEditForm` "새 모드 (value=null) … onSubmit 호출 payload 검증"(실제 단언은 미호출), `GalleryAdminManager` "새로 생성 … POST 호출"(실제 단언은 `typeof postCalled === "boolean"`)
+- [ ] 테스트 이름과 단언이 일치하지 않는 1건 정리 필요: `GalleryEditForm` "새 모드 (value=null) … onSubmit 호출 payload 검증"(실제 단언은 미호출). `GalleryAdminManager` "새로 생성 … POST 호출" 은 2026-09-16 에 단언과 이름을 맞춤
 - [ ] 테스트 이름 필터 기반 도메인 구분은 테스트 이름이 바뀌면 깨지므로, 도메인별 스크립트 추가 또는 디렉토리 정리 여부 결정 필요
 - [ ] 커버리지 설정과 목표값 결정 필요
-- [ ] 남은 결함 확인용 TC 3건(TC-I-005, TC-I-006, TC-AC-006)의 수정 여부 결정 필요 (TC-A-006 은 0.2.1 에서 수정 완료)
-- [ ] 접근성 계획 TC(TC-AC-001~007) 구현 필요
+- [x] 결함 확인용 TC 4건이 모두 수정 완료됨 (TC-A-006 은 0.2.1, TC-I-005·TC-I-006·TC-AC-006 은 2026-09-16)
+- [ ] 접근성 계획 TC(TC-AC-001~005, TC-AC-007) 구현 필요
 - [ ] 도메인 적용성 판정에 남긴 확인 필요 사항 2건(`togglePublish` 동시 토글, 저장소 삭제 실패 시 순서) 검토 필요
+- [ ] 우선순위 갭에 남긴 2026-09-16 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한) 검토 필요
