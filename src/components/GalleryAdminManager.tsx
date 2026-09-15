@@ -44,6 +44,16 @@ async function jsonOrNull(res: Response): Promise<any> {
   }
 }
 
+/** 목록 응답 본문에서 항목 배열을 꺼낸다.
+ *  `createGalleryRoutes` 의 collection.GET 은 `{ success, data: { items, meta } }` 를 반환한다.
+ *  호스트가 자체 라우트에서 `data` 를 배열로 반환하거나 본문 자체를 배열로 반환하는 경우도 계속 받는다. */
+function extractListItems<T>(json: any): T[] {
+  const data = json?.data ?? json;
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items;
+  return [];
+}
+
 const DEFAULT_TEXT: Partial<Record<GalleryI18nKey, string>> = {
   "admin.title": "Gallery",
   "admin.newButton": "+ New",
@@ -93,8 +103,7 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
         const res = await clientFetch("/api/admin/galleries");
         const json = await jsonOrNull(res);
         if (!cancelled && mountedRef.current) {
-          const data = json?.data ?? json ?? [];
-          setItems(Array.isArray(data) ? data : []);
+          setItems(extractListItems<GalleryListItem>(json));
         }
       } catch {}
     })();

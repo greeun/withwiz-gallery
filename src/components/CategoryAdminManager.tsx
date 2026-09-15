@@ -65,6 +65,18 @@ async function jsonOrNull(res: Response): Promise<any> {
   }
 }
 
+/** 오류 응답 본문에서 표시할 메시지를 꺼낸다.
+ *  - `createGalleryRoutes` 핸들러: `{ success: false, error: "Forbidden", message: "forbidden" }` (error 는 코드 문자열)
+ *  - 호스트 미들웨어(예: @withwiz/toolkit error-handler): `{ success: false, error: { code, message } }`
+ *  두 형식 모두에서 message 를 찾고, 없으면 null 을 반환한다. */
+function errorMessageOf(json: any): string | null {
+  const nested = json?.error?.message;
+  if (typeof nested === "string" && nested.length > 0) return nested;
+  const topLevel = json?.message;
+  if (typeof topLevel === "string" && topLevel.length > 0) return topLevel;
+  return null;
+}
+
 /** 카테고리 어드민 UI. 사용 중인 카테고리는 server 가 409 로 반환 → 안내 표시. */
 export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Element {
   const { className } = props;
@@ -139,7 +151,7 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
       const res = await clientFetch(url, { method, body });
       if (!res.ok) {
         const json = await jsonOrNull(res);
-        setError(json?.error?.message ?? `Save failed (${res.status})`);
+        setError(errorMessageOf(json) ?? `Save failed (${res.status})`);
         return;
       }
       if (mountedRef.current) {
@@ -164,7 +176,7 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
       }
       if (!res.ok) {
         const json = await jsonOrNull(res);
-        setError(json?.error?.message ?? `Delete failed (${res.status})`);
+        setError(errorMessageOf(json) ?? `Delete failed (${res.status})`);
         return;
       }
       if (mountedRef.current) refresh();
