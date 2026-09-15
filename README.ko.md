@@ -222,6 +222,27 @@ export default async function GalleryEditPage({
 }
 ```
 
+업로드는 host 책임입니다. 새 이미지를 선택하려면 `onImageSelect` 를 전달해야 하며, 전달하지 않으면 편집 폼이 업로드 함수 누락 오류를 표시합니다. Server Component 에서는 함수를 전달할 수 없으므로 Client Component 로 감싸서 사용합니다.
+
+```tsx
+// host: app/admin/galleries/GalleryAdminClient.tsx
+"use client";
+import { GalleryAdminManager, type GalleryAdminManagerProps } from "@withwiz/gallery/components";
+
+async function uploadImage(file: File): Promise<{ url: string; key?: string }> {
+  // 업로드 엔드포인트와 응답 형식은 host 마다 다르다
+  const body = new FormData();
+  body.append("file", file);
+  const res = await fetch("/api/admin/upload", { method: "POST", body, credentials: "include" });
+  const json = await res.json();
+  return { url: json.data.url, key: json.data.key };
+}
+
+export function GalleryAdminClient(props: Omit<GalleryAdminManagerProps, "onImageSelect">) {
+  return <GalleryAdminManager {...props} onImageSelect={uploadImage} />;
+}
+```
+
 ```tsx
 // host: app/admin/gallery-categories/page.tsx
 import { CategoryAdminManager } from "@withwiz/gallery/components";
@@ -302,7 +323,7 @@ import {
 
 | Export | 설명 |
 |---|---|
-| `GalleryAdminManager` | 3-pane 어드민 마운트 포인트 (`initialMode? / initialSelectedId?`) |
+| `GalleryAdminManager` | 3-pane 어드민 마운트 포인트 (`initialMode? / initialSelectedId? / onImageSelect?`) |
 | `GalleryManagerLayout` | 3-pane primitive (좌=list / 중=form / 우=preview) |
 | `GalleryEditForm` | 단일/다중 모드 form (`value / multipleMode / onSubmit / onSubmitMany`) |
 | `GalleryHomePreview` | 7-tile 모자이크 + drag 재정렬 + 별 토글 |
