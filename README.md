@@ -222,6 +222,27 @@ export default async function GalleryEditPage({
 }
 ```
 
+Uploading is the host's job. Pass `onImageSelect` so new images can be selected; without it the edit form shows an upload-handler error. Functions cannot be passed from a Server Component, so wrap the manager in a Client Component:
+
+```tsx
+// host: app/admin/galleries/GalleryAdminClient.tsx
+"use client";
+import { GalleryAdminManager, type GalleryAdminManagerProps } from "@withwiz/gallery/components";
+
+async function uploadImage(file: File): Promise<{ url: string; key?: string }> {
+  // the upload endpoint and response shape are host-specific
+  const body = new FormData();
+  body.append("file", file);
+  const res = await fetch("/api/admin/upload", { method: "POST", body, credentials: "include" });
+  const json = await res.json();
+  return { url: json.data.url, key: json.data.key };
+}
+
+export function GalleryAdminClient(props: Omit<GalleryAdminManagerProps, "onImageSelect">) {
+  return <GalleryAdminManager {...props} onImageSelect={uploadImage} />;
+}
+```
+
 ```tsx
 // host: app/admin/gallery-categories/page.tsx
 import { CategoryAdminManager } from "@withwiz/gallery/components";
@@ -302,7 +323,7 @@ Typed errors (also re-exported from the server entry):
 
 | Export | Description |
 |---|---|
-| `GalleryAdminManager` | 3-pane admin mount point (`initialMode?` / `initialSelectedId?`) |
+| `GalleryAdminManager` | 3-pane admin mount point (`initialMode?` / `initialSelectedId?` / `onImageSelect?`) |
 | `GalleryManagerLayout` | 3-pane primitive (left = list / center = form / right = preview) |
 | `GalleryEditForm` | Single/multi form (`value` / `multipleMode` / `onSubmit` / `onSubmitMany`) |
 | `GalleryHomePreview` | 7-tile mosaic + drag reorder + featured toggle |

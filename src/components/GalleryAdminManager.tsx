@@ -9,7 +9,7 @@ import {
 import { cn } from "../utils/cn";
 import { getGalleryConfig } from "../config";
 import { GalleryManagerLayout } from "./GalleryManagerLayout";
-import { GalleryEditForm } from "./GalleryEditForm";
+import { GalleryEditForm, type GalleryEditFormProps } from "./GalleryEditForm";
 import { GalleryHomePreview } from "./GalleryHomePreview";
 import type {
   CreateGalleryInput,
@@ -24,6 +24,9 @@ export interface GalleryAdminManagerProps {
   initialMode?: "list" | "new" | "edit";
   /** 편집 대상 ID (initialMode === "edit" 또는 URL 진입 시). */
   initialSelectedId?: string;
+  /** 이미지 파일을 host 가 업로드하고 결과 URL·key 를 반환하는 함수. `GalleryEditForm` 에 그대로 전달한다.
+   *  미전달 시 새 이미지를 선택할 수 없고 편집 폼이 업로드 함수 누락 오류를 표시한다. */
+  onImageSelect?: GalleryEditFormProps["onImageSelect"];
   className?: string;
 }
 
@@ -70,7 +73,7 @@ function t(
 
 /** 메인 마운트 포인트. host 의 페이지는 단순히 `<GalleryAdminManager initialSelectedId={id} />` 마운트. */
 export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Element {
-  const { initialMode, initialSelectedId, className } = props;
+  const { initialMode, initialSelectedId, onImageSelect, className } = props;
   const config = getGalleryConfig();
   const i18n = (config.i18n ?? {}) as Partial<Record<GalleryI18nKey, string>>;
   const ui = config.ui;
@@ -276,6 +279,7 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
             onSubmitMany={handleSubmitMany}
             onCancel={handleCancel}
             onDelete={mode === "edit" ? handleDelete : undefined}
+            onImageSelect={onImageSelect}
           />
         );
 
