@@ -14,7 +14,7 @@ Host-independent gallery module for Next.js 16 + Prisma 7. Self-contained admin 
 - **Admin UI** — 5 composite components (`GalleryAdminManager`, `GalleryEditForm`, `GalleryHomePreview`, `GalleryManagerLayout`, `CategoryAdminManager`) + 2 primitives (`ImageDropZone`, `ToggleSwitch`). Self-contained 3-pane layout.
 - **API routes** — `createGalleryRoutes(config)` returns Next.js Route Handlers for 6 endpoint groups (collection / item / publish toggle / bulk / category collection / category item).
 - **RSC loaders** — `getGalleryItems`, `getFeaturedGalleries`, `getRecentGalleries`, `getGalleryCount` for server components / dashboards.
-- **Public preset** — `PublicGalleryMosaic` (presets/ballet) — 1–7 tile adaptive mosaic + lightbox.
+- **Public preset** — `PublicGalleryMosaic` (presets/mosaic) — 1–7 tile adaptive mosaic + lightbox. `presets/ballet` remains as a deprecated alias.
 - **Headless lightbox hook** — `useGalleryLightbox` with ESC / Arrow key bindings + wrap-around.
 - **Image upload primitive** — `useImageDropZone` + `<ImageDropZone>` (host-side validate + accept/maxSize).
 - **Storage-agnostic** — R2 / S3 / local filesystem — host injects via `config.storage`.
@@ -257,7 +257,7 @@ export default function CategoryAdminPage() {
 
 ```tsx
 // host: app/page.tsx (RSC)
-import { PublicGalleryMosaic } from "@withwiz/gallery/presets/ballet";
+import { PublicGalleryMosaic } from "@withwiz/gallery/presets/mosaic";
 import { getFeaturedGalleries } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 import "@withwiz/gallery/components/gallery.css";
@@ -272,7 +272,7 @@ export default async function HomePage() {
     <PublicGalleryMosaic
       images={images}
       count={7}
-      i18n={{ sectionLabel: "Gallery", moments: "Moments from the stage" }}
+      i18n={{ sectionLabel: "Gallery", moments: "Highlights" }}
     />
   );
 }
@@ -382,11 +382,11 @@ import type {
 } from "@withwiz/gallery/types";
 ```
 
-### `@withwiz/gallery/presets/ballet`
+### `@withwiz/gallery/presets/mosaic`
 
 ```ts
-import { PublicGalleryMosaic } from "@withwiz/gallery/presets/ballet";
-import type { PublicGalleryMosaicProps } from "@withwiz/gallery/presets/ballet";
+import { PublicGalleryMosaic } from "@withwiz/gallery/presets/mosaic";
+import type { PublicGalleryMosaicProps } from "@withwiz/gallery/presets/mosaic";
 ```
 
 Signature:
@@ -409,6 +409,10 @@ function PublicGalleryMosaic(props: {
 }): JSX.Element | null;
 ```
 
+Default labels are Korean (`sectionLabel` "갤러리", `moments` "하이라이트"); pass `i18n` to override them.
+
+`@withwiz/gallery/presets/ballet` is a deprecated alias kept for 0.2.x users. It renders the same component and only keeps the previous default `moments` label ("공연의 순간들"). Import from `presets/mosaic` and set `i18n.moments` instead.
+
 ## Host-independence guarantees
 
 - **Zero `@withwiz/pms` imports** — this package does not depend on any domain package.
@@ -416,7 +420,7 @@ function PublicGalleryMosaic(props: {
 - **No assumption about the host's User model name** — the Prisma `Gallery` model has only an `authorId: String` column and no `@relation`.
 - **All infrastructure is injected via `GalleryConfig`** — Prisma client / API wrapper / storage / revalidate / i18n / limits.
 - **Storage / auth / revalidate are the host's responsibility** — this package only deals with keys/paths; actual R2/S3/local calls are delegated to the host via `config.storage.deleteKeys`, etc.
-- **`presets/ballet` does not import `next/image`, `next/navigation`, or `useI18n`** — images use plain `<img>`, labels come from props.
+- **`presets/mosaic` (and its alias `presets/ballet`) does not import `next/image`, `next/navigation`, or `useI18n`** — images use plain `<img>`, labels come from props.
 
 ## Security notes
 
@@ -508,7 +512,8 @@ node-packages/withwiz-gallery/
     ├── hooks/                # useGalleryLightbox / useImageDropZone / useScrollReveal
     ├── utils/                # cn / image-variants / api-helpers
     └── presets/
-        └── ballet.tsx        # PublicGalleryMosaic
+        ├── mosaic.tsx        # PublicGalleryMosaic
+        └── ballet.tsx        # deprecated alias of mosaic.tsx
 ```
 
 ## Scripts
