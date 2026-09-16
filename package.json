@@ -39,6 +39,11 @@
       "import": "./dist/types/index.mjs",
       "require": "./dist/types/index.js"
     },
+    "./presets/mosaic": {
+      "types": "./dist/presets/mosaic.d.ts",
+      "import": "./dist/presets/mosaic.mjs",
+      "require": "./dist/presets/mosaic.js"
+    },
     "./presets/ballet": {
       "types": "./dist/presets/ballet.d.ts",
       "import": "./dist/presets/ballet.mjs",

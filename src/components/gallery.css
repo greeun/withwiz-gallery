@@ -861,7 +861,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
- * Public — Mosaic (presets/ballet:PublicGalleryMosaic)
+ * Public — Mosaic (presets/mosaic:PublicGalleryMosaic)
  * ─────────────────────────────────────────────────────────────── */
 
 .gallery-public-mosaic-section {
@@ -1004,7 +1004,7 @@
 .gallery-public-mosaic[data-count="7"] .gallery-public-mosaic__item:nth-child(7) { grid-column: 13/17; }
 
 /* ═══════════════════════════════════════════════════════════════
- * Public — Lightbox (presets/ballet:PublicGalleryMosaic)
+ * Public — Lightbox (presets/mosaic:PublicGalleryMosaic)
  * ─────────────────────────────────────────────────────────────── */
 
 .gallery-lightbox {
