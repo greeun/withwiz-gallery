@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const CLIENT_ENTRIES = ["components/index", "hooks/index", "presets/ballet"];
+const CLIENT_ENTRIES = ["components/index", "hooks/index", "presets/mosaic", "presets/ballet"];
 
 function addUseClientDirective() {
   for (const entry of CLIENT_ENTRIES) {
@@ -26,6 +26,7 @@ export default defineConfig({
     "hooks/index": "src/hooks/index.ts",
     "validators/index": "src/validators/index.ts",
     "types/index": "src/types/index.ts",
+    "presets/mosaic": "src/presets/mosaic.tsx",
     "presets/ballet": "src/presets/ballet.tsx",
   },
   format: ["cjs", "esm"],

@@ -1,6 +1,6 @@
 import { act, fireEvent, render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { PublicGalleryMosaic } from "../../src/presets/ballet";
+import { PublicGalleryMosaic } from "../../src/presets/mosaic";
 import type { LightboxImage } from "../../src/hooks/useGalleryLightbox";
 
 function makeImages(n: number): LightboxImage[] {
@@ -155,5 +155,15 @@ describe("PublicGalleryMosaic", () => {
       ".gallery-lightbox__img",
     ) as HTMLImageElement;
     expect(lightboxImg.getAttribute("src")).toBe("/img0.jpg");
+  });
+});
+
+describe("PublicGalleryMosaic 기본 라벨", () => {
+  it("i18n 을 지정하지 않으면 특정 도메인에 묶이지 않은 한글 라벨을 쓴다", () => {
+    const { container } = render(<PublicGalleryMosaic images={makeImages(2)} />);
+    const section = container.querySelector("section");
+    expect(section?.getAttribute("aria-label")).toBe("갤러리");
+    expect(container.querySelector(".gallery-public-mosaic__title")?.textContent).toBe("하이라이트");
+    expect(container.textContent).not.toContain("공연");
   });
 });
