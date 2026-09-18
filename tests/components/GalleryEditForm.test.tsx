@@ -43,6 +43,25 @@ function makeItem(overrides: Partial<GalleryListItem> = {}): GalleryListItem {
   };
 }
 
+function makeFile(name: string, type: string): File {
+  return new File(["x"], name, { type });
+}
+
+function dropFiles(container: HTMLElement, files: File[]) {
+  const dataTransfer = {
+    files: files as unknown as FileList,
+    types: ["Files"],
+    items: [] as unknown as DataTransferItemList,
+    getData: () => "",
+    setData: () => {},
+    clearData: () => {},
+    dropEffect: "copy" as const,
+    effectAllowed: "all" as const,
+    setDragImage: () => {},
+  } as unknown as DataTransfer;
+  fireEvent.drop(container.querySelector(".gallery-dropzone") as HTMLElement, { dataTransfer });
+}
+
 describe("GalleryEditForm", () => {
   it("새 모드 (value=null) — 저장 시 onSubmit 호출 payload 검증", async () => {
     const onSubmit = vi.fn();
@@ -191,5 +210,86 @@ describe("GalleryEditForm", () => {
     expect(items[1].caption).toBe("공통_2");
     expect(items[0].sortOrder).toBe(10);
     expect(items[1].sortOrder).toBe(11);
+  });
+});
+
+describe("GalleryEditForm — TC-U-019 이미지 선택·업로드 오류 경로", () => {
+  it("새 모드에서 onImageSelect 없이 png 를 drop 하면 업로드 함수 누락 오류를 표시한다", async () => {
+    const { container, findByRole } = render(
+      <GalleryEditForm value={null} categories={categories} onSubmit={() => {}} />,
+    );
+    dropFiles(container, [makeFile("a.png", "image/png")]);
+    expect((await findByRole("alert")).textContent).toBe(
+      "onImageSelect prop missing — host must provide upload handler",
+    );
+  });
+
+  it("새 모드에서 이미지 없이 저장하면 Image is required 를 표시하고 onSubmit 을 호출하지 않는다", async () => {
+    const onSubmit = vi.fn();
+    const { getByText, findByRole } = render(
+      <GalleryEditForm value={null} categories={categories} onSubmit={onSubmit} />,
+    );
+    fireEvent.click(getByText(/save/i));
+    expect((await findByRole("alert")).textContent).toBe("Image is required");
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("onImageSelect 가 reject 하면 오류 메시지를 표시한다", async () => {
+    const onImageSelect = vi.fn().mockRejectedValue(new Error("upload failed"));
+    const { container, findByRole } = render(
+      <GalleryEditForm value={null} categories={categories} onSubmit={() => {}} onImageSelect={onImageSelect} />,
+    );
+    dropFiles(container, [makeFile("a.png", "image/png")]);
+    expect((await findByRole("alert")).textContent).toBe("upload failed");
+    expect(container.querySelector(".gallery-dropzone__preview")).toBeNull();
+  });
+
+  it("단일 모드에서 onImageSelect 반환값이 저장 payload 의 imageUrl·imageKey 가 된다", async () => {
+    const onSubmit = vi.fn();
+    const onImageSelect = vi.fn(async () => ({ url: "https://cdn.test/up.png", key: "gallery/up.png" }));
+    const { container, getByText } = render(
+      <GalleryEditForm value={null} categories={categories} onSubmit={onSubmit} onImageSelect={onImageSelect} />,
+    );
+    dropFiles(container, [makeFile("up.png", "image/png")]);
+    await waitFor(() => {
+      expect(container.querySelector(".gallery-dropzone__preview")?.getAttribute("src")).toBe(
+        "https://cdn.test/up.png",
+      );
+    });
+    fireEvent.click(getByText(/save/i));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({
+      imageUrl: "https://cdn.test/up.png",
+      imageKey: "gallery/up.png",
+    });
+  });
+
+  it("다중 모드에서 이미지 3개 중 첫 제거 버튼을 누르면 타일이 2개로 줄고 미리보기가 두 번째 이미지로 바뀐다", async () => {
+    const onImageSelect = async (file: File) => ({ url: `https://cdn.test/${file.name}`, key: `k-${file.name}` });
+    const { container, getAllByRole } = render(
+      <GalleryEditForm
+        value={null}
+        categories={categories}
+        onSubmit={() => {}}
+        multipleMode
+        onSubmitMany={() => {}}
+        onImageSelect={onImageSelect}
+      />,
+    );
+    dropFiles(container, [
+      makeFile("1.png", "image/png"),
+      makeFile("2.png", "image/png"),
+      makeFile("3.png", "image/png"),
+    ]);
+    await waitFor(() => {
+      expect(container.querySelectorAll(".gallery-edit-form__multi-tile")).toHaveLength(3);
+    });
+
+    fireEvent.click(getAllByRole("button", { name: "remove" })[0]);
+
+    expect(container.querySelectorAll(".gallery-edit-form__multi-tile")).toHaveLength(2);
+    expect(container.querySelector(".gallery-dropzone__preview")?.getAttribute("src")).toBe(
+      "https://cdn.test/2.png",
+    );
   });
 });

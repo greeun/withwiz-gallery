@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -126,6 +127,13 @@ export function GalleryEditForm(props: GalleryEditFormProps): JSX.Element {
   const [imageError, setImageError] = useState<string | null>(null);
   const valueIdRef = useRef<string | null>(value?.id ?? null);
   const dirtyRef = useRef(false);
+  // 섹션 제목을 aria-labelledby 로 컨트롤에 연결한다. 여러 번 마운트되어도 id 가 겹치지 않도록 useId 를 사용한다.
+  const labelIdBase = useId();
+  const labelIds = {
+    caption: `${labelIdBase}-caption-label`,
+    category: `${labelIdBase}-category-label`,
+    sortOrder: `${labelIdBase}-sortOrder-label`,
+  };
 
   // value 가 null → non-null 또는 다른 id 로 변경되면 form 을 재초기화.
   // 단, 사용자가 입력 중인 경우 (dirty) 는 덮어쓰지 않음.
@@ -341,10 +349,11 @@ export function GalleryEditForm(props: GalleryEditFormProps): JSX.Element {
       </div>
 
       <div className="gallery-edit-form__section">
-        <div className="gallery-edit-form__section-title">{t(i18n, "form.caption")}</div>
+        <div className="gallery-edit-form__section-title" id={labelIds.caption}>{t(i18n, "form.caption")}</div>
         <input
           type="text"
           name="caption"
+          aria-labelledby={labelIds.caption}
           className="gallery-edit-form__input"
           value={form.caption}
           maxLength={200}
@@ -358,9 +367,10 @@ export function GalleryEditForm(props: GalleryEditFormProps): JSX.Element {
 
       <div className="gallery-edit-form__row">
         <div className="gallery-edit-form__section">
-          <div className="gallery-edit-form__section-title">{t(i18n, "form.category")}</div>
+          <div className="gallery-edit-form__section-title" id={labelIds.category}>{t(i18n, "form.category")}</div>
           <select
             name="categoryId"
+            aria-labelledby={labelIds.category}
             className="gallery-edit-form__input"
             value={form.categoryId}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => updateField("categoryId", e.target.value)}
@@ -371,10 +381,11 @@ export function GalleryEditForm(props: GalleryEditFormProps): JSX.Element {
           </select>
         </div>
         <div className="gallery-edit-form__section">
-          <div className="gallery-edit-form__section-title">{t(i18n, "form.sortOrder")}</div>
+          <div className="gallery-edit-form__section-title" id={labelIds.sortOrder}>{t(i18n, "form.sortOrder")}</div>
           <input
             type="number"
             name="sortOrder"
+            aria-labelledby={labelIds.sortOrder}
             className="gallery-edit-form__input"
             value={form.sortOrder}
             min={0}

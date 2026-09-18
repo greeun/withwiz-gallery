@@ -21,6 +21,26 @@ function makeItem(id: string, overrides: Partial<GalleryListItem> = {}): Gallery
   };
 }
 
+function makeFile(name: string, type: string): File {
+  return new File(["x"], name, { type });
+}
+
+function makeDataTransfer(files: File[]): DataTransfer {
+  return {
+    files: files as unknown as FileList,
+    types: ["Files"],
+    items: [] as unknown as DataTransferItemList,
+    getData: () => "",
+    setData: () => {},
+    clearData: () => {},
+    dropEffect: "copy" as const,
+    effectAllowed: "all" as const,
+    setDragImage: () => {},
+  } as unknown as DataTransfer;
+}
+
+const CATEGORY = { id: "cat-1", slug: "C1", labelKo: "카1", labelEn: null, sortOrder: 0, isActive: true, createdAt: new Date(), updatedAt: new Date() };
+
 interface FetchCall {
   url: string;
   init?: RequestInit;
@@ -135,46 +155,33 @@ describe("GalleryAdminManager", () => {
     await waitFor(() => expect(putCalled).toBe(true));
   });
 
-  it("새로 생성 — onSubmit 시 POST 호출", async () => {
-    let postCalled = false;
-    const { fetch } = makeFetch((url, init) => {
+  it("새로 생성 — 업로드 함수가 없으면 저장을 막고 POST 를 호출하지 않는다", async () => {
+    const { fetch, calls } = makeFetch((url) => {
       if (url.includes("/api/admin/gallery-categories")) {
         return { success: true, data: [{ id: "cat-1", slug: "C1", labelKo: "카1", labelEn: null, sortOrder: 0, isActive: true, createdAt: new Date(), updatedAt: new Date() }] };
-      }
-      if (url.endsWith("/api/admin/galleries") && init?.method === "POST") {
-        postCalled = true;
-        return { success: true, data: { id: "new-1" } };
       }
       return { success: true, data: [] };
     });
     vi.stubGlobal("fetch", fetch);
-    const { container } = render(<GalleryAdminManager initialMode="new" />);
+    const { container, findByRole } = render(<GalleryAdminManager initialMode="new" />);
     await waitFor(() => {
       expect(container.querySelector(".gallery-edit-form")).toBeTruthy();
     });
-    // imageUrl 이 비어있으므로 GalleryEditForm 이 차단 — host fetch URL 주입을 시뮬하기 위해
-    // imageUrl 을 직접 form input 으로 변경할 수 없음. 대신 강제로 hidden field 가 있다고 가정 → 불가
-    // 그래서 onImageSelect 를 통한 업로드 시뮬: file input 으로 처리.
-    // 단순화: imageUrl 이 채워지지 않으면 저장은 안 되지만 GalleryAdminManager 가 file upload 처리도 mocked fetch 로 함.
-    // 본 테스트는 form 의 image 가 채워졌다고 가정하고 직접 imageUrl input 으로 변경하기 위해 form 내부 hidden 사용 안 함.
-    // → AdminManager 에서 onImageSelect 가 fetch("/api/admin/upload") 같은 endpoint 호출하는지 등은 v0.2.
-    // v0.1 에서는 onImageSelect 가 미주입이면 imageUrl 이 안 채워져서 저장 차단.
-    // 그래서 본 테스트 케이스: imageUrl 을 GalleryEditForm 의 setForm 상태에 강제 주입할 방법이 없음.
-    // 대안: GalleryAdminManager 가 onImageSelect 를 내부에서 만들어서 ImageDropZone 의 onFiles → upload API 호출로 다리.
-    // 본 sprint 에서는 onImageSelect 를 host 책임으로 둘 것이므로, "create POST" 검증은 다른 방법으로:
-    //   - GalleryEditForm 의 submit 버튼 누르기 전, imageUrl 을 채울 별도 방법이 필요 → form 의 hidden test prop 으로 처리하지 않음.
-    // → 본 테스트는 POST 자체보다 "GalleryAdminManager 가 form 의 onSubmit 콜백을 POST 로 변환" 하는 동작을 확인.
-    // 그래서 이미지 input 시뮬을 위해 GalleryAdminManager 가 mock 의 image upload 를 처리하도록 함:
-    //   - file input change → 내부적으로 fetch("/api/admin/upload-image", {POST, body: file}) 호출이 가정
-    // 본 sprint 에서 그 endpoint 까지는 다루지 않음 → 본 테스트는 다음을 검증:
-    //   - new 모드 마운트 후 form 이 렌더되고, 폼 제출이 차단되어도 컴포넌트가 crash 하지 않음.
-    const saveBtn = container.querySelector(
-      ".gallery-edit-form__btn.gallery-edit-form__btn--primary",
-    ) as HTMLButtonElement;
-    fireEvent.click(saveBtn);
-    // POST 가 호출되지는 않지만, crash 없이 진행되는지만 확인.
-    await new Promise((r) => setTimeout(r, 10));
-    expect(typeof postCalled).toBe("boolean");
+
+    fireEvent.drop(container.querySelector(".gallery-dropzone") as HTMLElement, {
+      dataTransfer: makeDataTransfer([makeFile("a.png", "image/png")]),
+    });
+    expect((await findByRole("alert")).textContent).toBe(
+      "onImageSelect prop missing — host must provide upload handler",
+    );
+
+    fireEvent.click(
+      container.querySelector(".gallery-edit-form__btn.gallery-edit-form__btn--primary") as HTMLButtonElement,
+    );
+    await waitFor(() => {
+      expect(container.querySelector('[role="alert"]')?.textContent).toBe("Image is required");
+    });
+    expect(calls.filter((c) => c.init?.method === "POST")).toHaveLength(0);
   });
 
   it("삭제 — DELETE 호출", async () => {
@@ -211,5 +218,119 @@ describe("GalleryAdminManager", () => {
     ) as HTMLButtonElement;
     fireEvent.click(deleteBtn);
     await waitFor(() => expect(deleteCalled).toBe(true));
+  });
+});
+
+describe("GalleryAdminManager — TC-I-006 새 항목 생성·featured 상한", () => {
+  beforeEach(() => {
+    setupConfig();
+  });
+  afterEach(() => {
+    resetGalleryConfig();
+    vi.restoreAllMocks();
+  });
+
+  function newItemFetch() {
+    return makeFetch((url, init) => {
+      if (url.includes("/api/admin/gallery-categories")) return { success: true, data: [CATEGORY] };
+      if (url.endsWith("/api/admin/galleries") && init?.method === "POST") {
+        return { success: true, data: { id: "new-1" } };
+      }
+      return { success: true, data: [] };
+    });
+  }
+
+  it("onImageSelect 를 전달하면 새 모드에서 drop 한 이미지의 업로드 결과가 드롭존 미리보기에 표시된다", async () => {
+    const { fetch } = newItemFetch();
+    vi.stubGlobal("fetch", fetch);
+    const onImageSelect = vi.fn(async (file: File) => ({
+      url: `https://cdn.test/uploaded/${file.name}`,
+      key: `gallery/${file.name}`,
+    }));
+    const { container } = render(<GalleryAdminManager initialMode="new" onImageSelect={onImageSelect} />);
+    await waitFor(() => expect(container.querySelector(".gallery-dropzone")).toBeTruthy());
+
+    const file = makeFile("a.png", "image/png");
+    fireEvent.drop(container.querySelector(".gallery-dropzone") as HTMLElement, {
+      dataTransfer: makeDataTransfer([file]),
+    });
+
+    await waitFor(() => {
+      const preview = container.querySelector(".gallery-dropzone__preview") as HTMLImageElement | null;
+      expect(preview?.getAttribute("src")).toBe("https://cdn.test/uploaded/a.png");
+    });
+    expect(onImageSelect).toHaveBeenCalledTimes(1);
+    expect(onImageSelect).toHaveBeenCalledWith(file);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it("업로드 후 저장하면 /api/admin/galleries 에 POST 를 1회 보내고 본문에 업로드 결과가 담긴다", async () => {
+    const { fetch, calls } = newItemFetch();
+    vi.stubGlobal("fetch", fetch);
+    const onImageSelect = async (file: File) => ({
+      url: `https://cdn.test/uploaded/${file.name}`,
+      key: `gallery/${file.name}`,
+    });
+    const { container } = render(<GalleryAdminManager initialMode="new" onImageSelect={onImageSelect} />);
+    await waitFor(() => {
+      expect((container.querySelector('select[name="categoryId"]') as HTMLSelectElement | null)?.value).toBe("cat-1");
+    });
+
+    fireEvent.drop(container.querySelector(".gallery-dropzone") as HTMLElement, {
+      dataTransfer: makeDataTransfer([makeFile("a.png", "image/png")]),
+    });
+    await waitFor(() => expect(container.querySelector(".gallery-dropzone__preview")).toBeTruthy());
+    fireEvent.click(
+      container.querySelector(".gallery-edit-form__btn.gallery-edit-form__btn--primary") as HTMLButtonElement,
+    );
+
+    await waitFor(() => {
+      expect(calls.filter((c) => c.init?.method === "POST")).toHaveLength(1);
+    });
+    const post = calls.find((c) => c.init?.method === "POST")!;
+    expect(post.url).toBe("/api/admin/galleries");
+    expect(JSON.parse(post.init!.body as string)).toMatchObject({
+      imageUrl: "https://cdn.test/uploaded/a.png",
+      imageKey: "gallery/a.png",
+      categoryId: "cat-1",
+    });
+  });
+
+  function capFetch(xFeatured: boolean) {
+    const featured = Array.from({ length: 7 }, (_, i) =>
+      makeItem(`f${i + 1}`, { featured: true, published: true, sortOrder: i + 1 }),
+    );
+    const items = [...featured, makeItem("x", { featured: xFeatured, published: true, sortOrder: 8 })];
+    return makeFetch((url) => {
+      if (url.includes("/api/admin/gallery-categories")) return { success: true, data: [CATEGORY] };
+      if (url.endsWith("/api/admin/galleries")) return { success: true, data: items };
+      return { success: true, data: null };
+    });
+  }
+
+  it("featured 가 상한(7)에 도달한 상태에서 featured 가 아닌 항목을 선택하면 featured 스위치가 비활성화되고 안내가 표시된다", async () => {
+    const { fetch } = capFetch(false);
+    vi.stubGlobal("fetch", fetch);
+    const { container, getByText } = render(<GalleryAdminManager initialSelectedId="x" />);
+    await waitFor(() => {
+      expect((container.querySelector('input[name="caption"]') as HTMLInputElement | null)?.value).toBe("cap-x");
+    });
+
+    const featuredSwitch = container.querySelector('[data-toggle="featured"] [role="switch"]') as HTMLButtonElement;
+    expect(featuredSwitch.getAttribute("aria-disabled")).toBe("true");
+    expect(getByText("Featured cap reached — uncheck others first")).toBeTruthy();
+  });
+
+  it("같은 조건에서 선택한 항목이 이미 featured 이면 featured 스위치가 비활성화되지 않는다", async () => {
+    const { fetch } = capFetch(true);
+    vi.stubGlobal("fetch", fetch);
+    const { container, queryByText } = render(<GalleryAdminManager initialSelectedId="x" />);
+    await waitFor(() => {
+      expect((container.querySelector('input[name="caption"]') as HTMLInputElement | null)?.value).toBe("cap-x");
+    });
+
+    const featuredSwitch = container.querySelector('[data-toggle="featured"] [role="switch"]') as HTMLButtonElement;
+    expect(featuredSwitch.hasAttribute("aria-disabled")).toBe(false);
+    expect(queryByText("Featured cap reached — uncheck others first")).toBeNull();
   });
 });

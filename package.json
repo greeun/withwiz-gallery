@@ -1,6 +1,7 @@
 {
   "name": "@withwiz/gallery",
   "version": "0.2.1",
+  "packageManager": "npm@11.16.0",
   "description": "Headless gallery module — Prisma 7 + Next 16, host-agnostic. Drop-in admin + public surface.",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -37,6 +38,11 @@
       "types": "./dist/types/index.d.ts",
       "import": "./dist/types/index.mjs",
       "require": "./dist/types/index.js"
+    },
+    "./presets/mosaic": {
+      "types": "./dist/presets/mosaic.d.ts",
+      "import": "./dist/presets/mosaic.mjs",
+      "require": "./dist/presets/mosaic.js"
     },
     "./presets/ballet": {
       "types": "./dist/presets/ballet.d.ts",

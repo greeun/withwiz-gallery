@@ -23,7 +23,7 @@ export type RouteHandler = (
   routeCtx?: { params: Promise<Record<string, string>> },
 ) => Promise<Response>;
 
-/** host 가 제공하는 API 미들웨어 래퍼 형태 (ballet 의 withAdminApi 와 동일 패턴) */
+/** host 가 제공하는 API 미들웨어 래퍼 형태 (예: @withwiz/toolkit 의 withAdminApi 와 같은 패턴) */
 export type ApiWrapper = (
   handler: (ctx: ApiContext) => Promise<Response>,
 ) => RouteHandler;
