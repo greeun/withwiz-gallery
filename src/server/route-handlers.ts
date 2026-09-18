@@ -311,6 +311,8 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
       if (err instanceof GalleryNotFoundError) {
         return jsonError("Gallery item not found", 404, "NotFound");
       }
+      const limited = featuredLimitResponse(err);
+      if (limited) return limited;
       throw err;
     }
   });
@@ -357,13 +359,19 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
 
     let count = 0;
 
-    if (published !== undefined) {
-      const r = await service.bulkUpdatePublished(ids, published);
-      count = r.count;
-    }
-    if (featured !== undefined) {
-      const r = await service.bulkUpdateFeatured(ids, featured);
-      count = r.count;
+    try {
+      if (published !== undefined) {
+        const r = await service.bulkUpdatePublished(ids, published);
+        count = r.count;
+      }
+      if (featured !== undefined) {
+        const r = await service.bulkUpdateFeatured(ids, featured);
+        count = r.count;
+      }
+    } catch (err) {
+      const limited = featuredLimitResponse(err);
+      if (limited) return limited;
+      throw err;
     }
 
     callRevalidate(config);

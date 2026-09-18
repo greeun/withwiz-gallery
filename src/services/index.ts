@@ -39,6 +39,27 @@ export function createGalleryService(config: GalleryConfig) {
   }
 
   /**
+   * 일괄 변경 대상 가운데 이 변경으로 공개 featured 집계에 **새로** 드는 건수를 센다.
+   * 이미 집계에 있는 항목과, 변경 뒤에도 집계 조건(`published && featured`)을 만족하지
+   * 않는 항목은 세지 않는다.
+   */
+  async function countNewlyFeatured(
+    ids: string[],
+    patch: { featured?: boolean; published?: boolean },
+  ): Promise<number> {
+    const rows = (await galleryDelegate().findMany({
+      where: { id: { in: ids } },
+      select: { id: true, featured: true, published: true },
+    })) as Array<{ featured: boolean; published: boolean }>;
+    return rows.filter((row) => {
+      const wasCounted = row.featured === true && row.published === true;
+      const nextFeatured = patch.featured ?? row.featured;
+      const nextPublished = patch.published ?? row.published;
+      return !wasCounted && nextFeatured === true && nextPublished === true;
+    }).length;
+  }
+
+  /**
    * featured 를 새로 켜는 요청만 상한을 검사한다. 이미 상한을 넘긴 기존 데이터는
    * 그대로 두고, featured 를 끄거나 다른 필드를 고치는 요청은 막지 않는다.
    */
@@ -277,6 +298,10 @@ export function createGalleryService(config: GalleryConfig) {
     ids: string[],
     published: boolean,
   ): Promise<{ count: number }> {
+    if (published) {
+      // 비공개 featured 항목이 공개로 바뀌면 집계에 새로 든다.
+      await assertFeaturedRoom(await countNewlyFeatured(ids, { published: true }));
+    }
     const result = await galleryDelegate().updateMany({
       where: { id: { in: ids } },
       data: { published, updatedAt: new Date() },
@@ -288,6 +313,9 @@ export function createGalleryService(config: GalleryConfig) {
     ids: string[],
     featured: boolean,
   ): Promise<{ count: number }> {
+    if (featured) {
+      await assertFeaturedRoom(await countNewlyFeatured(ids, { featured: true }));
+    }
     const result = await galleryDelegate().updateMany({
       where: { id: { in: ids } },
       data: { featured, updatedAt: new Date() },
@@ -298,10 +326,14 @@ export function createGalleryService(config: GalleryConfig) {
   async function togglePublish(id: string): Promise<GalleryDetail> {
     const current = (await galleryDelegate().findUnique({
       where: { id },
-      select: { published: true },
-    })) as { published: boolean } | null;
+      select: { published: true, featured: true },
+    })) as { published: boolean; featured: boolean } | null;
     if (!current) {
       throw new GalleryNotFoundError(id);
+    }
+    // 비공개 featured 항목을 공개로 올리면 집계에 새로 든다.
+    if (!current.published && current.featured === true) {
+      await assertFeaturedRoom(1, id);
     }
     const row = await galleryDelegate().update({
       where: { id },
