@@ -25,7 +25,8 @@ interface DelegateMock {
 
 function makeDelegate(): DelegateMock {
   return {
-    findMany: vi.fn(),
+    // Prisma findMany 는 결과가 없어도 배열을 돌려준다. 목도 같은 계약을 지킨다.
+    findMany: vi.fn().mockResolvedValue([]),
     findUnique: vi.fn(),
     create: vi.fn(),
     createMany: vi.fn(),
@@ -885,6 +886,29 @@ describe("featured 상한 초과 응답", () => {
     const res = await h.callWith(routes.bulk.POST, { body: { items } });
     expect(res.status).toBe(400);
     expect(h.gal.createMany).not.toHaveBeenCalled();
+  });
+
+  it("bulk.PATCH: 일괄 featured 가 상한을 넘기면 400 이다", async () => {
+    h.gal.findMany.mockResolvedValue([
+      { id: "a", featured: false, published: true },
+      { id: "b", featured: false, published: true },
+    ]);
+    h.gal.count.mockResolvedValue(6);
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.bulk.PATCH, {
+      body: { ids: ["a", "b"], featured: true },
+    });
+    expect(res.status).toBe(400);
+    expect(h.gal.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("item.PATCH: 비공개 featured 를 공개로 올릴 때 상한이면 400 이다", async () => {
+    h.gal.findUnique.mockResolvedValue({ id: "g1", published: false, featured: true });
+    h.gal.count.mockResolvedValue(7);
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.publishToggle.PATCH, { params: { id: "g1" } });
+    expect(res.status).toBe(400);
+    expect(h.gal.update).not.toHaveBeenCalled();
   });
 
   it("item.PUT: featured 를 새로 켜는데 상한이면 400 이다", async () => {
