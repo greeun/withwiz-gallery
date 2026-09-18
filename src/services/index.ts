@@ -6,7 +6,7 @@ import type {
   UpdateGalleryInput,
   PaginatedResult,
 } from "../types";
-import { GalleryNotFoundError } from "../errors";
+import { FeaturedLimitExceededError, GalleryNotFoundError } from "../errors";
 import { buildPaginatedResult } from "./helpers";
 
 export { buildPaginatedResult } from "./helpers";
@@ -27,6 +27,50 @@ type SortKey = "sortOrder" | "createdAt" | "updatedAt" | "caption";
 export function createGalleryService(config: GalleryConfig) {
   const galleryDelegate = () => config.prisma[config.modelName ?? "gallery"];
   const baseInclude = { category: true } as const;
+
+  /**
+   * 공개 상태로 featured 인 항목 수. 관리 화면의 홈 미리보기 계산(`featured && published`)과
+   * 공개 목록 조회(`listFeatured`)가 쓰는 기준과 같다.
+   */
+  async function countFeatured(excludeId?: string): Promise<number> {
+    const where: Record<string, unknown> = { published: true, featured: true };
+    if (excludeId) where.id = { not: excludeId };
+    return (await galleryDelegate().count({ where })) as number;
+  }
+
+  /**
+   * 일괄 변경 대상 가운데 이 변경으로 공개 featured 집계에 **새로** 드는 건수를 센다.
+   * 이미 집계에 있는 항목과, 변경 뒤에도 집계 조건(`published && featured`)을 만족하지
+   * 않는 항목은 세지 않는다.
+   */
+  async function countNewlyFeatured(
+    ids: string[],
+    patch: { featured?: boolean; published?: boolean },
+  ): Promise<number> {
+    const rows = (await galleryDelegate().findMany({
+      where: { id: { in: ids } },
+      select: { id: true, featured: true, published: true },
+    })) as Array<{ featured: boolean; published: boolean }>;
+    return rows.filter((row) => {
+      const wasCounted = row.featured === true && row.published === true;
+      const nextFeatured = patch.featured ?? row.featured;
+      const nextPublished = patch.published ?? row.published;
+      return !wasCounted && nextFeatured === true && nextPublished === true;
+    }).length;
+  }
+
+  /**
+   * featured 를 새로 켜는 요청만 상한을 검사한다. 이미 상한을 넘긴 기존 데이터는
+   * 그대로 두고, featured 를 끄거나 다른 필드를 고치는 요청은 막지 않는다.
+   */
+  async function assertFeaturedRoom(adding: number, excludeId?: string): Promise<void> {
+    if (adding <= 0) return;
+    const limit = config.limits.maxFeatured;
+    const current = await countFeatured(excludeId);
+    if (current + adding > limit) {
+      throw new FeaturedLimitExceededError(limit, current + adding);
+    }
+  }
 
   function orderByFor(sortBy: SortKey) {
     switch (sortBy) {
@@ -137,6 +181,9 @@ export function createGalleryService(config: GalleryConfig) {
     data: CreateGalleryInput,
     authorId: string,
   ): Promise<GalleryDetail> {
+    if (data.featured === true && data.published === true) {
+      await assertFeaturedRoom(1);
+    }
     const row = await galleryDelegate().create({
       data: {
         imageUrl: data.imageUrl,
@@ -157,6 +204,8 @@ export function createGalleryService(config: GalleryConfig) {
     items: CreateGalleryInput[],
     authorId: string,
   ): Promise<{ count: number }> {
+    const adding = items.filter((it) => it.featured === true && it.published === true).length;
+    await assertFeaturedRoom(adding);
     const result = await galleryDelegate().createMany({
       data: items.map((it) => ({
         imageUrl: it.imageUrl,
@@ -176,6 +225,20 @@ export function createGalleryService(config: GalleryConfig) {
     id: string,
     data: UpdateGalleryInput,
   ): Promise<GalleryDetail> {
+    if (data.featured === true || data.published === true) {
+      const current = (await galleryDelegate().findUnique({
+        where: { id },
+        select: { featured: true, published: true },
+      })) as { featured: boolean; published: boolean } | null;
+      const nextFeatured = data.featured ?? current?.featured ?? false;
+      const nextPublished = data.published ?? current?.published ?? false;
+      const wasCounted = current?.featured === true && current?.published === true;
+      // 집계에 새로 들어가는 경우만 검사한다. 이미 집계에 있던 항목은 자리를 차지하고 있다.
+      if (nextFeatured && nextPublished && !wasCounted) {
+        await assertFeaturedRoom(1, id);
+      }
+    }
+
     const patch: Record<string, unknown> = {};
     if (data.imageUrl !== undefined) patch.imageUrl = data.imageUrl;
     if (data.imageKey !== undefined) patch.imageKey = data.imageKey ?? null;
@@ -235,6 +298,10 @@ export function createGalleryService(config: GalleryConfig) {
     ids: string[],
     published: boolean,
   ): Promise<{ count: number }> {
+    if (published) {
+      // 비공개 featured 항목이 공개로 바뀌면 집계에 새로 든다.
+      await assertFeaturedRoom(await countNewlyFeatured(ids, { published: true }));
+    }
     const result = await galleryDelegate().updateMany({
       where: { id: { in: ids } },
       data: { published, updatedAt: new Date() },
@@ -246,6 +313,9 @@ export function createGalleryService(config: GalleryConfig) {
     ids: string[],
     featured: boolean,
   ): Promise<{ count: number }> {
+    if (featured) {
+      await assertFeaturedRoom(await countNewlyFeatured(ids, { featured: true }));
+    }
     const result = await galleryDelegate().updateMany({
       where: { id: { in: ids } },
       data: { featured, updatedAt: new Date() },
@@ -256,10 +326,14 @@ export function createGalleryService(config: GalleryConfig) {
   async function togglePublish(id: string): Promise<GalleryDetail> {
     const current = (await galleryDelegate().findUnique({
       where: { id },
-      select: { published: true },
-    })) as { published: boolean } | null;
+      select: { published: true, featured: true },
+    })) as { published: boolean; featured: boolean } | null;
     if (!current) {
       throw new GalleryNotFoundError(id);
+    }
+    // 비공개 featured 항목을 공개로 올리면 집계에 새로 든다.
+    if (!current.published && current.featured === true) {
+      await assertFeaturedRoom(1, id);
     }
     const row = await galleryDelegate().update({
       where: { id },

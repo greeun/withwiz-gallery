@@ -184,6 +184,153 @@ describe("GalleryAdminManager", () => {
     expect(calls.filter((c) => c.init?.method === "POST")).toHaveLength(0);
   });
 
+  it("저장 실패 — 폼을 닫지 않고 오류를 표시한다", async () => {
+    const items = [makeItem("a", { caption: "원본" })];
+    const { fetch } = makeFetch((url, init) => {
+      if (url.includes("/api/admin/gallery-categories")) {
+        return { success: true, data: [CATEGORY] };
+      }
+      if (url.endsWith("/api/admin/galleries") && (!init || init.method === undefined || init.method === "GET")) {
+        return { success: true, data: items };
+      }
+      if (url.includes("/api/admin/galleries/a") && init?.method === "PUT") {
+        return new Response(JSON.stringify({ success: false, message: "저장할 수 없습니다" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return { success: true, data: items[0] };
+    });
+    vi.stubGlobal("fetch", fetch);
+    const { container } = render(<GalleryAdminManager initialSelectedId="a" />);
+    await waitFor(() => {
+      const captionInput = container.querySelector('input[name="caption"]') as HTMLInputElement | null;
+      expect(captionInput?.value).toBe("원본");
+    });
+    fireEvent.click(
+      container.querySelector(".gallery-edit-form__btn.gallery-edit-form__btn--primary") as HTMLButtonElement,
+    );
+    await waitFor(() => {
+      expect(container.querySelector(".gallery-manager__error")?.textContent).toBe("저장할 수 없습니다");
+    });
+    // 편집 폼이 그대로 남아 입력값을 잃지 않는다
+    expect(container.querySelector(".gallery-edit-form")).toBeTruthy();
+  });
+
+  it("삭제 실패 — 목록으로 돌아가지 않고 오류를 표시한다", async () => {
+    const items = [makeItem("a", { caption: "원본" })];
+    const { fetch } = makeFetch((url, init) => {
+      if (url.includes("/api/admin/gallery-categories")) {
+        return { success: true, data: [CATEGORY] };
+      }
+      if (url.endsWith("/api/admin/galleries") && (!init || init.method === undefined || init.method === "GET")) {
+        return { success: true, data: items };
+      }
+      if (url.includes("/api/admin/galleries/a") && init?.method === "DELETE") {
+        return new Response(JSON.stringify({ success: false, message: "삭제할 수 없습니다" }), {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return { success: true, data: items[0] };
+    });
+    vi.stubGlobal("fetch", fetch);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const { container } = render(<GalleryAdminManager initialSelectedId="a" />);
+    await waitFor(() => {
+      expect(container.querySelector(".gallery-edit-form")).toBeTruthy();
+    });
+    const deleteBtn = container.querySelector(
+      ".gallery-edit-form__btn--danger",
+    ) as HTMLButtonElement;
+    fireEvent.click(deleteBtn);
+    await waitFor(() => {
+      expect(container.querySelector(".gallery-manager__error")?.textContent).toBe("삭제할 수 없습니다");
+    });
+    expect(container.querySelector(".gallery-edit-form")).toBeTruthy();
+  });
+
+  it("목록 — 여러 페이지면 남은 페이지까지 이어서 불러온다", async () => {
+    const page1 = [makeItem("a"), makeItem("b")];
+    const page2 = [makeItem("c")];
+    const { fetch, calls } = makeFetch((url, init) => {
+      if (url.includes("/api/admin/gallery-categories")) {
+        return { success: true, data: [CATEGORY] };
+      }
+      if (url.includes("/api/admin/galleries") && (!init || init.method === undefined || init.method === "GET")) {
+        const page = Number(new URL(url, "http://t").searchParams.get("page") ?? "1");
+        return {
+          success: true,
+          data: {
+            items: page === 1 ? page1 : page2,
+            meta: { page, limit: 2, total: 3, totalPages: 2 },
+          },
+        };
+      }
+      return { success: true, data: [] };
+    });
+    vi.stubGlobal("fetch", fetch);
+    const { container } = render(<GalleryAdminManager />);
+    await waitFor(() => {
+      expect(container.querySelectorAll(".gallery-list-item").length).toBe(3);
+    });
+    const listCalls = calls.filter((c) => c.url.includes("/api/admin/galleries") && !c.url.includes("categories"));
+    expect(listCalls.some((c) => c.url.includes("page=2"))).toBe(true);
+  });
+
+  it("일괄 생성 — featured 여유보다 많으면 요청하지 않고 오류를 표시한다", async () => {
+    // maxFeatured 7, 이미 공개 featured 6건 → 남은 자리 1
+    const items = Array.from({ length: 6 }, (_, i) =>
+      makeItem(`f${i}`, { featured: true, published: true }),
+    );
+    const { fetch, calls } = makeFetch((url, init) => {
+      if (url.includes("/api/admin/gallery-categories")) {
+        return { success: true, data: [CATEGORY] };
+      }
+      if (url.includes("/api/admin/galleries") && (!init || init.method === undefined || init.method === "GET")) {
+        return { success: true, data: items };
+      }
+      return { success: true, data: { count: 2 } };
+    });
+    vi.stubGlobal("fetch", fetch);
+    const { container } = render(
+      <GalleryAdminManager
+        initialMode="new"
+        onImageSelect={async (file) => ({ url: `https://cdn.test/${file.name}`, key: `k-${file.name}` })}
+      />,
+    );
+    await waitFor(() => {
+      expect(container.querySelectorAll(".gallery-list-item").length).toBe(6);
+    });
+
+    // 이미지 2장을 올려 다중 모드로 만든다
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+    Object.defineProperty(fileInput, "files", {
+      value: [makeFile("a.jpg", "image/jpeg"), makeFile("b.jpg", "image/jpeg")],
+      writable: false,
+    });
+    fireEvent.change(fileInput);
+    await waitFor(() => {
+      expect(container.querySelectorAll(".gallery-edit-form__multi-tile").length).toBeGreaterThanOrEqual(2);
+    });
+
+    // featured·published 를 켜고 저장한다
+    fireEvent.click(
+      container.querySelector('[data-toggle="featured"] [role="switch"]') as HTMLElement,
+    );
+    fireEvent.click(
+      container.querySelector('[data-toggle="published"] [role="switch"]') as HTMLElement,
+    );
+    fireEvent.click(
+      container.querySelector(".gallery-edit-form__btn.gallery-edit-form__btn--primary") as HTMLButtonElement,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".gallery-manager__error")).toBeTruthy();
+    });
+    expect(calls.some((c) => c.url.includes("/bulk"))).toBe(false);
+  });
+
   it("삭제 — DELETE 호출", async () => {
     const items = [makeItem("a")];
     let deleteCalled = false;
