@@ -11,6 +11,7 @@ import { getGalleryConfig } from "../config";
 import { GalleryManagerLayout } from "./GalleryManagerLayout";
 import { GalleryEditForm, type GalleryEditFormProps } from "./GalleryEditForm";
 import { GalleryHomePreview } from "./GalleryHomePreview";
+import { clientFetch, failureMessage, jsonOrNull } from "./_shared";
 import type {
   CreateGalleryInput,
   GalleryCategoryItem,
@@ -30,23 +31,6 @@ export interface GalleryAdminManagerProps {
   className?: string;
 }
 
-// host 가 더 정교한 인증 fetcher 가 필요하면 v0.2 에 config.clientFetch 추가 검토.
-async function clientFetch(url: string, init?: RequestInit): Promise<Response> {
-  return fetch(url, {
-    credentials: "include",
-    headers: init?.body ? { "Content-Type": "application/json", ...(init?.headers as any) } : init?.headers,
-    ...init,
-  });
-}
-
-async function jsonOrNull(res: Response): Promise<any> {
-  try {
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
 /** 목록 응답 본문에서 항목 배열을 꺼낸다.
  *  `createGalleryRoutes` 의 collection.GET 은 `{ success, data: { items, meta } }` 를 반환한다.
  *  호스트가 자체 라우트에서 `data` 를 배열로 반환하거나 본문 자체를 배열로 반환하는 경우도 계속 받는다. */
@@ -56,6 +40,16 @@ function extractListItems<T>(json: any): T[] {
   if (data && Array.isArray(data.items)) return data.items;
   return [];
 }
+
+/** 목록 응답의 페이지 정보. 배열만 돌려주는 호스트 자체 라우트에서는 없을 수 있다. */
+function extractTotalPages(json: any): number | null {
+  const meta = json?.data?.meta ?? json?.meta;
+  const total = meta?.totalPages;
+  return typeof total === "number" && Number.isFinite(total) ? total : null;
+}
+
+/** 목록을 여러 페이지에 걸쳐 받을 때의 요청 상한. 서버 기본 페이지 크기 20 기준 2,000건이다. */
+const MAX_LIST_PAGES = 100;
 
 const DEFAULT_TEXT: Partial<Record<GalleryI18nKey, string>> = {
   "admin.title": "Gallery",
@@ -87,6 +81,7 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
     initialMode ?? (initialSelectedId ? "edit" : "list"),
   );
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const mountedRef = useRef(true);
@@ -98,15 +93,36 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
     };
   }, []);
 
-  // 목록 로드
+  // 목록 로드. 이 화면은 검색·featured 개수·홈 미리보기를 모두 받은 항목으로 계산하므로
+  // 첫 페이지만 받으면 값이 어긋난다. 응답 meta 의 총 페이지 수를 보고 남은 페이지를 이어 받는다.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await clientFetch("/api/admin/galleries");
-        const json = await jsonOrNull(res);
+        const first = await clientFetch("/api/admin/galleries");
+        if (!first.ok) {
+          if (!cancelled && mountedRef.current) {
+            setError(await failureMessage(first, "Failed to load list"));
+          }
+          return;
+        }
+        const firstJson = await jsonOrNull(first);
+        const collected = extractListItems<GalleryListItem>(firstJson);
+        const totalPages = extractTotalPages(firstJson);
+
+        if (totalPages !== null && totalPages > 1) {
+          const lastPage = Math.min(totalPages, MAX_LIST_PAGES);
+          for (let page = 2; page <= lastPage; page++) {
+            if (cancelled || !mountedRef.current) return;
+            const res = await clientFetch(`/api/admin/galleries?page=${page}`);
+            if (!res.ok) break;
+            collected.push(...extractListItems<GalleryListItem>(await jsonOrNull(res)));
+          }
+        }
+
         if (!cancelled && mountedRef.current) {
-          setItems(extractListItems<GalleryListItem>(json));
+          setItems(collected);
+          setError(null);
         }
       } catch {}
     })();
@@ -176,17 +192,24 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
   const handleSubmit = useCallback(
     async (data: CreateGalleryInput | UpdateGalleryInput) => {
       setSaving(true);
+      setError(null);
       try {
+        let res: Response | null = null;
         if (mode === "new") {
-          await clientFetch("/api/admin/galleries", {
+          res = await clientFetch("/api/admin/galleries", {
             method: "POST",
             body: JSON.stringify(data),
           });
         } else if (selectedId) {
-          await clientFetch(`/api/admin/galleries/${selectedId}`, {
+          res = await clientFetch(`/api/admin/galleries/${selectedId}`, {
             method: "PUT",
             body: JSON.stringify(data),
           });
+        }
+        // 실패하면 편집 폼을 그대로 두어 입력을 잃지 않게 한다.
+        if (res && !res.ok) {
+          if (mountedRef.current) setError(await failureMessage(res, "Save failed"));
+          return;
         }
         if (mountedRef.current) {
           refresh();
@@ -202,12 +225,23 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
 
   const handleSubmitMany = useCallback(
     async (batch: CreateGalleryInput[]) => {
+      // 서버도 같은 검사를 하지만, 요청 전에 막아야 올린 이미지 정보를 잃지 않는다.
+      const adding = batch.filter((it) => it.featured === true && it.published === true).length;
+      if (adding > 0 && featuredCount + adding > maxFeatured) {
+        setError(t(i18n, "admin.featuredOverLimit"));
+        return;
+      }
       setSaving(true);
+      setError(null);
       try {
-        await clientFetch("/api/admin/galleries/bulk", {
+        const res = await clientFetch("/api/admin/galleries/bulk", {
           method: "POST",
           body: JSON.stringify({ items: batch }),
         });
+        if (!res.ok) {
+          if (mountedRef.current) setError(await failureMessage(res, "Save failed"));
+          return;
+        }
         if (mountedRef.current) {
           refresh();
           setMode("list");
@@ -216,13 +250,18 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
         if (mountedRef.current) setSaving(false);
       }
     },
-    [refresh],
+    [featuredCount, maxFeatured, i18n, refresh],
   );
 
   const handleDelete = useCallback(async () => {
     if (!selectedId) return;
     if (typeof window !== "undefined" && !window.confirm("Delete this item?")) return;
-    await clientFetch(`/api/admin/galleries/${selectedId}`, { method: "DELETE" });
+    setError(null);
+    const res = await clientFetch(`/api/admin/galleries/${selectedId}`, { method: "DELETE" });
+    if (!res.ok) {
+      if (mountedRef.current) setError(await failureMessage(res, "Delete failed"));
+      return;
+    }
     if (mountedRef.current) {
       setSelectedId(null);
       setMode("list");
@@ -238,10 +277,15 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
         }
         return;
       }
-      await clientFetch(`/api/admin/galleries/${id}`, {
+      setError(null);
+      const res = await clientFetch(`/api/admin/galleries/${id}`, {
         method: "PUT",
         body: JSON.stringify({ featured: next }),
       });
+      if (!res.ok) {
+        if (mountedRef.current) setError(await failureMessage(res, "Save failed"));
+        return;
+      }
       if (mountedRef.current) refresh();
     },
     [featuredCount, maxFeatured, i18n, refresh],
@@ -249,7 +293,8 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
 
   const handleReorder = useCallback(
     async (orderedIds: string[]) => {
-      await Promise.all(
+      setError(null);
+      const results = await Promise.all(
         orderedIds.map((id, index) =>
           clientFetch(`/api/admin/galleries/${id}`, {
             method: "PUT",
@@ -257,6 +302,11 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
           }),
         ),
       );
+      // 일부만 성공했을 수 있으므로, 실패를 알리고 목록을 다시 읽어 서버의 실제 순서를 보여 준다.
+      const failed = results.find((res) => !res.ok);
+      if (failed && mountedRef.current) {
+        setError(await failureMessage(failed, "Reorder failed"));
+      }
       if (mountedRef.current) refresh();
     },
     [refresh],
@@ -298,16 +348,21 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
   );
 
   const toolbar = (
-    <div className="gallery-manager__toolbar-row">
-      <h1 className="gallery-manager__title">{t(i18n, "admin.title")}</h1>
-      <button
-        type="button"
-        className="gallery-manager__new-btn"
-        onClick={handleNewClick}
-      >
-        {t(i18n, "admin.newButton")}
-      </button>
-    </div>
+    <>
+      <div className="gallery-manager__toolbar-row">
+        <h1 className="gallery-manager__title">{t(i18n, "admin.title")}</h1>
+        <button
+          type="button"
+          className="gallery-manager__new-btn"
+          onClick={handleNewClick}
+        >
+          {t(i18n, "admin.newButton")}
+        </button>
+      </div>
+      {error ? (
+        <div className="gallery-manager__error" role="alert">{error}</div>
+      ) : null}
+    </>
   );
 
   const listRoot = (

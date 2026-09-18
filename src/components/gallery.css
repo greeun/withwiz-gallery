@@ -731,6 +731,16 @@
   cursor: pointer;
 }
 
+.gallery-manager__error {
+  background: rgb(220 80 80 / 0.08);
+  color: rgb(220 80 80);
+  padding: 8px 12px;
+  margin-top: 8px;
+  border: 1px solid rgb(220 80 80 / 0.3);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
 .gallery-category-admin__error {
   background: rgb(220 80 80 / 0.08);
   color: rgb(220 80 80);
