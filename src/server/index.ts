@@ -27,6 +27,7 @@ export {
   CategoryNotFoundError,
   CategoryInUseError,
   PermissionDeniedError,
+  FeaturedLimitExceededError,
 } from "../errors";
 
 // DI + 타입 재노출 — host 가 `@withwiz/gallery/server` 한 곳에서 모든 server-side API 를 가져올 수 있게 함.

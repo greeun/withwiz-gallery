@@ -34,4 +34,5 @@ export {
   CategoryNotFoundError,
   CategoryInUseError,
   PermissionDeniedError,
+  FeaturedLimitExceededError,
 } from "./errors";

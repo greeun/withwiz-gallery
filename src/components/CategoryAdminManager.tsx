@@ -11,6 +11,7 @@ import { cn } from "../utils/cn";
 import { getGalleryConfig } from "../config";
 import { ToggleSwitch } from "./ToggleSwitch";
 import type { GalleryCategoryItem, GalleryI18nKey } from "../types";
+import { clientFetch, errorMessageOf, jsonOrNull } from "./_shared";
 
 export interface CategoryAdminManagerProps {
   className?: string;
@@ -49,34 +50,6 @@ const EMPTY_FORM: FormState = {
   sortOrder: 0,
   isActive: true,
 };
-
-async function clientFetch(url: string, init?: RequestInit): Promise<Response> {
-  return fetch(url, {
-    credentials: "include",
-    headers: init?.body ? { "Content-Type": "application/json", ...(init?.headers as any) } : init?.headers,
-    ...init,
-  });
-}
-
-async function jsonOrNull(res: Response): Promise<any> {
-  try {
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-/** 오류 응답 본문에서 표시할 메시지를 꺼낸다.
- *  - `createGalleryRoutes` 핸들러: `{ success: false, error: "Forbidden", message: "forbidden" }` (error 는 코드 문자열)
- *  - 호스트 미들웨어(예: @withwiz/toolkit error-handler): `{ success: false, error: { code, message } }`
- *  두 형식 모두에서 message 를 찾고, 없으면 null 을 반환한다. */
-function errorMessageOf(json: any): string | null {
-  const nested = json?.error?.message;
-  if (typeof nested === "string" && nested.length > 0) return nested;
-  const topLevel = json?.message;
-  if (typeof topLevel === "string" && topLevel.length > 0) return topLevel;
-  return null;
-}
 
 /** 카테고리 어드민 UI. 사용 중인 카테고리는 server 가 409 로 반환 → 안내 표시. */
 export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Element {

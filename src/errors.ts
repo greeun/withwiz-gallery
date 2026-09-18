@@ -48,3 +48,12 @@ export class PermissionDeniedError extends GalleryError {
     super(`Permission denied: cannot ${action} ${resourceId}`);
   }
 }
+
+export class FeaturedLimitExceededError extends GalleryError {
+  constructor(
+    public readonly limit: number,
+    public readonly attempted: number,
+  ) {
+    super(`Featured limit exceeded: ${attempted} requested, limit is ${limit}`);
+  }
+}

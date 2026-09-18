@@ -6,7 +6,7 @@ import type {
   UpdateGalleryInput,
   PaginatedResult,
 } from "../types";
-import { GalleryNotFoundError } from "../errors";
+import { FeaturedLimitExceededError, GalleryNotFoundError } from "../errors";
 import { buildPaginatedResult } from "./helpers";
 
 export { buildPaginatedResult } from "./helpers";
@@ -27,6 +27,29 @@ type SortKey = "sortOrder" | "createdAt" | "updatedAt" | "caption";
 export function createGalleryService(config: GalleryConfig) {
   const galleryDelegate = () => config.prisma[config.modelName ?? "gallery"];
   const baseInclude = { category: true } as const;
+
+  /**
+   * 공개 상태로 featured 인 항목 수. 관리 화면의 홈 미리보기 계산(`featured && published`)과
+   * 공개 목록 조회(`listFeatured`)가 쓰는 기준과 같다.
+   */
+  async function countFeatured(excludeId?: string): Promise<number> {
+    const where: Record<string, unknown> = { published: true, featured: true };
+    if (excludeId) where.id = { not: excludeId };
+    return (await galleryDelegate().count({ where })) as number;
+  }
+
+  /**
+   * featured 를 새로 켜는 요청만 상한을 검사한다. 이미 상한을 넘긴 기존 데이터는
+   * 그대로 두고, featured 를 끄거나 다른 필드를 고치는 요청은 막지 않는다.
+   */
+  async function assertFeaturedRoom(adding: number, excludeId?: string): Promise<void> {
+    if (adding <= 0) return;
+    const limit = config.limits.maxFeatured;
+    const current = await countFeatured(excludeId);
+    if (current + adding > limit) {
+      throw new FeaturedLimitExceededError(limit, current + adding);
+    }
+  }
 
   function orderByFor(sortBy: SortKey) {
     switch (sortBy) {
@@ -137,6 +160,9 @@ export function createGalleryService(config: GalleryConfig) {
     data: CreateGalleryInput,
     authorId: string,
   ): Promise<GalleryDetail> {
+    if (data.featured === true && data.published === true) {
+      await assertFeaturedRoom(1);
+    }
     const row = await galleryDelegate().create({
       data: {
         imageUrl: data.imageUrl,
@@ -157,6 +183,8 @@ export function createGalleryService(config: GalleryConfig) {
     items: CreateGalleryInput[],
     authorId: string,
   ): Promise<{ count: number }> {
+    const adding = items.filter((it) => it.featured === true && it.published === true).length;
+    await assertFeaturedRoom(adding);
     const result = await galleryDelegate().createMany({
       data: items.map((it) => ({
         imageUrl: it.imageUrl,
@@ -176,6 +204,20 @@ export function createGalleryService(config: GalleryConfig) {
     id: string,
     data: UpdateGalleryInput,
   ): Promise<GalleryDetail> {
+    if (data.featured === true || data.published === true) {
+      const current = (await galleryDelegate().findUnique({
+        where: { id },
+        select: { featured: true, published: true },
+      })) as { featured: boolean; published: boolean } | null;
+      const nextFeatured = data.featured ?? current?.featured ?? false;
+      const nextPublished = data.published ?? current?.published ?? false;
+      const wasCounted = current?.featured === true && current?.published === true;
+      // 집계에 새로 들어가는 경우만 검사한다. 이미 집계에 있던 항목은 자리를 차지하고 있다.
+      if (nextFeatured && nextPublished && !wasCounted) {
+        await assertFeaturedRoom(1, id);
+      }
+    }
+
     const patch: Record<string, unknown> = {};
     if (data.imageUrl !== undefined) patch.imageUrl = data.imageUrl;
     if (data.imageKey !== undefined) patch.imageKey = data.imageKey ?? null;
