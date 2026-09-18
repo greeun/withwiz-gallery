@@ -11,7 +11,7 @@
 | 실측 기준 | 2026-09-16, 브랜치 `fix/residual-defects` (develop `7d439ed` 에서 분기, 결함 수정 커밋 `bf72aa8`·`e9cbd7a`·`addd6b7` 이후), `package-lock.json` 기준 `npm ci` 후 `npm test` (`vitest run`) |
 | 실행 결과 | 테스트 파일 27개 통과 / 테스트 277건: 통과 277, 실패 0, 스킵 0 (2026-09-17, `1ee1a62` 기준) |
 | ID 체계 | 2026-09-13 판에서 SC/TC ID 를 처음 부여. 갱신할 때는 기존 번호를 유지하고, 새 항목은 도메인별 번호를 이어서 부여 |
-| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15). 2026-09-16 결함 수정 반영: 관리자 컴포넌트의 응답 형식 해석(`bf72aa8`), 업로드 함수 전달(`e9cbd7a`), 폼 컨트롤 이름과 목록 항목 키보드 선택(`addd6b7`)을 수정하고, TC-I-005·TC-I-006·TC-AC-006 을 ✅ 완료로 전환하고 TC-U-019·TC-E-001 을 구현 (파일 26개, 273건, ✅ 40 / 🔲 10). 2026-09-17 의존 방향 점검 반영: 소비 프로젝트 도메인이 담긴 공개 서브패스 `presets/ballet` 의 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 중립 문구로 바꿨으며, `presets/ballet` 은 이전 기본 제목만 유지하는 호환 별칭으로 남겼다(`1ee1a62`). TC-I-002 에 기본 라벨·별칭 단계를 추가 (파일 27개, 277건, ✅ 40 / 🔲 10) |
+| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15). 2026-09-16 결함 수정 반영: 관리자 컴포넌트의 응답 형식 해석(`bf72aa8`), 업로드 함수 전달(`e9cbd7a`), 폼 컨트롤 이름과 목록 항목 키보드 선택(`addd6b7`)을 수정하고, TC-I-005·TC-I-006·TC-AC-006 을 ✅ 완료로 전환하고 TC-U-019·TC-E-001 을 구현 (파일 26개, 273건, ✅ 40 / 🔲 10). 2026-09-17 의존 방향 점검 반영: 소비 프로젝트 도메인이 담긴 공개 서브패스 `presets/ballet` 의 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 중립 문구로 바꿨으며, `presets/ballet` 은 이전 기본 제목만 유지하는 호환 별칭으로 남겼다(`1ee1a62`). TC-I-002 에 기본 라벨·별칭 단계를 추가 (파일 27개, 277건, ✅ 40 / 🔲 10). 2026-09-18 `fix/residual-defects-a` 기준 갱신: 우선순위 갭의 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한)을 고치고 SC/TC-I-007·SC/TC-A-008 을 추가 (파일 27개, 291건, ✅ 42 / 🔲 10) |
 
 ### 분류 원칙
 
@@ -61,6 +61,7 @@
 | SC-I-004 | CategoryAdminManager ↔ fetch·409 안내 | Integration | Medium | ✅ 완료 |
 | SC-I-005 | 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 계약 | Integration | Critical | ✅ 완료 |
 | SC-I-006 | GalleryAdminManager 새 항목 생성·featured 상한 | Integration | High | ✅ 완료 |
+| SC-I-007 | GalleryAdminManager 실패 응답 처리·목록 전체 로드 | Integration | High | ✅ 완료 |
 | SC-A-001 | 갤러리 컬렉션 라우트 (GET·POST·DELETE) | API | Critical | ✅ 완료 |
 | SC-A-002 | 갤러리 단건·공개 토글 라우트 | API | Critical | ✅ 완료 |
 | SC-A-003 | bulk 생성·일괄 수정 라우트 | API | High | ✅ 완료 |
@@ -68,6 +69,7 @@
 | SC-A-005 | typed error → HTTP 상태 매핑 (오류 처리) | API | High | ✅ 완료 |
 | SC-A-006 | 부분 수정 PUT 의 미지정 필드 보존 | API | Critical | ✅ 완료 |
 | SC-A-007 | 오류 응답 본문 계약·비매핑 예외 전파 | API | Medium | 🔲 계획 |
+| SC-A-008 | featured 상한 서버 검사 (생성·일괄 생성·수정) | API | High | ✅ 완료 |
 | SC-E-001 | 관리자 화면 ↔ 실제 라우트 핸들러 왕복 여정 | E2E | High | ✅ 완료 |
 | SC-S-001 | imageUrl 프로토콜·호스트 allowlist (`javascript:`·`data:` 차단) | Security | Critical | ✅ 완료 |
 | SC-S-002 | imageKey 형식 검증 (경로 순회 차단) | Security | Critical | ✅ 완료 |
@@ -694,7 +696,29 @@ npx vitest run tests/server/loaders tests/presets tests/components/GalleryAdminM
 - **자동화:** 가능 ✅ | **테스트 수:** 4개 (2026-09-16 실측)
 - **결함 이력:** 2026-09-13·2026-09-15 판에서는 결함 확인용 🔲 계획 TC 였다. `GalleryAdminManagerProps` 에 업로드 함수를 받는 prop 이 없고 `GalleryEditForm` 에 `onImageSelect` 를 전달하지 않았다. 그래서 관리자 화면에서 png 를 drop 하면 alert 에 `onImageSelect prop missing — host must provide upload handler` 가 표시되고, 저장은 `Image is required` 로 막혔으며 fetch 는 GET 2회만 발생했다. 2026-09-16 커밋 `e9cbd7a` 에서 선택 prop `onImageSelect` 를 추가하고 편집 폼에 그대로 전달했다. 수정 전 코드에서는 1·2번이 실패하고 3·4번은 통과했으며, 3·4번의 상한 계산에는 결함이 없었다.
 - **주입 방식 결정:** `GalleryConfig` 를 확장하지 않고 컴포넌트 prop 을 택했다. `GalleryEditForm` 의 기존 prop 과 이름·시그니처가 같고, 공개 API 에는 선택 항목만 추가되기 때문이다. Server Component 페이지에서는 함수를 전달할 수 없으므로 호스트는 Client Component 로 감싸야 하며, README 에 예시를 추가했다. 전달하지 않았을 때의 동작은 수정 전과 같고 TC-I-003 5번이 이 경로를 확인한다.
-- **비고:** `handleToggleFeatured` 의 상한 분기(`window.alert`, `src/components/GalleryAdminManager.tsx:233-248`)는 `next === true` 일 때만 실행된다. 그런데 `GalleryHomePreview` 에는 featured 항목만 전달되므로 별 버튼 클릭은 항상 `next === false` 가 되어, 현재 UI 에서는 이 분기에 도달하지 않는다. 사용자에게 드러나는 결함이 아니므로 수정하지 않았다. 새 항목 일괄 생성으로 상한을 넘을 수 있는 문제는 우선순위 갭의 확인 필요 사항에 적었다.
+- **비고:** `handleToggleFeatured` 의 상한 분기(`window.alert`, `src/components/GalleryAdminManager.tsx:233-248`)는 `next === true` 일 때만 실행된다. 그런데 `GalleryHomePreview` 에는 featured 항목만 전달되므로 별 버튼 클릭은 항상 `next === false` 가 되어, 현재 UI 에서는 이 분기에 도달하지 않는다. 사용자에게 드러나는 결함이 아니므로 수정하지 않았다. 새 항목 일괄 생성으로 상한을 넘을 수 있는 문제는 2026-09-18 에 서버 검사로 해결했다 (TC-A-008).
+
+---
+### TC-I-007: GalleryAdminManager 실패 응답 처리·목록 전체 로드
+
+| 항목 | 내용 |
+|------|------|
+| **파일** | `tests/components/GalleryAdminManager.test.tsx` |
+| **대상** | `src/components/GalleryAdminManager.tsx` 의 `handleSubmit`·`handleSubmitMany`·`handleDelete`·`handleToggleFeatured`·`handleReorder` 응답 상태 확인, 목록 로드 `useEffect` 의 페이지 이어 받기, 툴바의 `gallery-manager__error` / `src/components/_shared.ts` `failureMessage()` |
+| **우선순위** | High |
+| **전제조건** | `limits.maxFeatured 7`. fetch 모의가 상태 코드와 본문을 함께 돌려준다. 목록 응답은 `{ data: { items, meta } }` 형식 |
+| **테스트 데이터** | 실패 응답 `{ success:false, message:'저장할 수 없습니다' }` 500, `{ success:false, message:'삭제할 수 없습니다' }` 409. 2페이지 목록(`meta.totalPages 2`, 1페이지 2건·2페이지 1건). featured·published 6건 + 일괄 생성 2건 |
+
+| # | 단계 | 예상 결과 |
+|---|------|---------|
+| 1 | 편집 화면에서 저장하고 PUT 이 500 을 돌려준다 | `.gallery-manager__error` 에 본문 메시지가 표시되고 편집 폼이 남아 입력을 잃지 않는다 |
+| 2 | 편집 화면에서 삭제하고 DELETE 가 409 를 돌려준다 | 오류가 표시되고 목록 화면으로 돌아가지 않는다 |
+| 3 | 목록 첫 응답의 `meta.totalPages` 가 2 이다 | `page=2` 를 이어서 요청하고 목록 항목이 3개가 된다 |
+| 4 | featured·published 6건이 있는 상태에서 이미지 2장을 featured·published 로 일괄 생성한다 | `/bulk` 요청을 보내지 않고 상한 안내를 표시한다 |
+
+- **자동화:** 가능 ✅ | **테스트 수:** 4개 (2026-09-18 실측)
+- **결함 이력:** 2026-09-16 판의 우선순위 갭에 확인 사항 3건으로 적혀 있었다. 다섯 핸들러가 `clientFetch` 의 반환값을 버려 서버가 거부해도 폼이 닫히고 입력이 사라졌고(1·2번이 수정 전 실패), 목록은 서버 기본 페이지 크기인 첫 20건만 받아 검색·featured 개수·홈 미리보기 계산이 어긋났으며(3번 실패), 일괄 생성 경로에는 상한 검사가 없었다(4번 실패). 2026-09-18 커밋 `3bc3de1` 에서 세 가지를 함께 고쳤다. 순서 변경은 개별 PUT 이 일부만 성공할 수 있으므로 오류를 알리고 목록을 다시 읽는 방식을 택했다.
+- **비고:** 오류 표시는 `GalleryManagerLayout` 에 슬롯을 추가하지 않고 툴바 안에 넣었다. 레이아웃의 공개 props 를 바꾸지 않기 위해서다. `CategoryAdminManager` 와 중복하던 `clientFetch`·`jsonOrNull`·`errorMessageOf` 는 `src/components/_shared.ts` 로 모았고, 두 화면의 응답 해석 규칙이 같아졌다.
 
 ---
 
@@ -1331,6 +1355,36 @@ npx vitest run tests/smoke.test.ts
 
 ---
 
+### TC-A-008: featured 상한 서버 검사
+
+| 항목 | 내용 |
+|------|------|
+| **파일** | `tests/services/gallery-service.test.ts` (`featured 상한 서버 검사` 블록, 7건), `tests/server/route-handlers.test.ts` (`featured 상한 초과 응답` 블록, 3건) |
+| **대상** | `src/services/index.ts` 의 `countFeatured()`·`assertFeaturedRoom()` 과 `create()`·`createMany()`·`update()` 의 호출 지점 / `src/server/route-handlers.ts` `featuredLimitResponse()` 와 `collection.POST`·`bulk.POST`·`item.PUT` / `src/errors.ts` `FeaturedLimitExceededError` |
+| **우선순위** | High |
+| **전제조건** | `limits.maxFeatured 7`. Prisma `count` 목이 현재 공개 featured 개수를 돌려준다 |
+| **판정 방법** | 서비스는 `FeaturedLimitExceededError` 를 던지고 Prisma 변경 메서드를 부르지 않아야 한다. 라우트는 400 과 `error: "FeaturedLimitExceeded"` 를 돌려줘야 한다 |
+
+| # | 단계 | 예상 결과 |
+|---|------|---------|
+| 1 | `create` 에 `featured:true, published:true`, 현재 개수 7 | 오류를 던지고 `create` 를 부르지 않는다 |
+| 2 | `create` 에 `featured:false`, 현재 개수 7 | 상한과 무관하게 생성한다 |
+| 3 | `createMany` 로 featured 3건, 현재 개수 5 | 오류를 던지고 `createMany` 를 부르지 않는다 (5+3 > 7) |
+| 4 | `createMany` 로 featured 2건, 현재 개수 5 | 생성한다 (5+2 = 7) |
+| 5 | `update` 로 featured 를 켠다, 기존 featured false, 현재 개수 7 | 오류를 던지고 `update` 를 부르지 않는다 |
+| 6 | `update` 로 featured 를 끈다, 현재 개수 9 (이미 초과) | 허용한다 |
+| 7 | 이미 featured 인 항목의 `caption` 만 고친다, 현재 개수 9 | 허용한다 (집계에 새로 들어가지 않는다) |
+| 8 | `collection.POST` 로 상한 초과 생성 | 400, `error: "FeaturedLimitExceeded"`, Prisma `create` 미호출 |
+| 9 | `bulk.POST` 로 상한 초과 일괄 생성 | 400, Prisma `createMany` 미호출 |
+| 10 | `item.PUT` 으로 featured 를 새로 켠다 | 400, Prisma `update` 미호출 |
+
+- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-18 실측)
+- **결함 이력:** 2026-09-16 판의 우선순위 갭에 "일괄 생성으로 featured 상한을 넘을 수 있음" 으로 적혀 있었다. 상한 검사가 클라이언트 `handleToggleFeatured` 와 `canToggleFeatured` 계산에만 있어, 일괄 생성 경로와 API 직접 호출로 상한을 넘길 수 있었다. 2026-09-18 커밋 `3bc3de1` 에서 서버 검사를 넣었다. 수정 전 실행에서 1·3·5·8·9·10번 6건이 실패했다.
+- **결정 (2026-09-18):** featured 를 **새로 켜는** 요청만 검사한다. 이미 상한을 넘긴 기존 데이터는 그대로 두고, featured 를 끄거나 다른 필드를 고치는 요청은 막지 않는다. 운영 중인 데이터를 갑자기 수정 불가로 만들지 않기 위해서다. 집계 기준은 `published && featured` 이며, 관리 화면의 홈 미리보기 계산·`listFeatured` 조회와 같다.
+- **비고:** 검사는 트랜잭션 밖에서 `count` 를 읽으므로 동시 요청이 겹치면 상한을 한두 건 넘길 수 있다. 관리자만 쓰는 경로라 그대로 두었다.
+
+---
+
 ### TC-SM-001: 소스 공개 진입점 export
 
 | 항목 | 내용 |
@@ -1392,7 +1446,7 @@ npx vitest run tests/smoke.test.ts
 | **Chaos** | 0개 | 0개 | 0 | 0 | - |
 | **합계** | **27개** (중복 제외) | **277개** | **50 (40/10)** | **50 (40/10)** | |
 
-- 현재 파일 수는 해당 도메인 테스트를 1건 이상 포함한 파일 수이다. `tests/validators/index.test.ts` 는 Unit·Security 에, `tests/server/route-handlers.test.ts` 는 API·Security 에 함께 집계되므로 도메인별 파일 수의 합(29)은 실제 파일 수(27)보다 크다.
+- 현재 파일 수는 해당 도메인 테스트를 1건 이상 포함한 파일 수이다. `tests/validators/index.test.ts` 는 Unit·Security 에, `tests/server/route-handlers.test.ts` 는 API·Security 에, `tests/services/gallery-service.test.ts` 는 Unit·API 에 함께 집계되므로 도메인별 파일 수의 합(30)은 실제 파일 수(27)보다 크다.
 - 도메인별 테스트 수(163 + 38 + 35 + 5 + 28 + 6 + 2)의 합은 실측 277건과 같다.
 - 2026-09-15 판에서 증가한 4건은 0.2.1 회귀 테스트이며, 모두 기존 TC 에 배정했다 (TC-U-006 1건, TC-U-007 1건, TC-A-006 2건). 새 SC·TC 는 없다.
 - 2026-09-16 판에서 증가한 25건은 결함 수정과 함께 추가한 테스트이며, 새 SC·TC 없이 기존 계획 TC 에 배정했다 (TC-U-019 5건, TC-I-005 5건, TC-I-006 4건, TC-E-001 5건, TC-AC-006 6건). TC-I-003 5번 테스트 1건은 단언과 이름을 바꿨지만 건수는 같다. 새 테스트 파일은 `tests/integration/admin-route-contract.test.tsx`, `tests/e2e/admin-roundtrip.test.tsx`, `tests/accessibility/form-labels.a11y.test.tsx` 3개이다.
@@ -1408,7 +1462,7 @@ npx vitest run tests/smoke.test.ts
 | `tests/services/helpers.test.ts` | 5 | Unit | TC-U-004 |
 | `tests/utils/api-helpers.test.ts` | 12 | Unit | TC-U-005 |
 | `tests/validators/index.test.ts` | 42 | Unit 31, Security 11 | TC-U-006 (18), TC-U-007 (13), TC-S-001 (5), TC-S-002 (6) |
-| `tests/services/gallery-service.test.ts` | 25 | Unit | TC-U-008 (23), TC-U-010 (2) |
+| `tests/services/gallery-service.test.ts` | 32 | Unit 25, API 7 | TC-U-008 (23), TC-U-010 (2), TC-A-008 (7) |
 | `tests/services/category-service.test.ts` | 11 | Unit | TC-U-009 (9), TC-U-010 (2) |
 | `tests/hooks/useGalleryLightbox.test.tsx` | 9 | Unit | TC-U-011 |
 | `tests/hooks/useImageDropZone.test.tsx` | 9 | Unit | TC-U-012 |
@@ -1421,10 +1475,10 @@ npx vitest run tests/smoke.test.ts
 | `tests/server/loaders.test.ts` | 7 | Integration | TC-I-001 |
 | `tests/presets/mosaic.test.tsx` | 11 | Integration | TC-I-002 |
 | `tests/presets/ballet-alias.test.tsx` | 3 | Integration | TC-I-002 |
-| `tests/components/GalleryAdminManager.test.tsx` | 9 | Integration | TC-I-003 (5), TC-I-006 (4) |
+| `tests/components/GalleryAdminManager.test.tsx` | 13 | Integration | TC-I-003 (5), TC-I-006 (4), TC-I-007 (4) |
 | `tests/components/CategoryAdminManager.test.tsx` | 3 | Integration | TC-I-004 |
 | `tests/integration/admin-route-contract.test.tsx` | 5 | Integration | TC-I-005 |
-| `tests/server/route-handlers.test.ts` | 52 | API 35, Security 17 | TC-A-001 (7), TC-A-002 (9), TC-A-003 (5), TC-A-004 (10), TC-A-005 (2), TC-A-006 (2), TC-S-003 (5), TC-S-004 (5), TC-S-005 (4), TC-S-006 (3) |
+| `tests/server/route-handlers.test.ts` | 55 | API 38, Security 17 | TC-A-001 (7), TC-A-002 (9), TC-A-003 (5), TC-A-004 (10), TC-A-005 (2), TC-A-006 (2), TC-A-008 (3), TC-S-003 (5), TC-S-004 (5), TC-S-005 (4), TC-S-006 (3) |
 | `tests/e2e/admin-roundtrip.test.tsx` | 5 | E2E | TC-E-001 |
 | `tests/accessibility/form-labels.a11y.test.tsx` | 6 | Accessibility | TC-AC-006 |
 | `tests/smoke.test.ts` | 2 | Smoke | TC-SM-001 |
@@ -1472,9 +1526,9 @@ npx vitest run tests/smoke.test.ts
 
 2026-09-16 결함 수정 중에 다음 사항을 확인했다. 결함 확인용 TC 의 범위 밖이고 동작 설계 결정이 필요하므로 수정하지 않았다.
 
-- **저장 실패 응답을 확인하지 않음:** `GalleryAdminManager` 의 `handleSubmit`·`handleSubmitMany`·`handleDelete`·`handleToggleFeatured`·`handleReorder` 는 응답의 `res.ok` 를 확인하지 않는다 (`src/components/GalleryAdminManager.tsx:176-263`). TC-E-001 을 작성하면서 PUT 이 400 `ValidationError` 를 받았을 때 화면이 오류를 표시하지 않고 폼을 닫은 뒤 목록을 다시 불러오는 것을 실제 실행으로 확인했다. 입력한 내용은 사라진다. 오류 표시 위치와 문구를 정해야 한다.
-- **목록이 첫 페이지 20건으로 제한됨:** `GalleryAdminManager` 는 `/api/admin/galleries` 를 쿼리 없이 요청하고, `collection.GET` 은 `limit` 기본값 20 으로 첫 페이지만 반환한다 (`src/utils/api-helpers.ts:8-15`). 임시 테스트에서 항목 25개 가운데 25번째만 featured·published 로 두면, 목록과 개수 표시는 20 이고 홈 프리뷰 타일은 0개였다. 클라이언트 검색과 featured 개수 계산도 첫 페이지 기준이 된다. 전체 페이지를 불러올지 페이지 UI 를 둘지 결정해야 한다.
-- **일괄 생성으로 featured 상한을 넘을 수 있음:** 새 모드의 `canToggleFeatured` 는 `featuredCount < maxFeatured` 만 확인한다 (`src/components/GalleryAdminManager.tsx:276`). featured 가 6개인 상태에서 featured·published 로 이미지 3개를 일괄 생성하면 9개가 되며, 서버 라우트에도 상한 검사가 없다. 소스로만 확인했고 실행으로 재현하지는 않았다.
+- ~~**저장 실패 응답을 확인하지 않음**~~ → **2026-09-18 해결** (`3bc3de1`, TC-I-007 1·2번). 다섯 핸들러가 응답 상태를 확인하고, 실패하면 툴바 아래 `gallery-manager__error` 에 메시지를 표시하며 편집 폼을 유지한다.
+- ~~**목록이 첫 페이지 20건으로 제한됨**~~ → **2026-09-18 해결** (`3bc3de1`, TC-I-007 3번). 응답 `meta.totalPages` 를 보고 남은 페이지를 이어 받는 방식을 택했다. 이 화면은 검색·featured 개수·홈 미리보기를 받은 항목으로 계산하므로 페이지 UI 를 두면 값이 어긋나기 때문이다. 요청 상한은 100페이지다.
+- ~~**일괄 생성으로 featured 상한을 넘을 수 있음**~~ → **2026-09-18 해결** (`3bc3de1`, TC-A-008·TC-I-007 4번). 서비스 `create`·`createMany`·`update` 가 featured 를 새로 켜는 요청만 상한을 검사하고 라우트가 400 으로 돌려주며, 클라이언트도 일괄 생성 전에 같은 검사를 한다.
 
 테스트 인프라에도 다음 공백이 있다.
 
@@ -1499,4 +1553,4 @@ npx vitest run tests/smoke.test.ts
 - [x] 결함 확인용 TC 4건이 모두 수정 완료됨 (TC-A-006 은 0.2.1, TC-I-005·TC-I-006·TC-AC-006 은 2026-09-16)
 - [ ] 접근성 계획 TC(TC-AC-001~005, TC-AC-007) 구현 필요
 - [ ] 도메인 적용성 판정에 남긴 확인 필요 사항 2건(`togglePublish` 동시 토글, 저장소 삭제 실패 시 순서) 검토 필요
-- [ ] 우선순위 갭에 남긴 2026-09-16 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한) 검토 필요
+- [x] 우선순위 갭에 남긴 2026-09-16 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한) → 2026-09-18 `3bc3de1` 에서 모두 해결 (TC-I-007·TC-A-008)
