@@ -352,6 +352,29 @@
   background: rgb(var(--gallery-accent) / 0.06);
 }
 
+/* 목록 항목 안의 키보드 접근용 button. 기본 버튼 스타일을 없애 항목 레이아웃을 그대로 유지한다. */
+.gallery-list-item__select {
+  display: flex;
+  flex: 1;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: inherit;
+}
+
+.gallery-list-item__select:focus-visible {
+  outline: 2px solid rgb(var(--gallery-accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .gallery-list-item__thumb {
   width: 60px;
   height: 40px;
@@ -361,11 +384,13 @@
 }
 
 .gallery-list-item__body {
+  display: block;
   flex: 1;
   min-width: 0;
 }
 
 .gallery-list-item__caption {
+  display: block;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
@@ -373,6 +398,7 @@
 }
 
 .gallery-list-item__meta {
+  display: block;
   font-size: 11px;
   color: rgb(var(--gallery-fg) / 0.6);
 }
@@ -835,7 +861,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
- * Public — Mosaic (presets/ballet:PublicGalleryMosaic)
+ * Public — Mosaic (presets/mosaic:PublicGalleryMosaic)
  * ─────────────────────────────────────────────────────────────── */
 
 .gallery-public-mosaic-section {
@@ -978,7 +1004,7 @@
 .gallery-public-mosaic[data-count="7"] .gallery-public-mosaic__item:nth-child(7) { grid-column: 13/17; }
 
 /* ═══════════════════════════════════════════════════════════════
- * Public — Lightbox (presets/ballet:PublicGalleryMosaic)
+ * Public — Lightbox (presets/mosaic:PublicGalleryMosaic)
  * ─────────────────────────────────────────────────────────────── */
 
 .gallery-lightbox {

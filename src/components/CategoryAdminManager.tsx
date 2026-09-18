@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   type ChangeEvent,
@@ -65,6 +66,18 @@ async function jsonOrNull(res: Response): Promise<any> {
   }
 }
 
+/** 오류 응답 본문에서 표시할 메시지를 꺼낸다.
+ *  - `createGalleryRoutes` 핸들러: `{ success: false, error: "Forbidden", message: "forbidden" }` (error 는 코드 문자열)
+ *  - 호스트 미들웨어(예: @withwiz/toolkit error-handler): `{ success: false, error: { code, message } }`
+ *  두 형식 모두에서 message 를 찾고, 없으면 null 을 반환한다. */
+function errorMessageOf(json: any): string | null {
+  const nested = json?.error?.message;
+  if (typeof nested === "string" && nested.length > 0) return nested;
+  const topLevel = json?.message;
+  if (typeof topLevel === "string" && topLevel.length > 0) return topLevel;
+  return null;
+}
+
 /** 카테고리 어드민 UI. 사용 중인 카테고리는 server 가 409 로 반환 → 안내 표시. */
 export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Element {
   const { className } = props;
@@ -77,6 +90,14 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
   const [refreshKey, setRefreshKey] = useState(0);
   const [saving, setSaving] = useState(false);
   const mountedRef = useRef(true);
+  // 같은 화면에 여러 번 마운트되어도 label ↔ input 연결 id 가 겹치지 않도록 useId 로 만든다.
+  const fieldIdBase = useId();
+  const fieldIds = {
+    slug: `${fieldIdBase}-slug`,
+    labelKo: `${fieldIdBase}-labelKo`,
+    labelEn: `${fieldIdBase}-labelEn`,
+    sortOrder: `${fieldIdBase}-sortOrder`,
+  };
 
   useEffect(() => {
     mountedRef.current = true;
@@ -139,7 +160,7 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
       const res = await clientFetch(url, { method, body });
       if (!res.ok) {
         const json = await jsonOrNull(res);
-        setError(json?.error?.message ?? `Save failed (${res.status})`);
+        setError(errorMessageOf(json) ?? `Save failed (${res.status})`);
         return;
       }
       if (mountedRef.current) {
@@ -164,7 +185,7 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
       }
       if (!res.ok) {
         const json = await jsonOrNull(res);
-        setError(json?.error?.message ?? `Delete failed (${res.status})`);
+        setError(errorMessageOf(json) ?? `Delete failed (${res.status})`);
         return;
       }
       if (mountedRef.current) refresh();
@@ -221,8 +242,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           {form.id ? "Edit category" : "New category"}
         </div>
         <div className="gallery-category-admin__field">
-          <label className="gallery-category-admin__field-label">{t(i18n, "category.slug")}</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.slug}>{t(i18n, "category.slug")}</label>
           <input
+            id={fieldIds.slug}
             name="slug"
             className="gallery-category-admin__input"
             value={form.slug}
@@ -231,8 +253,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           />
         </div>
         <div className="gallery-category-admin__field">
-          <label className="gallery-category-admin__field-label">{t(i18n, "category.labelKo")}</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.labelKo}>{t(i18n, "category.labelKo")}</label>
           <input
+            id={fieldIds.labelKo}
             name="labelKo"
             className="gallery-category-admin__input"
             value={form.labelKo}
@@ -240,8 +263,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           />
         </div>
         <div className="gallery-category-admin__field">
-          <label className="gallery-category-admin__field-label">{t(i18n, "category.labelEn")}</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.labelEn}>{t(i18n, "category.labelEn")}</label>
           <input
+            id={fieldIds.labelEn}
             name="labelEn"
             className="gallery-category-admin__input"
             value={form.labelEn}
@@ -249,8 +273,9 @@ export function CategoryAdminManager(props: CategoryAdminManagerProps): JSX.Elem
           />
         </div>
         <div className="gallery-category-admin__field gallery-category-admin__field--row">
-          <label className="gallery-category-admin__field-label">Sort order</label>
+          <label className="gallery-category-admin__field-label" htmlFor={fieldIds.sortOrder}>Sort order</label>
           <input
+            id={fieldIds.sortOrder}
             type="number"
             name="sortOrder"
             className="gallery-category-admin__input"

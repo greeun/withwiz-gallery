@@ -14,7 +14,7 @@ Next.js 16 + Prisma 7 호스트에 독립적으로 동작하는 갤러리 모듈
 - **어드민 UI** — 5개 컴포지트 컴포넌트 (`GalleryAdminManager`, `GalleryEditForm`, `GalleryHomePreview`, `GalleryManagerLayout`, `CategoryAdminManager`) + 2개 프리미티브 (`ImageDropZone`, `ToggleSwitch`). 자가완결 3-pane 레이아웃.
 - **API 라우트** — `createGalleryRoutes(config)` 가 6개 엔드포인트 그룹의 Next.js Route Handler 를 반환 (collection / item / publish toggle / bulk / category collection / category item).
 - **RSC 로더** — `getGalleryItems`, `getFeaturedGalleries`, `getRecentGalleries`, `getGalleryCount` — 서버 컴포넌트 / 대시보드 용.
-- **퍼블릭 프리셋** — `PublicGalleryMosaic` (presets/ballet) — 1~7장 적응형 모자이크 + 라이트박스.
+- **퍼블릭 프리셋** — `PublicGalleryMosaic` (presets/mosaic) — 1~7장 적응형 모자이크 + 라이트박스. `presets/ballet` 은 호환 별칭(deprecated)으로 남아 있다.
 - **헤드리스 라이트박스 훅** — `useGalleryLightbox` — ESC / Arrow 키 자동 바인딩 + wrap-around.
 - **이미지 업로드 프리미티브** — `useImageDropZone` + `<ImageDropZone>` (호스트 측 validate + accept/maxSize).
 - **스토리지 비종속** — R2 / S3 / 로컬 파일시스템 등 어디든 호스트가 `config.storage` 로 주입.
@@ -222,6 +222,27 @@ export default async function GalleryEditPage({
 }
 ```
 
+업로드는 host 책임입니다. 새 이미지를 선택하려면 `onImageSelect` 를 전달해야 하며, 전달하지 않으면 편집 폼이 업로드 함수 누락 오류를 표시합니다. Server Component 에서는 함수를 전달할 수 없으므로 Client Component 로 감싸서 사용합니다.
+
+```tsx
+// host: app/admin/galleries/GalleryAdminClient.tsx
+"use client";
+import { GalleryAdminManager, type GalleryAdminManagerProps } from "@withwiz/gallery/components";
+
+async function uploadImage(file: File): Promise<{ url: string; key?: string }> {
+  // 업로드 엔드포인트와 응답 형식은 host 마다 다르다
+  const body = new FormData();
+  body.append("file", file);
+  const res = await fetch("/api/admin/upload", { method: "POST", body, credentials: "include" });
+  const json = await res.json();
+  return { url: json.data.url, key: json.data.key };
+}
+
+export function GalleryAdminClient(props: Omit<GalleryAdminManagerProps, "onImageSelect">) {
+  return <GalleryAdminManager {...props} onImageSelect={uploadImage} />;
+}
+```
+
 ```tsx
 // host: app/admin/gallery-categories/page.tsx
 import { CategoryAdminManager } from "@withwiz/gallery/components";
@@ -236,7 +257,7 @@ export default function CategoryAdminPage() {
 
 ```tsx
 // host: app/page.tsx (RSC)
-import { PublicGalleryMosaic } from "@withwiz/gallery/presets/ballet";
+import { PublicGalleryMosaic } from "@withwiz/gallery/presets/mosaic";
 import { getFeaturedGalleries } from "@withwiz/gallery/server";
 import { galleryConfig } from "@/lib/gallery-config";
 import "@withwiz/gallery/components/gallery.css";
@@ -251,7 +272,7 @@ export default async function HomePage() {
     <PublicGalleryMosaic
       images={images}
       count={7}
-      i18n={{ sectionLabel: "갤러리", moments: "공연의 순간들" }}
+      i18n={{ sectionLabel: "갤러리", moments: "하이라이트" }}
     />
   );
 }
@@ -302,7 +323,7 @@ import {
 
 | Export | 설명 |
 |---|---|
-| `GalleryAdminManager` | 3-pane 어드민 마운트 포인트 (`initialMode? / initialSelectedId?`) |
+| `GalleryAdminManager` | 3-pane 어드민 마운트 포인트 (`initialMode? / initialSelectedId? / onImageSelect?`) |
 | `GalleryManagerLayout` | 3-pane primitive (좌=list / 중=form / 우=preview) |
 | `GalleryEditForm` | 단일/다중 모드 form (`value / multipleMode / onSubmit / onSubmitMany`) |
 | `GalleryHomePreview` | 7-tile 모자이크 + drag 재정렬 + 별 토글 |
@@ -361,11 +382,11 @@ import type {
 } from "@withwiz/gallery/types";
 ```
 
-### `@withwiz/gallery/presets/ballet`
+### `@withwiz/gallery/presets/mosaic`
 
 ```ts
-import { PublicGalleryMosaic } from "@withwiz/gallery/presets/ballet";
-import type { PublicGalleryMosaicProps } from "@withwiz/gallery/presets/ballet";
+import { PublicGalleryMosaic } from "@withwiz/gallery/presets/mosaic";
+import type { PublicGalleryMosaicProps } from "@withwiz/gallery/presets/mosaic";
 ```
 
 Signature:
@@ -388,6 +409,10 @@ function PublicGalleryMosaic(props: {
 }): JSX.Element | null;
 ```
 
+기본 라벨은 `sectionLabel` "갤러리", `moments` "하이라이트" 이며 `i18n` 으로 바꿀 수 있다.
+
+`@withwiz/gallery/presets/ballet` 은 0.2.x 사용자를 위한 호환 별칭(deprecated)이다. 같은 컴포넌트를 렌더링하고 이전 기본 제목("공연의 순간들")만 유지한다. 새 코드는 `presets/mosaic` 에서 import 하고 `i18n.moments` 로 제목을 지정한다.
+
 ## 호스트 비종속 보증
 
 - **`@withwiz/pms` import 0** — 본 패키지는 도메인 패키지에 의존하지 않는다.
@@ -395,7 +420,7 @@ function PublicGalleryMosaic(props: {
 - **호스트의 User 모델명 가정 없음** — Prisma `Gallery` 모델은 `authorId: String` 컬럼만 두고 `@relation` 정의하지 않는다.
 - **모든 인프라는 `GalleryConfig` 로 주입** — Prisma client / API wrapper / storage / revalidate / i18n / limits 모두 주입.
 - **Storage / auth / revalidate 는 호스트 책임** — 본 패키지는 키/경로만 다루고 실제 R2/S3/로컬 호출은 호스트의 `config.storage.deleteKeys` 등에 위임.
-- **`presets/ballet` 에서 `next/image`, `next/navigation`, `useI18n` 직접 의존 없음** — 이미지는 plain `<img>`, 라벨은 props.
+- **`presets/mosaic`(별칭 `presets/ballet` 포함)에서 `next/image`, `next/navigation`, `useI18n` 직접 의존 없음** — 이미지는 plain `<img>`, 라벨은 props.
 
 ## 보안 참고
 
@@ -487,7 +512,8 @@ node-packages/withwiz-gallery/
     ├── hooks/                # useGalleryLightbox / useImageDropZone / useScrollReveal
     ├── utils/                # cn / image-variants / api-helpers
     └── presets/
-        └── ballet.tsx        # PublicGalleryMosaic
+        ├── mosaic.tsx        # PublicGalleryMosaic
+        └── ballet.tsx        # deprecated alias of mosaic.tsx
 ```
 
 ## 스크립트

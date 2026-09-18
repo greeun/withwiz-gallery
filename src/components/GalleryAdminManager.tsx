@@ -9,7 +9,7 @@ import {
 import { cn } from "../utils/cn";
 import { getGalleryConfig } from "../config";
 import { GalleryManagerLayout } from "./GalleryManagerLayout";
-import { GalleryEditForm } from "./GalleryEditForm";
+import { GalleryEditForm, type GalleryEditFormProps } from "./GalleryEditForm";
 import { GalleryHomePreview } from "./GalleryHomePreview";
 import type {
   CreateGalleryInput,
@@ -24,6 +24,9 @@ export interface GalleryAdminManagerProps {
   initialMode?: "list" | "new" | "edit";
   /** 편집 대상 ID (initialMode === "edit" 또는 URL 진입 시). */
   initialSelectedId?: string;
+  /** 이미지 파일을 host 가 업로드하고 결과 URL·key 를 반환하는 함수. `GalleryEditForm` 에 그대로 전달한다.
+   *  미전달 시 새 이미지를 선택할 수 없고 편집 폼이 업로드 함수 누락 오류를 표시한다. */
+  onImageSelect?: GalleryEditFormProps["onImageSelect"];
   className?: string;
 }
 
@@ -44,6 +47,16 @@ async function jsonOrNull(res: Response): Promise<any> {
   }
 }
 
+/** 목록 응답 본문에서 항목 배열을 꺼낸다.
+ *  `createGalleryRoutes` 의 collection.GET 은 `{ success, data: { items, meta } }` 를 반환한다.
+ *  호스트가 자체 라우트에서 `data` 를 배열로 반환하거나 본문 자체를 배열로 반환하는 경우도 계속 받는다. */
+function extractListItems<T>(json: any): T[] {
+  const data = json?.data ?? json;
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items;
+  return [];
+}
+
 const DEFAULT_TEXT: Partial<Record<GalleryI18nKey, string>> = {
   "admin.title": "Gallery",
   "admin.newButton": "+ New",
@@ -60,7 +73,7 @@ function t(
 
 /** 메인 마운트 포인트. host 의 페이지는 단순히 `<GalleryAdminManager initialSelectedId={id} />` 마운트. */
 export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Element {
-  const { initialMode, initialSelectedId, className } = props;
+  const { initialMode, initialSelectedId, onImageSelect, className } = props;
   const config = getGalleryConfig();
   const i18n = (config.i18n ?? {}) as Partial<Record<GalleryI18nKey, string>>;
   const ui = config.ui;
@@ -93,8 +106,7 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
         const res = await clientFetch("/api/admin/galleries");
         const json = await jsonOrNull(res);
         if (!cancelled && mountedRef.current) {
-          const data = json?.data ?? json ?? [];
-          setItems(Array.isArray(data) ? data : []);
+          setItems(extractListItems<GalleryListItem>(json));
         }
       } catch {}
     })();
@@ -267,6 +279,7 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
             onSubmitMany={handleSubmitMany}
             onCancel={handleCancel}
             onDelete={mode === "edit" ? handleDelete : undefined}
+            onImageSelect={onImageSelect}
           />
         );
 
@@ -275,6 +288,7 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
       <input
         type="search"
         className="gallery-manager__search"
+        aria-label={t(i18n, "admin.searchPlaceholder")}
         placeholder={t(i18n, "admin.searchPlaceholder")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -304,17 +318,20 @@ export function GalleryAdminManager(props: GalleryAdminManagerProps): JSX.Elemen
           className={cn("gallery-list-item", selectedId === item.id && "gallery-list-item--active")}
           onClick={() => handleSelect(item.id)}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.imageUrl} alt="" className="gallery-list-item__thumb" />
-          <div className="gallery-list-item__body">
-            <div className="gallery-list-item__caption">
-              {item.caption || "(no caption)"}
-            </div>
-            <div className="gallery-list-item__meta">
-              {item.featured ? "★ " : ""}
-              {item.published ? "공개" : "비공개"} · 순서 {item.sortOrder}
-            </div>
-          </div>
+          {/* 키보드 접근용 네이티브 button. Enter·Space 로 발생한 click 이 li 의 onClick 으로 전파되어 항목을 선택한다. */}
+          <button type="button" className="gallery-list-item__select">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={item.imageUrl} alt="" className="gallery-list-item__thumb" />
+            <span className="gallery-list-item__body">
+              <span className="gallery-list-item__caption">
+                {item.caption || "(no caption)"}
+              </span>
+              <span className="gallery-list-item__meta">
+                {item.featured ? "★ " : ""}
+                {item.published ? "공개" : "비공개"} · 순서 {item.sortOrder}
+              </span>
+            </span>
+          </button>
         </li>
       ))}
     </ul>
