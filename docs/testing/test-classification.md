@@ -11,7 +11,7 @@
 | 실측 기준 | 2026-09-16, 브랜치 `fix/residual-defects` (develop `7d439ed` 에서 분기, 결함 수정 커밋 `bf72aa8`·`e9cbd7a`·`addd6b7` 이후), `package-lock.json` 기준 `npm ci` 후 `npm test` (`vitest run`) |
 | 실행 결과 | 테스트 파일 27개 통과 / 테스트 277건: 통과 277, 실패 0, 스킵 0 (2026-09-17, `1ee1a62` 기준) |
 | ID 체계 | 2026-09-13 판에서 SC/TC ID 를 처음 부여. 갱신할 때는 기존 번호를 유지하고, 새 항목은 도메인별 번호를 이어서 부여 |
-| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15). 2026-09-16 결함 수정 반영: 관리자 컴포넌트의 응답 형식 해석(`bf72aa8`), 업로드 함수 전달(`e9cbd7a`), 폼 컨트롤 이름과 목록 항목 키보드 선택(`addd6b7`)을 수정하고, TC-I-005·TC-I-006·TC-AC-006 을 ✅ 완료로 전환하고 TC-U-019·TC-E-001 을 구현 (파일 26개, 273건, ✅ 40 / 🔲 10). 2026-09-17 의존 방향 점검 반영: 소비 프로젝트 도메인이 담긴 공개 서브패스 `presets/ballet` 의 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 중립 문구로 바꿨으며, `presets/ballet` 은 이전 기본 제목만 유지하는 호환 별칭으로 남겼다(`1ee1a62`). TC-I-002 에 기본 라벨·별칭 단계를 추가 (파일 27개, 277건, ✅ 40 / 🔲 10). 2026-09-18 `fix/residual-defects-a` 기준 갱신: 우선순위 갭의 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한)을 고치고 SC/TC-I-007·SC/TC-A-008 을 추가 (파일 27개, 291건, ✅ 42 / 🔲 10) |
+| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15). 2026-09-16 결함 수정 반영: 관리자 컴포넌트의 응답 형식 해석(`bf72aa8`), 업로드 함수 전달(`e9cbd7a`), 폼 컨트롤 이름과 목록 항목 키보드 선택(`addd6b7`)을 수정하고, TC-I-005·TC-I-006·TC-AC-006 을 ✅ 완료로 전환하고 TC-U-019·TC-E-001 을 구현 (파일 26개, 273건, ✅ 40 / 🔲 10). 2026-09-17 의존 방향 점검 반영: 소비 프로젝트 도메인이 담긴 공개 서브패스 `presets/ballet` 의 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 중립 문구로 바꿨으며, `presets/ballet` 은 이전 기본 제목만 유지하는 호환 별칭으로 남겼다(`1ee1a62`). TC-I-002 에 기본 라벨·별칭 단계를 추가 (파일 27개, 277건, ✅ 40 / 🔲 10). 2026-09-18 `fix/residual-defects-a` 기준 갱신: 우선순위 갭의 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한)을 고치고 SC/TC-I-007·SC/TC-A-008 을 추가 (파일 27개, 300건, ✅ 42 / 🔲 10) |
 
 ### 분류 원칙
 
@@ -1359,8 +1359,8 @@ npx vitest run tests/smoke.test.ts
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/services/gallery-service.test.ts` (`featured 상한 서버 검사` 블록, 7건), `tests/server/route-handlers.test.ts` (`featured 상한 초과 응답` 블록, 3건) |
-| **대상** | `src/services/index.ts` 의 `countFeatured()`·`assertFeaturedRoom()` 과 `create()`·`createMany()`·`update()` 의 호출 지점 / `src/server/route-handlers.ts` `featuredLimitResponse()` 와 `collection.POST`·`bulk.POST`·`item.PUT` / `src/errors.ts` `FeaturedLimitExceededError` |
+| **파일** | `tests/services/gallery-service.test.ts` (`featured 상한 서버 검사` 블록, 14건), `tests/server/route-handlers.test.ts` (`featured 상한 초과 응답` 블록, 5건) |
+| **대상** | `src/services/index.ts` 의 `countFeatured()`·`countNewlyFeatured()`·`assertFeaturedRoom()` 과 `create()`·`createMany()`·`update()`·`bulkUpdateFeatured()`·`bulkUpdatePublished()`·`togglePublish()` 의 호출 지점 / `src/server/route-handlers.ts` `featuredLimitResponse()` 와 `collection.POST`·`bulk.POST`·`bulk.PATCH`·`item.PUT`·`publishToggle.PATCH` / `src/errors.ts` `FeaturedLimitExceededError` |
 | **우선순위** | High |
 | **전제조건** | `limits.maxFeatured 7`. Prisma `count` 목이 현재 공개 featured 개수를 돌려준다 |
 | **판정 방법** | 서비스는 `FeaturedLimitExceededError` 를 던지고 Prisma 변경 메서드를 부르지 않아야 한다. 라우트는 400 과 `error: "FeaturedLimitExceeded"` 를 돌려줘야 한다 |
@@ -1377,11 +1377,20 @@ npx vitest run tests/smoke.test.ts
 | 8 | `collection.POST` 로 상한 초과 생성 | 400, `error: "FeaturedLimitExceeded"`, Prisma `create` 미호출 |
 | 9 | `bulk.POST` 로 상한 초과 일괄 생성 | 400, Prisma `createMany` 미호출 |
 | 10 | `item.PUT` 으로 featured 를 새로 켠다 | 400, Prisma `update` 미호출 |
+| 11 | `bulkUpdateFeatured` 로 공개·비featured 3건을 켠다, 현재 개수 5 | 오류를 던지고 `updateMany` 를 부르지 않는다 (5+3 > 7) |
+| 12 | `bulkUpdateFeatured` 대상이 이미 featured·비공개·공개 비featured 각 1건, 현재 개수 6 | 새로 드는 1건만 세어 허용한다 (6+1 = 7) |
+| 13 | `bulkUpdateFeatured` 로 끈다, 현재 개수 9 | 허용한다 |
+| 14 | `bulkUpdatePublished` 로 비공개 featured 2건을 공개로 바꾼다, 현재 개수 6 | 오류를 던지고 `updateMany` 를 부르지 않는다 (6+2 > 7) |
+| 15 | `bulkUpdatePublished` 로 비공개로 바꾼다, 현재 개수 9 | 허용한다 |
+| 16 | `togglePublish` 로 비공개 featured 항목을 공개로 올린다, 현재 개수 7 | 오류를 던지고 `update` 를 부르지 않는다 |
+| 17 | `togglePublish` 로 공개를 내린다, 현재 개수 9 | 허용한다 |
+| 18 | `bulk.PATCH` 로 상한 초과 일괄 featured | 400, Prisma `updateMany` 미호출 |
+| 19 | `publishToggle.PATCH` 로 비공개 featured 를 공개로 올린다, 상한 도달 | 400, Prisma `update` 미호출 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 10개 (2026-09-18 실측)
-- **결함 이력:** 2026-09-16 판의 우선순위 갭에 "일괄 생성으로 featured 상한을 넘을 수 있음" 으로 적혀 있었다. 상한 검사가 클라이언트 `handleToggleFeatured` 와 `canToggleFeatured` 계산에만 있어, 일괄 생성 경로와 API 직접 호출로 상한을 넘길 수 있었다. 2026-09-18 커밋 `3bc3de1` 에서 서버 검사를 넣었다. 수정 전 실행에서 1·3·5·8·9·10번 6건이 실패했다.
+- **자동화:** 가능 ✅ | **테스트 수:** 19개 (2026-09-18 실측)
+- **결함 이력:** 2026-09-16 판의 우선순위 갭에 "일괄 생성으로 featured 상한을 넘을 수 있음" 으로 적혀 있었다. 상한 검사가 클라이언트 `handleToggleFeatured` 와 `canToggleFeatured` 계산에만 있어, 일괄 생성 경로와 API 직접 호출로 상한을 넘길 수 있었다. 2026-09-18 커밋 `3bc3de1` 에서 `create`·`createMany`·`update` 에 서버 검사를 넣었다(수정 전 1·3·5·8·9·10번 6건 실패). 같은 날 호스트 사용 경로를 다시 대조하면서 `bulk.PATCH`·`publishToggle.PATCH` 가 검사를 거치지 않는 것을 발견해 커밋 `295076a` 로 마저 막았다(수정 전 11·14·16번 3건 실패). 이 과정에서 두 테스트 파일의 `findMany` 목이 배열 대신 `undefined` 를 돌려주고 있어 실제 Prisma 계약에 맞게 기본값을 뒀다.
 - **결정 (2026-09-18):** featured 를 **새로 켜는** 요청만 검사한다. 이미 상한을 넘긴 기존 데이터는 그대로 두고, featured 를 끄거나 다른 필드를 고치는 요청은 막지 않는다. 운영 중인 데이터를 갑자기 수정 불가로 만들지 않기 위해서다. 집계 기준은 `published && featured` 이며, 관리 화면의 홈 미리보기 계산·`listFeatured` 조회와 같다.
-- **비고:** 검사는 트랜잭션 밖에서 `count` 를 읽으므로 동시 요청이 겹치면 상한을 한두 건 넘길 수 있다. 관리자만 쓰는 경로라 그대로 두었다.
+- **비고:** 검사는 트랜잭션 밖에서 `count` 를 읽으므로 동시 요청이 겹치면 상한을 한두 건 넘길 수 있다. 관리자만 쓰는 경로라 그대로 두었다. 호스트 dts-ballet-homepage 는 이 패키지의 `GalleryAdminManager` 대신 자체 관리 화면을 쓰지만 라우트는 이 패키지 것을 쓰므로, 일괄 홈 표시와 공개 토글에서 400 을 받을 수 있다. 호스트 화면은 이미 실패 응답을 토스트로 표시한다.
 
 ---
 
@@ -1462,7 +1471,7 @@ npx vitest run tests/smoke.test.ts
 | `tests/services/helpers.test.ts` | 5 | Unit | TC-U-004 |
 | `tests/utils/api-helpers.test.ts` | 12 | Unit | TC-U-005 |
 | `tests/validators/index.test.ts` | 42 | Unit 31, Security 11 | TC-U-006 (18), TC-U-007 (13), TC-S-001 (5), TC-S-002 (6) |
-| `tests/services/gallery-service.test.ts` | 32 | Unit 25, API 7 | TC-U-008 (23), TC-U-010 (2), TC-A-008 (7) |
+| `tests/services/gallery-service.test.ts` | 39 | Unit 25, API 14 | TC-U-008 (23), TC-U-010 (2), TC-A-008 (14) |
 | `tests/services/category-service.test.ts` | 11 | Unit | TC-U-009 (9), TC-U-010 (2) |
 | `tests/hooks/useGalleryLightbox.test.tsx` | 9 | Unit | TC-U-011 |
 | `tests/hooks/useImageDropZone.test.tsx` | 9 | Unit | TC-U-012 |
@@ -1478,7 +1487,7 @@ npx vitest run tests/smoke.test.ts
 | `tests/components/GalleryAdminManager.test.tsx` | 13 | Integration | TC-I-003 (5), TC-I-006 (4), TC-I-007 (4) |
 | `tests/components/CategoryAdminManager.test.tsx` | 3 | Integration | TC-I-004 |
 | `tests/integration/admin-route-contract.test.tsx` | 5 | Integration | TC-I-005 |
-| `tests/server/route-handlers.test.ts` | 55 | API 38, Security 17 | TC-A-001 (7), TC-A-002 (9), TC-A-003 (5), TC-A-004 (10), TC-A-005 (2), TC-A-006 (2), TC-A-008 (3), TC-S-003 (5), TC-S-004 (5), TC-S-005 (4), TC-S-006 (3) |
+| `tests/server/route-handlers.test.ts` | 57 | API 40, Security 17 | TC-A-001 (7), TC-A-002 (9), TC-A-003 (5), TC-A-004 (10), TC-A-005 (2), TC-A-006 (2), TC-A-008 (5), TC-S-003 (5), TC-S-004 (5), TC-S-005 (4), TC-S-006 (3) |
 | `tests/e2e/admin-roundtrip.test.tsx` | 5 | E2E | TC-E-001 |
 | `tests/accessibility/form-labels.a11y.test.tsx` | 6 | Accessibility | TC-AC-006 |
 | `tests/smoke.test.ts` | 2 | Smoke | TC-SM-001 |
@@ -1528,7 +1537,7 @@ npx vitest run tests/smoke.test.ts
 
 - ~~**저장 실패 응답을 확인하지 않음**~~ → **2026-09-18 해결** (`3bc3de1`, TC-I-007 1·2번). 다섯 핸들러가 응답 상태를 확인하고, 실패하면 툴바 아래 `gallery-manager__error` 에 메시지를 표시하며 편집 폼을 유지한다.
 - ~~**목록이 첫 페이지 20건으로 제한됨**~~ → **2026-09-18 해결** (`3bc3de1`, TC-I-007 3번). 응답 `meta.totalPages` 를 보고 남은 페이지를 이어 받는 방식을 택했다. 이 화면은 검색·featured 개수·홈 미리보기를 받은 항목으로 계산하므로 페이지 UI 를 두면 값이 어긋나기 때문이다. 요청 상한은 100페이지다.
-- ~~**일괄 생성으로 featured 상한을 넘을 수 있음**~~ → **2026-09-18 해결** (`3bc3de1`, TC-A-008·TC-I-007 4번). 서비스 `create`·`createMany`·`update` 가 featured 를 새로 켜는 요청만 상한을 검사하고 라우트가 400 으로 돌려주며, 클라이언트도 일괄 생성 전에 같은 검사를 한다.
+- ~~**일괄 생성으로 featured 상한을 넘을 수 있음**~~ → **2026-09-18 해결** (`3bc3de1`, TC-A-008·TC-I-007 4번). 서비스의 생성·수정·일괄 수정·공개 토글 여섯 경로가 featured 를 새로 켜는 요청만 상한을 검사하고 라우트가 400 으로 돌려주며, 클라이언트도 일괄 생성 전에 같은 검사를 한다.
 
 테스트 인프라에도 다음 공백이 있다.
 
