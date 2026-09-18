@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createGalleryService } from "../../src/services";
-import { GalleryNotFoundError } from "../../src/errors";
+import { FeaturedLimitExceededError, GalleryNotFoundError } from "../../src/errors";
 import type { GalleryConfig } from "../../src/types";
 
 interface GalleryDelegateMock {
@@ -351,5 +351,88 @@ describe("createGalleryService", () => {
     const svc = createGalleryService(config);
     await svc.listPublished();
     expect(customGal.findMany).toHaveBeenCalled();
+  });
+});
+
+describe("featured 상한 서버 검사", () => {
+  let ctx: ReturnType<typeof makeMock>;
+  beforeEach(() => {
+    ctx = makeMock();
+  });
+
+  it("create: featured 를 켜는데 이미 상한이면 거부한다", async () => {
+    ctx.gal.count.mockResolvedValue(7); // maxFeatured 7
+    const svc = createGalleryService(ctx.config);
+    await expect(
+      svc.create(
+        { imageUrl: "https://cdn.test/a.jpg", categoryId: "cat-1", featured: true, published: true },
+        "user-1",
+      ),
+    ).rejects.toThrow(FeaturedLimitExceededError);
+    expect(ctx.gal.create).not.toHaveBeenCalled();
+  });
+
+  it("create: featured 가 아니면 상한과 무관하게 생성한다", async () => {
+    ctx.gal.count.mockResolvedValue(7);
+    ctx.gal.create.mockResolvedValue({ id: "g1" });
+    const svc = createGalleryService(ctx.config);
+    await svc.create(
+      { imageUrl: "https://cdn.test/a.jpg", categoryId: "cat-1", featured: false, published: true },
+      "user-1",
+    );
+    expect(ctx.gal.create).toHaveBeenCalled();
+  });
+
+  it("createMany: 일괄 featured 건수를 더해 상한을 넘으면 거부한다", async () => {
+    ctx.gal.count.mockResolvedValue(5); // 남은 자리 2
+    const svc = createGalleryService(ctx.config);
+    const items = Array.from({ length: 3 }, (_, i) => ({
+      imageUrl: `https://cdn.test/${i}.jpg`,
+      categoryId: "cat-1",
+      featured: true,
+      published: true,
+    }));
+    await expect(svc.createMany(items, "user-1")).rejects.toThrow(FeaturedLimitExceededError);
+    expect(ctx.gal.createMany).not.toHaveBeenCalled();
+  });
+
+  it("createMany: 남은 자리 안이면 생성한다", async () => {
+    ctx.gal.count.mockResolvedValue(5);
+    ctx.gal.createMany.mockResolvedValue({ count: 2 });
+    const svc = createGalleryService(ctx.config);
+    const items = Array.from({ length: 2 }, (_, i) => ({
+      imageUrl: `https://cdn.test/${i}.jpg`,
+      categoryId: "cat-1",
+      featured: true,
+      published: true,
+    }));
+    await svc.createMany(items, "user-1");
+    expect(ctx.gal.createMany).toHaveBeenCalled();
+  });
+
+  it("update: featured 를 새로 켜는데 상한이면 거부한다", async () => {
+    ctx.gal.findUnique.mockResolvedValue({ id: "g1", featured: false, published: true });
+    ctx.gal.count.mockResolvedValue(7);
+    const svc = createGalleryService(ctx.config);
+    await expect(svc.update("g1", { featured: true })).rejects.toThrow(FeaturedLimitExceededError);
+    expect(ctx.gal.update).not.toHaveBeenCalled();
+  });
+
+  it("update: featured 를 끄는 요청은 상한을 넘은 상태에서도 허용한다", async () => {
+    ctx.gal.findUnique.mockResolvedValue({ id: "g1", featured: true, published: true });
+    ctx.gal.count.mockResolvedValue(9); // 이미 상한 초과
+    ctx.gal.update.mockResolvedValue({ id: "g1" });
+    const svc = createGalleryService(ctx.config);
+    await svc.update("g1", { featured: false });
+    expect(ctx.gal.update).toHaveBeenCalled();
+  });
+
+  it("update: 이미 featured 인 항목의 다른 필드 수정은 상한 검사를 하지 않는다", async () => {
+    ctx.gal.findUnique.mockResolvedValue({ id: "g1", featured: true, published: true });
+    ctx.gal.count.mockResolvedValue(9);
+    ctx.gal.update.mockResolvedValue({ id: "g1" });
+    const svc = createGalleryService(ctx.config);
+    await svc.update("g1", { caption: "수정" });
+    expect(ctx.gal.update).toHaveBeenCalled();
   });
 });

@@ -846,3 +846,56 @@ describe("createGalleryRoutes — no revalidate config", () => {
     expect(h.revalidate).not.toHaveBeenCalled();
   });
 });
+
+// ─── featured 상한 ────────────────────────────────────────
+
+describe("featured 상한 초과 응답", () => {
+  let h: Harness;
+  beforeEach(() => {
+    h = makeHarness();
+  });
+
+  it("collection.POST: 상한을 넘기면 400 과 오류 코드를 준다", async () => {
+    h.gal.count.mockResolvedValue(7); // limits.maxFeatured 와 같음
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.collection.POST, {
+      body: {
+        imageUrl: "https://cdn.example.com/1.jpg",
+        categoryId: "ckaaaaaaaaaaaaaaaaaaaaaaa",
+        featured: true,
+        published: true,
+      },
+    });
+    expect(res.status).toBe(400);
+    const json: any = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe("FeaturedLimitExceeded");
+    expect(h.gal.create).not.toHaveBeenCalled();
+  });
+
+  it("bulk.POST: 일괄 생성이 상한을 넘기면 400 이다", async () => {
+    h.gal.count.mockResolvedValue(6);
+    const routes = createGalleryRoutes(h.config);
+    const items = [1, 2].map((n) => ({
+      imageUrl: `https://cdn.example.com/${n}.jpg`,
+      categoryId: "ckaaaaaaaaaaaaaaaaaaaaaaa",
+      featured: true,
+      published: true,
+    }));
+    const res = await h.callWith(routes.bulk.POST, { body: { items } });
+    expect(res.status).toBe(400);
+    expect(h.gal.createMany).not.toHaveBeenCalled();
+  });
+
+  it("item.PUT: featured 를 새로 켜는데 상한이면 400 이다", async () => {
+    h.gal.findUnique.mockResolvedValue({ id: "g1", featured: false, published: true });
+    h.gal.count.mockResolvedValue(7);
+    const routes = createGalleryRoutes(h.config);
+    const res = await h.callWith(routes.item.PUT, {
+      params: { id: "g1" },
+      body: { featured: true },
+    });
+    expect(res.status).toBe(400);
+    expect(h.gal.update).not.toHaveBeenCalled();
+  });
+});

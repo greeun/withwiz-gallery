@@ -25,6 +25,7 @@ import { createCategoryService } from "../services/category-service";
 import { createGallerySchemas } from "../validators";
 import {
   CategoryInUseError,
+  FeaturedLimitExceededError,
   GalleryNotFoundError,
 } from "../errors";
 import {
@@ -62,6 +63,14 @@ function jsonError(message: string, status: number, error?: string): Response {
     { success: false, error: error ?? "Error", message },
     { status },
   );
+}
+
+/** featured 상한 초과는 입력 문제이므로 400 으로 돌려준다. 그 밖의 오류는 호출부가 다시 던진다. */
+function featuredLimitResponse(err: unknown): Response | null {
+  if (err instanceof FeaturedLimitExceededError) {
+    return jsonError(err.message, 400, "FeaturedLimitExceeded");
+  }
+  return null;
 }
 
 function callRevalidate(config: GalleryConfig): void {
@@ -183,7 +192,14 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
     const validation = validateAndParse(schemas.CreateGallerySchema, body);
     if (!validation.success) return validation.response;
 
-    const item = await service.create(validation.data, authorId);
+    let item;
+    try {
+      item = await service.create(validation.data, authorId);
+    } catch (err) {
+      const limited = featuredLimitResponse(err);
+      if (limited) return limited;
+      throw err;
+    }
     callRevalidate(config);
     return NextResponse.json({ success: true, data: item }, { status: 201 });
   });
@@ -241,7 +257,14 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
       if (!ok) return jsonError("forbidden", 403, "Forbidden");
     }
 
-    const item = await service.update(id, validation.data);
+    let item;
+    try {
+      item = await service.update(id, validation.data);
+    } catch (err) {
+      const limited = featuredLimitResponse(err);
+      if (limited) return limited;
+      throw err;
+    }
     callRevalidate(config);
     return NextResponse.json({ success: true, data: item });
   });
@@ -302,7 +325,14 @@ export function createGalleryRoutes(config: GalleryConfig): GalleryRoutes {
     const validation = validateAndParse(schemas.BatchCreateGallerySchema, body);
     if (!validation.success) return validation.response;
 
-    const result = await service.createMany(validation.data.items, authorId);
+    let result;
+    try {
+      result = await service.createMany(validation.data.items, authorId);
+    } catch (err) {
+      const limited = featuredLimitResponse(err);
+      if (limited) return limited;
+      throw err;
+    }
     callRevalidate(config);
     return NextResponse.json(
       { success: true, data: result },
