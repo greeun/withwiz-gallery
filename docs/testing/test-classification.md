@@ -4,18 +4,18 @@
 
 | 항목 | 내용 |
 |------|------|
-| 대상 | `@withwiz/gallery` 0.2.1 headless 갤러리 모듈 (서버 계층, React 컴포넌트·훅, 공개 모자이크 프리셋 `presets/mosaic` 과 호환 별칭 `presets/ballet`). 2026-09-16 판은 0.2.1 에 결함 수정 3건을 더한 브랜치 `fix/residual-defects` 기준이며 버전은 올리지 않았다 |
+| 대상 | `@withwiz/gallery` 0.2.1 headless 갤러리 모듈 (서버 계층, React 컴포넌트·훅, 공개 모자이크 프리셋 `presets/mosaic`). 2026-09-16 판은 0.2.1 에 결함 수정 3건을 더한 브랜치 `fix/residual-defects` 기준이며 버전은 올리지 않았다 |
 | 범위 | `src/` 전체 (errors, config, utils, validators, services, server, hooks, components, presets). `prisma/` 스키마와 SQL 마이그레이션은 테스트 대상에서 제외 |
 | 환경 | Vitest 4.1.7 (설치본, `package.json` 범위 `^4.1.5`) + jsdom 29.1.1 + @testing-library/react 16.3.2 + @vitejs/plugin-react 6.0.2, React 19.2.6, zod 4.4.3, Node v22.22.0. `vitest.config.ts`: `environment: "jsdom"`, `globals: false`, `include: tests/**/*.test.{ts,tsx}`, `setupFiles: tests/setup.ts` (테스트마다 `cleanup()`) |
 | 목표 커버리지 | 미설정 (`vitest.config.ts` 에 coverage 설정이 없고, coverage provider 패키지도 devDependencies 에 없음) |
 | 실측 기준 | 2026-09-16, 브랜치 `fix/residual-defects` (develop `7d439ed` 에서 분기, 결함 수정 커밋 `bf72aa8`·`e9cbd7a`·`addd6b7` 이후), `package-lock.json` 기준 `npm ci` 후 `npm test` (`vitest run`) |
-| 실행 결과 | 테스트 파일 27개 통과 / 테스트 277건: 통과 277, 실패 0, 스킵 0 (2026-09-17, `1ee1a62` 기준) |
+| 실행 결과 | 테스트 파일 26개 통과 / 테스트 297건: 통과 297, 실패 0, 스킵 0 (2026-09-28, 브랜치 `chore/remove-consumer-mentions` `16b23ee` 기준, Vitest 4.1.7, Node v22.22.0) |
 | ID 체계 | 2026-09-13 판에서 SC/TC ID 를 처음 부여. 갱신할 때는 기존 번호를 유지하고, 새 항목은 도메인별 번호를 이어서 부여 |
-| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15). 2026-09-16 결함 수정 반영: 관리자 컴포넌트의 응답 형식 해석(`bf72aa8`), 업로드 함수 전달(`e9cbd7a`), 폼 컨트롤 이름과 목록 항목 키보드 선택(`addd6b7`)을 수정하고, TC-I-005·TC-I-006·TC-AC-006 을 ✅ 완료로 전환하고 TC-U-019·TC-E-001 을 구현 (파일 26개, 273건, ✅ 40 / 🔲 10). 2026-09-17 의존 방향 점검 반영: 소비 프로젝트 도메인이 담긴 공개 서브패스 `presets/ballet` 의 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 중립 문구로 바꿨으며, `presets/ballet` 은 이전 기본 제목만 유지하는 호환 별칭으로 남겼다(`1ee1a62`). TC-I-002 에 기본 라벨·별칭 단계를 추가 (파일 27개, 277건, ✅ 40 / 🔲 10). 2026-09-18 `fix/residual-defects-a` 기준 갱신: 우선순위 갭의 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한)을 고치고 SC/TC-I-007·SC/TC-A-008 을 추가 (파일 27개, 300건, ✅ 42 / 🔲 10) |
+| 문서 이력 | 2026-09-13 0.2.0 (`29fd94c`) 기준 최초 작성: 테스트 파일 23개, 244건, SC/TC 50개 (✅ 34 / 🔲 16). 2026-09-15 0.2.1 기준 갱신: 부분 수정 스키마 결함 수정(`d4c3134`)과 회귀 테스트 4건을 반영하고 TC-A-006 을 🔲 계획에서 ✅ 완료로 전환 (248건, ✅ 35 / 🔲 15). 2026-09-16 결함 수정 반영: 관리자 컴포넌트의 응답 형식 해석(`bf72aa8`), 업로드 함수 전달(`e9cbd7a`), 폼 컨트롤 이름과 목록 항목 키보드 선택(`addd6b7`)을 수정하고, TC-I-005·TC-I-006·TC-AC-006 을 ✅ 완료로 전환하고 TC-U-019·TC-E-001 을 구현 (파일 26개, 273건, ✅ 40 / 🔲 10). 2026-09-17 의존 방향 점검 반영: 이름과 기본 제목에 특정 소비 프로젝트의 도메인이 담긴 이전 공개 프리셋 서브패스의 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 중립 문구로 바꿨으며, 이전 서브패스는 이전 기본 제목만 유지하는 호환 별칭으로 남겼다(`1ee1a62`). TC-I-002 에 기본 라벨·별칭 단계를 추가 (파일 27개, 277건, ✅ 40 / 🔲 10). 2026-09-18 `fix/residual-defects-a` 기준 갱신: 우선순위 갭의 확인 사항 3건(저장 실패 응답 미확인, 목록 20건 제한, 일괄 생성의 featured 상한)을 고치고 SC/TC-I-007·SC/TC-A-008 을 추가 (파일 27개, 300건, ✅ 42 / 🔲 10). 2026-09-28 `chore/remove-consumer-mentions` 기준 갱신: 패키지에서 소비 프로젝트 언급을 모두 없애면서 호환 별칭 서브패스와 별칭 테스트 파일(3건)을 제거하고(BREAKING, `presets/mosaic` 사용), 테스트 데이터의 카테고리 slug·라벨·caption·cuid 를 중립 값(`EVENT`/`이벤트`, `NATURE`/`자연`, `cevent0000000001`)으로 바꿨다. TC-I-002 의 별칭 단계 3개를 삭제하고 분류 요약을 실측값으로 다시 맞췄다 (파일 26개, 297건, ✅ 42 / 🔲 10) |
 
 ### 분류 원칙
 
-- 테스트 케이스(`it`) 하나는 TC 하나에만 배정한다. 따라서 도메인별 테스트 수를 더하면 실측 합계 277건과 같다.
+- 테스트 케이스(`it`) 하나는 TC 하나에만 배정한다. 따라서 도메인별 테스트 수를 더하면 실측 합계 297건과 같다.
 - `tests/helpers/` 의 `in-memory-prisma.ts`(메모리 기반 Prisma 가짜 객체)와 `route-fetch.ts`(fetch → 실제 라우트 핸들러 어댑터)는 2026-09-16 에 추가한 테스트 도우미이며 테스트 파일이 아니다.
 - 테스트 파일은 이동하지 않는다. 한 파일에 여러 도메인이 섞인 `tests/validators/index.test.ts` 와 `tests/server/route-handlers.test.ts` 는 테스트 이름 필터(`-t`)로 도메인을 구분한다.
 - 보안 강화 커밋 `82f081f` 에서 추가된 검증(프로토콜·호스트 allowlist, imageKey 형식, 권한 훅, 입력 크기 제한)과 인증 누락 401 검증은 Security 로 재분류한다.
@@ -252,13 +252,13 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | **대상** | `src/validators/index.ts`: `CreateCategorySchema`, `UpdateCategorySchema`, `ReorderCategorySchema` |
 | **우선순위** | High |
 | **전제조건** | 없음 (순수 스키마) |
-| **테스트 데이터** | slug `"PERFORMANCE"`, `"A1_B2"`, `"performance"`, `"1ABC"`, `"A".repeat(65)` |
+| **테스트 데이터** | slug `"EVENT"`, `"A1_B2"`, `"event"`, `"1ABC"`, `"A".repeat(65)` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | `{ slug: "PERFORMANCE", labelKo: "공연" }` 파싱 | 성공, 기본값 `sortOrder 0`, `isActive true` |
+| 1 | `{ slug: "EVENT", labelKo: "이벤트" }` 파싱 | 성공, 기본값 `sortOrder 0`, `isActive true` |
 | 2 | `slug: "A1_B2"` 파싱 | 성공 |
-| 3 | `slug` 를 `"performance"`, `"1ABC"`, 65자로 각각 파싱 | 모두 실패 (정규식 `^[A-Z][A-Z0-9_]*$`, 최대 64자) |
+| 3 | `slug` 를 `"event"`, `"1ABC"`, 65자로 각각 파싱 | 모두 실패 (정규식 `^[A-Z][A-Z0-9_]*$`, 최대 64자) |
 | 4 | `labelKo: ""` 파싱 | 실패 |
 | 5 | `UpdateCategorySchema` 에 `{ slug: "lower" }` 파싱 | 실패 (부분 스키마에서도 형식 검증 유지) |
 | 6 | `UpdateCategorySchema` 에 `{ labelKo: "수정" }` 파싱 | 성공, 결과가 `{ labelKo: "수정" }` 와 정확히 일치 (`toStrictEqual`, Create 기본값 `sortOrder`·`isActive` 미적용) |
@@ -300,12 +300,12 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 | **대상** | `src/services/category-service.ts`: `list`, `getBySlug`, `getById`, `create`, `update`, `remove`(미사용 카테고리), `reorder` |
 | **우선순위** | High |
 | **전제조건** | galleryCategory delegate 모의 객체, `gallery.count` 모의 함수, `$transaction` 은 `Promise.all` |
-| **테스트 데이터** | slug `"PERFORMANCE"`, id `"c1"`~`"c3"` |
+| **테스트 데이터** | slug `"EVENT"`, id `"c1"`~`"c3"` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
 | 1 | `list({ isActive: true })` 호출 | `findMany` 인자에 `where { isActive: true }` |
-| 2 | `getBySlug("PERFORMANCE")` 호출 | `findUnique({ where: { slug: "PERFORMANCE" } })` |
+| 2 | `getBySlug("EVENT")` 호출 | `findUnique({ where: { slug: "EVENT" } })` |
 | 3 | `update("c1", { labelKo: "갱신" })` 호출 | `update({ where: { id: "c1" }, data: { labelKo: "갱신" } })` |
 | 4 | gallery count 0 에서 `remove("c1")` 호출 | `delete({ where: { id: "c1" } })` 호출 |
 | 5 | `reorder(["c1","c2","c3"])` 호출 | `update` 3회, 첫 호출 `sortOrder 0`, 세 번째 호출 `sortOrder 2` |
@@ -548,7 +548,7 @@ npx vitest run tests/errors.test.ts tests/config.test.ts tests/utils tests/servi
 
 **목적:** 실제 구현끼리 결합한 흐름을 검증한다. 대상은 로더와 서비스, 공개 프리셋과 훅, 관리자 컴포넌트와 설정 DI·fetch, 관리자 컴포넌트와 실제 라우트 핸들러이다. TC-I-005 를 제외하면 Prisma delegate 와 fetch 응답은 모의 객체를 사용한다. TC-I-005 는 fetch 를 `createGalleryRoutes` 핸들러에 연결하고 메모리 기반 Prisma 가짜 객체를 사용한다.
 
-**실행 명령:** 아래 명령은 2026-09-17 에 파일 6개, 테스트 38건을 실행했다.
+**실행 명령:** 아래 명령은 2026-09-28 에 파일 5개, 테스트 39건을 실행했다.
 
 ```bash
 npx vitest run tests/server/loaders tests/presets tests/components/GalleryAdminManager tests/components/CategoryAdminManager \
@@ -583,8 +583,8 @@ npx vitest run tests/server/loaders tests/presets tests/components/GalleryAdminM
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `tests/presets/mosaic.test.tsx`, `tests/presets/ballet-alias.test.tsx` |
-| **대상** | `src/presets/mosaic.tsx`: `PublicGalleryMosaic` 과 `useGalleryLightbox`, `useScrollReveal` / `src/presets/ballet.tsx`: 호환 별칭 `PublicGalleryMosaic` |
+| **파일** | `tests/presets/mosaic.test.tsx` |
+| **대상** | `src/presets/mosaic.tsx`: `PublicGalleryMosaic` 과 `useGalleryLightbox`, `useScrollReveal` |
 | **우선순위** | High |
 | **전제조건** | jsdom 에 `IntersectionObserver` 가 없으므로 `useScrollReveal` 은 관찰을 건너뛴다 |
 | **테스트 데이터** | `/img0.jpg`~ 이미지, alt `이미지 N` |
@@ -597,13 +597,10 @@ npx vitest run tests/server/loaders tests/presets tests/components/GalleryAdminM
 | 4 | 열린 상태에서 window 에 `ArrowRight`, `Escape` keydown 발생 | `/img1.jpg` 표시, 이후 오버레이 제거 |
 | 5 | 닫기 버튼 클릭, next 후 prev 버튼 클릭 | 오버레이 제거, 이미지가 `/img1.jpg` 에서 `/img0.jpg` 로 변경 |
 | 6 | alt 없는 이미지와 `i18n.expandAria="확대해서 보기"` 렌더 | 타일 `aria-label="확대해서 보기"` |
-| 7 | `presets/mosaic` 을 i18n 없이 렌더 | section `aria-label="갤러리"`, 제목 `"하이라이트"`, 텍스트에 "공연" 없음 |
-| 8 | `presets/ballet` 별칭을 i18n 없이 렌더 | 제목 `"공연의 순간들"`(0.2.x 기본값 유지), section `aria-label="갤러리"` |
-| 9 | 별칭에 `i18n={{ moments: "Moments", sectionLabel: "Gallery" }}` 지정 | 지정한 라벨이 별칭 기본 제목보다 우선 |
-| 10 | 같은 props(`moments` 지정)로 별칭과 `presets/mosaic` 렌더 | 두 결과의 `innerHTML` 이 같음 |
+| 7 | `presets/mosaic` 을 i18n 없이 렌더 | section `aria-label="갤러리"`, 제목 `"하이라이트"`(중립 기본값) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 14개 (2026-09-17 실측: `mosaic.test.tsx` 11건, `ballet-alias.test.tsx` 3건)
-- **변경 이력:** 2026-09-17 `1ee1a62` 이전에는 구현이 `src/presets/ballet.tsx` 에 있었고 테스트 파일은 `tests/presets/ballet.test.tsx`(10건)였다. 공용 패키지의 공개 서브패스 이름과 기본 제목("공연의 순간들")이 특정 소비 프로젝트의 도메인을 담고 있어, 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 "하이라이트" 로 바꿨다. 7·8·10단계는 수정 전 `presets/mosaic` 모듈이 없어 실패했다.
+- **자동화:** 가능 ✅ | **테스트 수:** 11개 (2026-09-28 실측: `mosaic.test.tsx` 11건)
+- **변경 이력:** 2026-09-17 `1ee1a62` 이전에는 구현이 이전 공개 프리셋 서브패스 모듈에 있었고 테스트 파일도 그 이름으로 10건이었다. 공용 패키지의 공개 서브패스 이름과 기본 제목이 특정 소비 프로젝트의 도메인을 담고 있어, 구현을 `presets/mosaic` 으로 옮기고 기본 제목을 "하이라이트" 로 바꿨다. 이때 이전 서브패스를 호환 별칭으로 남기고 별칭 단계 3개(8~10단계, 3건)를 두었다. 2026-09-28 에 호환 별칭 서브패스를 제거하면서(BREAKING) 별칭 테스트 파일과 8~10단계를 삭제했다. 7단계는 소비 프로젝트 문구가 없다는 부정 단언을 빼고 기본 제목이 중립값인지 확인하는 단언만 남겼으며 건수는 같다.
 
 ---
 
@@ -639,7 +636,7 @@ npx vitest run tests/server/loaders tests/presets tests/components/GalleryAdminM
 | **대상** | `src/components/CategoryAdminManager.tsx` 와 `getGalleryConfig`, `ToggleSwitch` |
 | **우선순위** | Medium |
 | **전제조건** | `setGalleryConfig` 로 설정 주입, fetch 모의 (DELETE 는 status 409), `window.confirm` true |
-| **테스트 데이터** | 카테고리 `PERFORMANCE`, `REHEARSAL`, 입력 slug `NEW_SLUG`, labelKo `한글` |
+| **테스트 데이터** | 카테고리 `EVENT`, `NATURE`, 입력 slug `NEW_SLUG`, labelKo `한글` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
@@ -659,11 +656,11 @@ npx vitest run tests/server/loaders tests/presets tests/components/GalleryAdminM
 | **대상** | `GalleryAdminManager` 목록 로드 (`src/components/GalleryAdminManager.tsx:53-58` `extractListItems`, `:102-117`) ↔ `collection.GET` 응답 (`src/server/route-handlers.ts:166-175`), `CategoryAdminManager` 오류 표시 (`src/components/CategoryAdminManager.tsx:73-79` `errorMessageOf`, `:163`, `:188`) ↔ `jsonError` 본문 (`src/server/route-handlers.ts:60-65`) |
 | **우선순위** | Critical |
 | **전제조건** | `tests/helpers/route-fetch.ts` 의 fetch 어댑터가 URL·method 로 `createGalleryRoutes(config)` 의 실제 핸들러를 선택하고, Prisma 는 `tests/helpers/in-memory-prisma.ts` 의 메모리 기반 가짜 객체를 사용한다. 테스트용 apiWrapper 는 호스트 어댑터처럼 `routeCtx.params` 를 `ctx.params` 로 전달하고, 미인증이면 호스트 미들웨어 형식(`error: { code, message }`)의 401 을 반환한다 |
-| **테스트 데이터** | 카테고리 id `cperformance0001` (스키마의 cuid 형식), 갤러리 `g1` (caption `첫 공연`), 권한 거부 설정 `permissions.canManageCategories: () => false`, 입력 slug `NEW_SLUG` |
+| **테스트 데이터** | 카테고리 id `cevent0000000001` (스키마의 cuid 형식), 갤러리 `g1` (caption `첫 이벤트`), 권한 거부 설정 `permissions.canManageCategories: () => false`, 입력 slug `NEW_SLUG` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | 실제 `collection.GET` 응답으로 `GalleryAdminManager` 마운트 | `.gallery-list-item` 1개, `.gallery-manager__count` 텍스트 `1`, caption `첫 공연` 표시 |
+| 1 | 실제 `collection.GET` 응답으로 `GalleryAdminManager` 마운트 | `.gallery-list-item` 1개, `.gallery-manager__count` 텍스트 `1`, caption `첫 이벤트` 표시 |
 | 2 | 1번과 같은 조건에서 `GET /api/admin/galleries` 응답 본문 확인 | status 200, 본문 `{ success: true, data: { items: [g1], meta: { total: 1, ... } } }` (라우트 형식이 유지되는지 확인) |
 | 3 | 사용 중인 카테고리 삭제 (실제 409) | `role="alert"` 텍스트가 `category.deleteConfirmInUse` 기본 문구, 응답 본문 `error: "CategoryInUse"` |
 | 4 | 권한 거부 상태에서 카테고리 저장 (실제 403) | `role="alert"` 텍스트가 서버 `message` 값 `forbidden`, 응답 본문 `{ success: false, error: "Forbidden", message: "forbidden" }` |
@@ -672,7 +669,7 @@ npx vitest run tests/server/loaders tests/presets tests/components/GalleryAdminM
 - **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 - **결함 이력:** 2026-09-13 (0.2.0)·2026-09-15 (0.2.1) 판에서는 결함 확인용 🔲 계획 TC 였다. 당시 `GalleryAdminManager` 는 `json.data` 가 배열일 때만 목록으로 사용해서, 실제 `collection.GET` 응답을 받으면 `.gallery-list-item` 이 0개이고 `.gallery-manager__count` 는 `0` 이었다. `CategoryAdminManager` 는 `json.error.message` 만 읽었는데 라우트 본문의 `error` 는 코드 문자열이어서, 403 응답에 `Save failed (403)` 을 표시했다. 2026-09-16 커밋 `bf72aa8` 에서 라우트 응답 형식은 그대로 두고 컴포넌트 해석을 맞췄다. 목록은 `data.items` 를 읽고 기존 배열 형식도 계속 받는다. 오류 메시지는 `error.message`(호스트 미들웨어 형식)를 먼저 찾고, 없으면 최상위 `message`(라우트 형식)를 찾는다.
 - **재현 확인 (2026-09-16):** 같은 브랜치에서 `src/` 변경만 되돌리고 이 파일과 TC-E-001 을 실행하면 이 TC 의 1·4번과 TC-E-001 의 1~4번, 모두 6건이 실패한다. 현재 코드에서는 모두 통과한다.
-- **맞출 쪽 결정:** 라우트 응답 형식을 바꾸면 라우트를 직접 소비하는 호스트 코드에 영향을 줄 수 있으므로, 서버 형식을 기준으로 클라이언트 해석을 맞췄다. 호스트 dts-ballet-homepage 는 카테고리 라우트(`categoryCollection`, `categoryItem`)와 `CategoryAdminManager` 를 사용하고, 갤러리 목록 라우트와 관리 화면은 자체 구현을 사용한다.
+- **맞출 쪽 결정:** 라우트 응답 형식을 바꾸면 라우트를 직접 소비하는 호스트 코드에 영향을 줄 수 있으므로, 서버 형식을 기준으로 클라이언트 해석을 맞췄다. 실제 호스트 중에는 카테고리 라우트(`categoryCollection`, `categoryItem`)와 `CategoryAdminManager` 만 사용하고 갤러리 목록 라우트와 관리 화면은 자체 구현을 쓰는 경우도 있다.
 
 ---
 
@@ -825,7 +822,7 @@ npx vitest run tests/server/route-handlers \
 | **대상** | `categoryCollection`, `categoryItem` (`src/server/route-handlers.ts:345-415`) |
 | **우선순위** | High |
 | **전제조건** | route-handlers 하네스, permissions 미설정 |
-| **테스트 데이터** | `{ slug: "PERFORMANCE", labelKo: "공연" }`, `slug "lowercase"`, `{ labelKo: "수정" }` |
+| **테스트 데이터** | `{ slug: "EVENT", labelKo: "이벤트" }`, `slug "lowercase"`, `{ labelKo: "수정" }` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
@@ -928,7 +925,7 @@ npx vitest run tests/e2e
 | **대상** | `GalleryAdminManager`, `CategoryAdminManager` + `createGalleryRoutes` + `createGalleryService`, `createCategoryService` |
 | **우선순위** | High |
 | **전제조건** | `tests/helpers/route-fetch.ts` fetch 어댑터(URL·method 로 핸들러 선택, `params.id` 추출), `tests/helpers/in-memory-prisma.ts` 메모리 배열 기반 Prisma 가짜 객체. 테스트마다 같은 초기 데이터로 새로 시작한다 |
-| **테스트 데이터** | 카테고리 `cperformance0001` 1개, 갤러리 `g1`(caption `A`, sortOrder 1, featured·published), `g2`(`B`, 2, featured·published), `g3`(`C`, 3, featured·published 모두 false) |
+| **테스트 데이터** | 카테고리 `cevent0000000001` 1개, 갤러리 `g1`(caption `A`, sortOrder 1, featured·published), `g2`(`B`, 2, featured·published), `g3`(`C`, 3, featured·published 모두 false) |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
@@ -940,7 +937,7 @@ npx vitest run tests/e2e
 
 - **자동화:** 가능 ✅ | **테스트 수:** 5개 (2026-09-16 실측)
 - **결함 이력:** 계획 단계에서는 TC-I-005 결함 때문에 1·3·4번 예상 결과가 성립하지 않았다. 홈 프리뷰 타일도 같은 목록 응답에서 만들어지므로 목록과 프리뷰가 모두 비어 있었다. 2026-09-16 커밋 `bf72aa8` 에서 목록 응답 해석을 수정하면서 이 파일을 함께 추가했고, 수정 전 코드에서는 1~4번이 실패하고 5번만 통과했다. 3·4번의 `published`·`featured` 유지 조건을 막던 TC-A-006(부분 수정 기본값) 결함은 0.2.1 에서 해소되었다.
-- **비고:** 스키마가 `categoryId` 에 cuid 형식을 요구하므로 테스트 데이터 id 를 `cperformance0001` 로 지정했다. 처음에 `cat-1` 로 작성했을 때 2번의 PUT 이 400 `ValidationError` 를 받았는데도 화면은 오류를 표시하지 않고 폼을 닫았다. 이 동작은 우선순위 갭의 확인 필요 사항에 적었다.
+- **비고:** 스키마가 `categoryId` 에 cuid 형식을 요구하므로 테스트 데이터 id 를 `cevent0000000001` 로 지정했다 (2026-09-28 에 중립 값으로 바꿈, cuid 형식은 같음). 처음에 `cat-1` 로 작성했을 때 2번의 PUT 이 400 `ValidationError` 를 받았는데도 화면은 오류를 표시하지 않고 폼을 닫았다. 이 동작은 우선순위 갭의 확인 필요 사항에 적었다.
 
 ---
 
@@ -1229,7 +1226,7 @@ npx vitest run tests/accessibility
 | 항목 | 내용 |
 |------|------|
 | **파일** | `tests/accessibility/PublicGalleryMosaic.a11y.test.tsx` (신규) |
-| **대상** | `src/presets/mosaic.tsx:98-209` (별칭 `presets/ballet` 도 같은 마크업) |
+| **대상** | `src/presets/mosaic.tsx:98-209` |
 | **우선순위** | High |
 | **전제조건** | jsdom (`IntersectionObserver` 없음), 기본 i18n (한글 대체 문구) |
 | **테스트 데이터** | `[{ src: "/a.jpg", alt: "A" }, { src: "/b.jpg" }]`, 이미지 1개 배열 |
@@ -1238,14 +1235,14 @@ npx vitest run tests/accessibility
 | # | 단계 | 예상 결과 |
 |---|------|---------|
 | 1 | 이미지 2개 렌더 | section `aria-label="갤러리"`, 타일 `role="button"`·`tabindex="0"`, 타일 이름 `A`, `이미지 확대`, `+` 아이콘 `aria-hidden="true"` |
-| 2 | 두 번째 타일에서 Enter keyDown | `role="dialog"`, `aria-modal="true"`, `aria-label="공연의 순간들"` 인 요소 노출 |
+| 2 | 두 번째 타일에서 Enter keyDown | `role="dialog"`, `aria-modal="true"`, `aria-label="하이라이트"`(기본 `moments` 라벨) 인 요소 노출 |
 | 3 | 대화상자 버튼 이름 확인 | `닫기`, `이전 이미지`, `다음 이미지` |
 | 4 | 열린 동안, 그리고 닫기 버튼 클릭 후 `document.body.style.overflow` 확인 | `"hidden"`, 닫힌 뒤 원래 값 `""` 으로 복원 |
 | 5 | 이미지 1개에서 Space keyDown | 대화상자 노출, 이전·다음 버튼과 카운터 없음 |
 | 6 | 대화상자가 열린 직후 포커스 위치 확인 | 소스에 포커스 이동 코드가 없으므로 포커스는 대화상자 안으로 이동하지 않는다. WAI-ARIA 대화상자 패턴(열릴 때 내부로 포커스 이동, Tab 순환, 닫힐 때 타일로 복귀) 적용 여부를 결정한 뒤 예상 결과를 확정한다 |
 
 - **자동화:** 가능 ✅
-- **근거:** 1~5번은 2026-09-13 jsdom 임시 테스트로 확인했다. 6번은 `mosaic.tsx`(2026-09-16 까지 `ballet.tsx`)에 `focus()` 호출과 포커스 관리 코드가 없다는 소스 확인에 근거한다.
+- **근거:** 1~5번은 2026-09-13 jsdom 임시 테스트로 확인했다. 6번은 `mosaic.tsx`(2026-09-16 까지는 이전 프리셋 모듈)에 `focus()` 호출과 포커스 관리 코드가 없다는 소스 확인에 근거한다.
 
 ---
 
@@ -1390,7 +1387,7 @@ npx vitest run tests/smoke.test.ts
 - **자동화:** 가능 ✅ | **테스트 수:** 19개 (2026-09-18 실측)
 - **결함 이력:** 2026-09-16 판의 우선순위 갭에 "일괄 생성으로 featured 상한을 넘을 수 있음" 으로 적혀 있었다. 상한 검사가 클라이언트 `handleToggleFeatured` 와 `canToggleFeatured` 계산에만 있어, 일괄 생성 경로와 API 직접 호출로 상한을 넘길 수 있었다. 2026-09-18 커밋 `3bc3de1` 에서 `create`·`createMany`·`update` 에 서버 검사를 넣었다(수정 전 1·3·5·8·9·10번 6건 실패). 같은 날 호스트 사용 경로를 다시 대조하면서 `bulk.PATCH`·`publishToggle.PATCH` 가 검사를 거치지 않는 것을 발견해 커밋 `295076a` 로 마저 막았다(수정 전 11·14·16번 3건 실패). 이 과정에서 두 테스트 파일의 `findMany` 목이 배열 대신 `undefined` 를 돌려주고 있어 실제 Prisma 계약에 맞게 기본값을 뒀다.
 - **결정 (2026-09-18):** featured 를 **새로 켜는** 요청만 검사한다. 이미 상한을 넘긴 기존 데이터는 그대로 두고, featured 를 끄거나 다른 필드를 고치는 요청은 막지 않는다. 운영 중인 데이터를 갑자기 수정 불가로 만들지 않기 위해서다. 집계 기준은 `published && featured` 이며, 관리 화면의 홈 미리보기 계산·`listFeatured` 조회와 같다.
-- **비고:** 검사는 트랜잭션 밖에서 `count` 를 읽으므로 동시 요청이 겹치면 상한을 한두 건 넘길 수 있다. 관리자만 쓰는 경로라 그대로 두었다. 호스트 dts-ballet-homepage 는 이 패키지의 `GalleryAdminManager` 대신 자체 관리 화면을 쓰지만 라우트는 이 패키지 것을 쓰므로, 일괄 홈 표시와 공개 토글에서 400 을 받을 수 있다. 호스트 화면은 이미 실패 응답을 토스트로 표시한다.
+- **비고:** 검사는 트랜잭션 밖에서 `count` 를 읽으므로 동시 요청이 겹치면 상한을 한두 건 넘길 수 있다. 관리자만 쓰는 경로라 그대로 두었다. 이 패키지의 `GalleryAdminManager` 대신 자체 관리 화면을 쓰면서 라우트만 이 패키지 것을 쓰는 호스트는 일괄 홈 표시와 공개 토글에서 400 을 받을 수 있으므로, 실패 응답을 화면에 표시해야 한다.
 
 ---
 
@@ -1420,7 +1417,7 @@ npx vitest run tests/smoke.test.ts
 | 항목 | 내용 |
 |------|------|
 | **파일** | `tests/smoke/exports.test.ts` (신규, dist 단계는 빌드 후 실행) |
-| **대상** | `package.json` `exports` 9개 키 (`.`, `./server`, `./components`, `./components/gallery.css`, `./hooks`, `./validators`, `./types`, `./presets/mosaic`, `./presets/ballet`), `tsup.config.ts:5-49` (진입점 7개, `CLIENT_ENTRIES`, `addUseClientDirective`, CSS 복사) |
+| **대상** | `package.json` `exports` 8개 키 (`.`, `./server`, `./components`, `./components/gallery.css`, `./hooks`, `./validators`, `./types`, `./presets/mosaic`), `tsup.config.ts:5-47` (진입점 7개, `CLIENT_ENTRIES`, `addUseClientDirective`, CSS 복사) |
 | **우선순위** | Medium |
 | **전제조건** | 소스 단계는 추가 준비 없음. dist 단계는 `npm run build` 선행 필요 (현재 테스트 절차에 빌드 단계 없음) |
 | **테스트 데이터** | 없음 |
@@ -1431,7 +1428,7 @@ npx vitest run tests/smoke.test.ts
 | 2 | `src/index.ts` 오류 클래스 확인 | `GalleryError` 외 4개가 클래스로 export |
 | 3 | `src/components/index.ts`, `src/hooks/index.ts` import | 컴포넌트 7개, 훅 3개 export |
 | 4 | 빌드 후 `exports` 각 경로의 `import`·`require` 파일 확인 (CSS 제외) | 파일 존재, `require` 성공 |
-| 5 | 빌드 후 `dist/components/index.mjs`, `dist/hooks/index.mjs`, `dist/presets/mosaic.mjs`, `dist/presets/ballet.mjs` 와 각 `.js` 첫 줄 확인 | `"use client";` |
+| 5 | 빌드 후 `dist/components/index.mjs`, `dist/hooks/index.mjs`, `dist/presets/mosaic.mjs` 와 각 `.js` 첫 줄 확인 | `"use client";` |
 | 6 | 빌드 후 CSS 파일 확인 | `dist/gallery.css`, `dist/components/gallery.css` 존재 |
 
 - **자동화:** 가능 ✅ (4~6번은 빌드 단계 추가 후)
@@ -1444,8 +1441,8 @@ npx vitest run tests/smoke.test.ts
 | 유형 | 현재 파일 수 | 현재 테스트 수 | SC 수 (✅/🔲) | TC 수 (✅/🔲) | 계획 파일 |
 |------|------------|-------------|--------------|--------------|----------|
 | **Unit** | 17개 | 163개 | 19 (19/0) | 19 (19/0) | - |
-| **Integration** | 6개 | 38개 | 6 (6/0) | 6 (6/0) | - |
-| **API** | 1개 | 35개 | 7 (6/1) | 7 (6/1) | 기존 1개에 추가 |
+| **Integration** | 5개 | 39개 | 7 (7/0) | 7 (7/0) | - |
+| **API** | 2개 | 54개 | 8 (7/1) | 8 (7/1) | 기존 1개에 추가 |
 | **E2E** | 1개 | 5개 | 1 (1/0) | 1 (1/0) | - |
 | **Security** | 2개 | 28개 | 8 (6/2) | 8 (6/2) | 기존 1개에 추가 |
 | **Accessibility** | 1개 | 6개 | 7 (1/6) | 7 (1/6) | 신규 6개 |
@@ -1453,10 +1450,11 @@ npx vitest run tests/smoke.test.ts
 | **Load/Stress** | 0개 | 0개 | 0 | 0 | - |
 | **Smoke** | 1개 | 2개 | 2 (1/1) | 2 (1/1) | 신규 1개 |
 | **Chaos** | 0개 | 0개 | 0 | 0 | - |
-| **합계** | **27개** (중복 제외) | **277개** | **50 (40/10)** | **50 (40/10)** | |
+| **합계** | **26개** (중복 제외) | **297개** | **52 (42/10)** | **52 (42/10)** | |
 
-- 현재 파일 수는 해당 도메인 테스트를 1건 이상 포함한 파일 수이다. `tests/validators/index.test.ts` 는 Unit·Security 에, `tests/server/route-handlers.test.ts` 는 API·Security 에, `tests/services/gallery-service.test.ts` 는 Unit·API 에 함께 집계되므로 도메인별 파일 수의 합(30)은 실제 파일 수(27)보다 크다.
-- 도메인별 테스트 수(163 + 38 + 35 + 5 + 28 + 6 + 2)의 합은 실측 277건과 같다.
+- 현재 파일 수는 해당 도메인 테스트를 1건 이상 포함한 파일 수이다. `tests/validators/index.test.ts` 는 Unit·Security 에, `tests/server/route-handlers.test.ts` 는 API·Security 에, `tests/services/gallery-service.test.ts` 는 Unit·API 에 함께 집계되므로 도메인별 파일 수의 합(29)은 실제 파일 수(26)보다 크다.
+- 도메인별 테스트 수(163 + 39 + 54 + 5 + 28 + 6 + 2)의 합은 실측 297건과 같다 (2026-09-28). 2026-09-18 판에서 늘어난 23건(TC-I-007 4건, TC-A-008 19건)이 이 표에 반영되지 않았던 것을 함께 맞췄다.
+- 2026-09-28 판에서 줄어든 3건은 호환 별칭 서브패스 제거와 함께 삭제한 별칭 테스트(TC-I-002)이다. 테스트 데이터 값만 바뀐 파일은 건수가 같다.
 - 2026-09-15 판에서 증가한 4건은 0.2.1 회귀 테스트이며, 모두 기존 TC 에 배정했다 (TC-U-006 1건, TC-U-007 1건, TC-A-006 2건). 새 SC·TC 는 없다.
 - 2026-09-16 판에서 증가한 25건은 결함 수정과 함께 추가한 테스트이며, 새 SC·TC 없이 기존 계획 TC 에 배정했다 (TC-U-019 5건, TC-I-005 5건, TC-I-006 4건, TC-E-001 5건, TC-AC-006 6건). TC-I-003 5번 테스트 1건은 단언과 이름을 바꿨지만 건수는 같다. 새 테스트 파일은 `tests/integration/admin-route-contract.test.tsx`, `tests/e2e/admin-roundtrip.test.tsx`, `tests/accessibility/form-labels.a11y.test.tsx` 3개이다.
 
@@ -1483,7 +1481,6 @@ npx vitest run tests/smoke.test.ts
 | `tests/components/GalleryHomePreview.test.tsx` | 5 | Unit | TC-U-018 |
 | `tests/server/loaders.test.ts` | 7 | Integration | TC-I-001 |
 | `tests/presets/mosaic.test.tsx` | 11 | Integration | TC-I-002 |
-| `tests/presets/ballet-alias.test.tsx` | 3 | Integration | TC-I-002 |
 | `tests/components/GalleryAdminManager.test.tsx` | 13 | Integration | TC-I-003 (5), TC-I-006 (4), TC-I-007 (4) |
 | `tests/components/CategoryAdminManager.test.tsx` | 3 | Integration | TC-I-004 |
 | `tests/integration/admin-route-contract.test.tsx` | 5 | Integration | TC-I-005 |
@@ -1548,9 +1545,9 @@ npx vitest run tests/smoke.test.ts
 
 ## 리뷰 체크리스트
 
-- [x] 테스트 파일 27개가 모두 TC 에 배정됨 (2026-09-17 문서와 `tests/` 목록 대조, 누락 0개)
-- [x] 테스트 277건이 각각 TC 하나에만 배정됨 (도메인 합계와 실측 합계 일치)
-- [x] 도메인별 실행 명령과 파일 내 분할 필터로 건수를 재현함 (2026-09-16: Unit 163, Integration 34, API 35, E2E 5, Security 28, Accessibility 6, Smoke 2)
+- [x] 테스트 파일 26개가 모두 TC 에 배정됨 (2026-09-28 문서와 `tests/` 목록 대조, 누락 0개)
+- [x] 테스트 297건이 각각 TC 하나에만 배정됨 (도메인 합계와 실측 합계 일치)
+- [x] 도메인별 실행 명령과 파일 내 분할 필터로 건수를 재현함 (2026-09-16: Unit 163, Integration 34, API 35, E2E 5, Security 28, Accessibility 6, Smoke 2. 2026-09-28 재실행: Unit 명령 177건, Integration 39건, API 명령 40건, E2E 5건, Security 28건, Accessibility 6건, Smoke 2건. Unit·API 명령 결과에는 `tests/services/gallery-service.test.ts` 의 TC-A-008 14건이 Unit 명령 쪽으로 잡혀, 배정 기준 Unit 163·API 54 와 14건씩 차이가 난다)
 - [x] 0.2.1 변경을 반영함: 회귀 테스트 4건을 TC-U-006·TC-U-007·TC-A-006 에 배정하고 TC-A-006 을 완료로 전환함. 수정 전 스키마(`29fd94c`)로 4건 실패를 재현함
 - [x] 2026-09-16 결함 수정 3건을 반영함: TC-I-005·TC-I-006·TC-AC-006 을 완료로 전환하고 TC-U-019·TC-E-001 을 구현함. 수정 전 코드로 TC-I-005·TC-E-001 6건, TC-I-006 2건, TC-AC-006 6건의 실패를 확인함
 - [x] 완료 TC 의 단계·예상 결과를 실제 테스트 이름과 단언에서 발췌함
