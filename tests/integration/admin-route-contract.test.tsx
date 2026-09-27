@@ -14,7 +14,7 @@ import { createInMemoryPrisma, type CategorySeed, type GallerySeed } from "../he
 import { createRouteFetch, makeTestApiWrapper } from "../helpers/route-fetch";
 
 // 스키마가 categoryId 에 cuid 형식을 요구하므로 검증을 통과하는 id 를 사용한다.
-const CATEGORY_ID = "cperformance0001";
+const CATEGORY_ID = "cevent0000000001";
 const IN_USE_TEXT = "This category has galleries — remove or move them first";
 
 function mount(opts: {
@@ -47,8 +47,8 @@ describe("TC-I-005 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 
 
   it("GalleryAdminManager 가 collection.GET 의 data.items 형식 목록을 표시한다", async () => {
     mount({
-      categories: [{ id: CATEGORY_ID, slug: "PERFORMANCE" }],
-      galleries: [{ id: "g1", categoryId: CATEGORY_ID, caption: "첫 공연", published: true }],
+      categories: [{ id: CATEGORY_ID, slug: "EVENT" }],
+      galleries: [{ id: "g1", categoryId: CATEGORY_ID, caption: "첫 이벤트", published: true }],
     });
     const { container, getByText } = render(<GalleryAdminManager />);
 
@@ -56,12 +56,12 @@ describe("TC-I-005 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 
       expect(container.querySelectorAll(".gallery-list-item")).toHaveLength(1);
     });
     expect(container.querySelector(".gallery-manager__count")?.textContent).toBe("1");
-    expect(getByText("첫 공연")).toBeTruthy();
+    expect(getByText("첫 이벤트")).toBeTruthy();
   });
 
   it("collection.GET 응답 본문은 data 가 items·meta 객체인 형식을 유지한다", async () => {
     const env = mount({
-      categories: [{ id: CATEGORY_ID, slug: "PERFORMANCE" }],
+      categories: [{ id: CATEGORY_ID, slug: "EVENT" }],
       galleries: [{ id: "g1", categoryId: CATEGORY_ID }],
     });
     render(<GalleryAdminManager />);
@@ -78,7 +78,7 @@ describe("TC-I-005 관리자 컴포넌트 ↔ 라우트 핸들러 응답 형식 
 
   it("CategoryAdminManager 가 409 CategoryInUse 응답에 사용 중 안내를 표시한다", async () => {
     const env = mount({
-      categories: [{ id: CATEGORY_ID, slug: "PERFORMANCE" }],
+      categories: [{ id: CATEGORY_ID, slug: "EVENT" }],
       galleries: [{ id: "g1", categoryId: CATEGORY_ID }],
     });
     vi.spyOn(window, "confirm").mockReturnValue(true);

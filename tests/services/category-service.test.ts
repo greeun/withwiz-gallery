@@ -50,7 +50,7 @@ describe("createCategoryService", () => {
   });
 
   it("list() returns rows ordered by sortOrder, with optional isActive filter", async () => {
-    ctx.cat.findMany.mockResolvedValue([{ id: "c1", slug: "PERFORMANCE" }]);
+    ctx.cat.findMany.mockResolvedValue([{ id: "c1", slug: "EVENT" }]);
     const svc = createCategoryService(ctx.config);
     const r = await svc.list();
     expect(ctx.cat.findMany).toHaveBeenCalled();
@@ -68,10 +68,10 @@ describe("createCategoryService", () => {
   });
 
   it("getBySlug returns row or null", async () => {
-    ctx.cat.findUnique.mockResolvedValue({ id: "c1", slug: "PERFORMANCE" });
+    ctx.cat.findUnique.mockResolvedValue({ id: "c1", slug: "EVENT" });
     const svc = createCategoryService(ctx.config);
-    const r = await svc.getBySlug("PERFORMANCE");
-    expect(ctx.cat.findUnique).toHaveBeenCalledWith({ where: { slug: "PERFORMANCE" } });
+    const r = await svc.getBySlug("EVENT");
+    expect(ctx.cat.findUnique).toHaveBeenCalledWith({ where: { slug: "EVENT" } });
     expect(r?.id).toBe("c1");
   });
 
