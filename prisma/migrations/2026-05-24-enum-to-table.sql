@@ -1,16 +1,18 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- @withwiz/gallery-kit — ballet enum → table backfill migration
+-- @withwiz/gallery — enum 기반 카테고리 → table backfill 마이그레이션 예시
 -- ───────────────────────────────────────────────────────────────────────────
--- 1회용 마이그레이션 스크립트.
--- ballet 의 기존 schema:
---   enum GalleryCategory { PERFORMANCE | REHEARSAL | ACTIVITY | ARTIST }
+-- 1회용 마이그레이션 스크립트 템플릿.
+-- 가정하는 호스트의 기존 schema (예시):
+--   enum GalleryCategory { EVENT | NATURE | PEOPLE | TRAVEL }
 --   galleries.category  ← enum 컬럼
 -- 본 패키지의 새 schema:
---   gallery_categories  ← 4 row seed
+--   gallery_categories  ← enum 값마다 1 row seed
 --   galleries.category_id  ← cuid FK
 --
+-- 2) 의 seed row 는 예시다. 호스트는 자신의 enum 값에 맞춰 slug·라벨·순서를
+-- 바꿔서 사용한다. slug 는 기존 enum 값과 정확히 같아야 3) 의 백필이 매핑된다.
 -- ───────────────────────────────────────────────────────────────────────────
--- 실행 절차 (ballet 환경):
+-- 실행 절차 (호스트 환경):
 --   1. host prisma/ 에 본 패키지의 gallery.schema.prisma 를 머지.
 --   2. `npx prisma migrate dev --create-only` 로 마이그레이션 SQL 자동 생성.
 --      Prisma 가 만들어준 migration.sql 에서 `DROP COLUMN category` /
@@ -27,12 +29,12 @@ BEGIN;
 -- gallery_categories 와 galleries.category_id 컬럼은 prisma migrate 결과로
 -- 이미 생성되어 있다고 가정 (위 실행 절차 2 단계).
 
--- ─── 2) 4개 카테고리 seed (slug = 기존 enum value) ─────────────────────────
+-- ─── 2) 카테고리 seed (slug = 기존 enum value, 예시 값) ─────────────────────
 INSERT INTO gallery_categories (id, slug, label_ko, label_en, sort_order, is_active, created_at, updated_at) VALUES
-  ('cat_performance', 'PERFORMANCE', '공연',     'Performance', 0, true, NOW(), NOW()),
-  ('cat_rehearsal',   'REHEARSAL',   '연습',     'Rehearsal',   1, true, NOW(), NOW()),
-  ('cat_activity',    'ACTIVITY',    '활동',     'Activity',    2, true, NOW(), NOW()),
-  ('cat_artist',      'ARTIST',      '아티스트', 'Artist',      3, true, NOW(), NOW());
+  ('cat_event',  'EVENT',  '이벤트', 'Event',  0, true, NOW(), NOW()),
+  ('cat_nature', 'NATURE', '자연',   'Nature', 1, true, NOW(), NOW()),
+  ('cat_people', 'PEOPLE', '인물',   'People', 2, true, NOW(), NOW()),
+  ('cat_travel', 'TRAVEL', '여행',   'Travel', 3, true, NOW(), NOW());
 
 -- ─── 3) 기존 galleries.category (enum) → category_id 백필 ──────────────────
 -- 전제: enum 컬럼이 아직 살아있어야 backfill 가능.

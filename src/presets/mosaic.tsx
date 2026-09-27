@@ -16,7 +16,7 @@
  *   }
  *
  * 마크업을 바꾸고 싶은 host 는 이 preset 을 fork 하거나 `useGalleryLightbox` hook 만
- * 가져다 직접 그릴 수 있다. 0.2.x 의 `@withwiz/gallery/presets/ballet` 은 이 모듈의 호환 별칭이다.
+ * 가져다 직접 그릴 수 있다.
  *
  * Host-independence:
  *   - `next/image`, `next/navigation`, `useI18n`, `@withwiz/pms` 등 직접 의존 0

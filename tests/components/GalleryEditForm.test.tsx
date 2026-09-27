@@ -5,10 +5,10 @@ import type { GalleryCategoryItem, GalleryListItem } from "../../src/types";
 
 const categories: GalleryCategoryItem[] = [
   {
-    id: "cat-perf",
-    slug: "PERFORMANCE",
-    labelKo: "공연",
-    labelEn: "Performance",
+    id: "cat-event",
+    slug: "EVENT",
+    labelKo: "이벤트",
+    labelEn: "Event",
     sortOrder: 0,
     isActive: true,
     createdAt: new Date(),
@@ -16,9 +16,9 @@ const categories: GalleryCategoryItem[] = [
   },
   {
     id: "cat-reh",
-    slug: "REHEARSAL",
-    labelKo: "연습",
-    labelEn: "Rehearsal",
+    slug: "NATURE",
+    labelKo: "자연",
+    labelEn: "Nature",
     sortOrder: 1,
     isActive: true,
     createdAt: new Date(),
@@ -32,7 +32,7 @@ function makeItem(overrides: Partial<GalleryListItem> = {}): GalleryListItem {
     imageUrl: "https://cdn.test/g-1.jpg",
     imageKey: "key-1",
     caption: "원본 캡션",
-    categoryId: "cat-perf",
+    categoryId: "cat-event",
     sortOrder: 5,
     featured: false,
     published: true,
@@ -103,7 +103,7 @@ describe("GalleryEditForm", () => {
     const payload = onSubmit.mock.calls[0][0];
     expect(payload.caption).toBe("수정된 캡션");
     expect(payload.imageUrl).toBe("https://cdn.test/g-1.jpg");
-    expect(payload.categoryId).toBe("cat-perf");
+    expect(payload.categoryId).toBe("cat-event");
   });
 
   it("featured 토글 — canToggleFeatured=false 이고 현재 false 인 경우 비활성", () => {
@@ -144,7 +144,7 @@ describe("GalleryEditForm", () => {
   });
 
   it("category select — categories 길이만큼 option, 선택 시 form 반영", async () => {
-    const value = makeItem({ categoryId: "cat-perf" });
+    const value = makeItem({ categoryId: "cat-event" });
     const onSubmit = vi.fn();
     const { container, getByText } = render(
       <GalleryEditForm value={value} categories={categories} onSubmit={onSubmit} />,

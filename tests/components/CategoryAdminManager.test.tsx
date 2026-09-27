@@ -60,7 +60,7 @@ describe("CategoryAdminManager", () => {
   });
 
   it("마운트 시 /api/admin/gallery-categories 호출 + 목록 노출", async () => {
-    const cats = [makeCat("c1", "PERFORMANCE"), makeCat("c2", "REHEARSAL")];
+    const cats = [makeCat("c1", "EVENT"), makeCat("c2", "NATURE")];
     const { fetch } = makeFetch(() => ({ success: true, data: cats }));
     vi.stubGlobal("fetch", fetch);
     const { container } = render(<CategoryAdminManager />);
@@ -93,7 +93,7 @@ describe("CategoryAdminManager", () => {
   });
 
   it("DELETE 시 409 응답이면 사용 중 안내 표시", async () => {
-    const cats = [makeCat("c1", "PERFORMANCE")];
+    const cats = [makeCat("c1", "EVENT")];
     const { fetch } = makeFetch((url, init) => {
       if (init?.method === "DELETE") {
         return { success: false, error: { message: "in use" }, _status: 409 };

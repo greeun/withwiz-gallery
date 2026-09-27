@@ -13,9 +13,9 @@ import type { GalleryCategoryItem, GalleryConfig, GalleryListItem } from "../../
 const categories: GalleryCategoryItem[] = [
   {
     id: "cat-1",
-    slug: "PERFORMANCE",
-    labelKo: "공연",
-    labelEn: "Performance",
+    slug: "EVENT",
+    labelKo: "이벤트",
+    labelEn: "Event",
     sortOrder: 0,
     isActive: true,
     createdAt: new Date("2026-01-01T00:00:00Z"),

@@ -164,6 +164,5 @@ describe("PublicGalleryMosaic 기본 라벨", () => {
     const section = container.querySelector("section");
     expect(section?.getAttribute("aria-label")).toBe("갤러리");
     expect(container.querySelector(".gallery-public-mosaic__title")?.textContent).toBe("하이라이트");
-    expect(container.textContent).not.toContain("공연");
   });
 });
