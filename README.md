@@ -6,7 +6,7 @@ Host-independent gallery module for Next.js 16 + Prisma 7. Self-contained admin 
 
 ## Status
 
-**v0.1.0** — Sprints 1–6 complete (`@withwiz/gallery` scaffold + validators + services + server layer + hooks/primitive UI + admin composite UI + Prisma partial + ballet preset + README). Sprint 7 (ballet migration) not yet executed.
+**v0.1.0** — Sprints 1–6 complete (`@withwiz/gallery` scaffold + validators + services + server layer + hooks/primitive UI + admin composite UI + Prisma partial + public mosaic preset + README).
 
 ## Features
 
@@ -14,7 +14,7 @@ Host-independent gallery module for Next.js 16 + Prisma 7. Self-contained admin 
 - **Admin UI** — 5 composite components (`GalleryAdminManager`, `GalleryEditForm`, `GalleryHomePreview`, `GalleryManagerLayout`, `CategoryAdminManager`) + 2 primitives (`ImageDropZone`, `ToggleSwitch`). Self-contained 3-pane layout.
 - **API routes** — `createGalleryRoutes(config)` returns Next.js Route Handlers for 6 endpoint groups (collection / item / publish toggle / bulk / category collection / category item).
 - **RSC loaders** — `getGalleryItems`, `getFeaturedGalleries`, `getRecentGalleries`, `getGalleryCount` for server components / dashboards.
-- **Public preset** — `PublicGalleryMosaic` (presets/mosaic) — 1–7 tile adaptive mosaic + lightbox. `presets/ballet` remains as a deprecated alias.
+- **Public preset** — `PublicGalleryMosaic` (presets/mosaic) — 1–7 tile adaptive mosaic + lightbox.
 - **Headless lightbox hook** — `useGalleryLightbox` with ESC / Arrow key bindings + wrap-around.
 - **Image upload primitive** — `useImageDropZone` + `<ImageDropZone>` (host-side validate + accept/maxSize).
 - **Storage-agnostic** — R2 / S3 / local filesystem — host injects via `config.storage`.
@@ -70,7 +70,7 @@ npx prisma migrate dev --create-only
 
 The partial defines two models (`GalleryCategory`, `Gallery`) plus indexes and `@@map`. Because `authorId` is a plain `String` column (no `@relation`), the host's User-model name is irrelevant and the multi-file schema validates cleanly.
 
-Migrating from a ballet-style enum-based schema? See [Migration from ballet enum-based schema](#migration-from-ballet-enum-based-schema) below.
+Migrating from a schema that stores categories in an enum column? See [Migration from an enum-based category schema](#migration-from-an-enum-based-category-schema) below.
 
 ### 2. `setGalleryConfig` (host bootstrap)
 
@@ -411,8 +411,6 @@ function PublicGalleryMosaic(props: {
 
 Default labels are Korean (`sectionLabel` "갤러리", `moments` "하이라이트"); pass `i18n` to override them.
 
-`@withwiz/gallery/presets/ballet` is a deprecated alias kept for 0.2.x users. It renders the same component and only keeps the previous default `moments` label ("공연의 순간들"). Import from `presets/mosaic` and set `i18n.moments` instead.
-
 ## Host-independence guarantees
 
 - **Zero `@withwiz/pms` imports** — this package does not depend on any domain package.
@@ -420,7 +418,7 @@ Default labels are Korean (`sectionLabel` "갤러리", `moments` "하이라이�
 - **No assumption about the host's User model name** — the Prisma `Gallery` model has only an `authorId: String` column and no `@relation`.
 - **All infrastructure is injected via `GalleryConfig`** — Prisma client / API wrapper / storage / revalidate / i18n / limits.
 - **Storage / auth / revalidate are the host's responsibility** — this package only deals with keys/paths; actual R2/S3/local calls are delegated to the host via `config.storage.deleteKeys`, etc.
-- **`presets/mosaic` (and its alias `presets/ballet`) does not import `next/image`, `next/navigation`, or `useI18n`** — images use plain `<img>`, labels come from props.
+- **`presets/mosaic` does not import `next/image`, `next/navigation`, or `useI18n`** — images use plain `<img>`, labels come from props.
 
 ## Security notes
 
@@ -449,12 +447,12 @@ These four variables are defined as fallbacks inside `:where(.gallery-toggle, .g
 
 The admin components also support per-slot customization via `config.ui.classNames[slot]` / `config.ui.slots[slot]`.
 
-## Migration from ballet enum-based schema
+## Migration from an enum-based category schema
 
-ballet's existing schema:
+If the host has been storing categories in an enum column (example):
 
 ```prisma
-enum GalleryCategory { PERFORMANCE | REHEARSAL | ACTIVITY | ARTIST }
+enum GalleryCategory { EVENT | NATURE | PEOPLE | TRAVEL }
 model Gallery {
   category GalleryCategory
   // ...
@@ -466,28 +464,28 @@ This package's new schema replaces the enum with a `gallery_categories` table + 
 1. Merge this package's `gallery.schema.prisma` into the host's `prisma/` (copy or symlink).
 2. Run `npx prisma migrate dev --create-only` to auto-generate the migration SQL.
 3. Manually remove `DROP COLUMN category` / `DROP TYPE "GalleryCategory"` from the generated SQL (separate them into a follow-up migration).
-4. Insert the contents of `prisma/migrations/2026-05-24-enum-to-table.sql` (shipped with this package) at that location — seeds the 4 categories, backfills `galleries.category_id`, and includes a PL/pgSQL verification block.
+4. Insert the contents of `prisma/migrations/2026-05-24-enum-to-table.sql` (shipped with this package) at that location — seeds the categories, backfills `galleries.category_id`, and includes a PL/pgSQL verification block. The seed rows are examples; change their slugs to match the host's enum values.
 5. `npx prisma migrate dev` to apply.
 6. Once verification passes, run the second migration (separate file) to `DROP` the enum column and type.
 
-Reference the shipped `prisma/migrations/2026-05-24-enum-to-table.sql` as-is.
+Use the shipped `prisma/migrations/2026-05-24-enum-to-table.sql` as a template.
 
-The ballet code (`src/components/sections/Gallery.tsx` — `gallery-mosaic` / `lightbox-*` classes) and this package (`gallery-public-mosaic` / `gallery-lightbox__*` classes) use different prefixes and are isolated. During ballet migration, remove those classes from the existing `main.css` and import only this package's `gallery.css`.
+All CSS classes in this package use the `gallery-` prefix (`gallery-public-mosaic`, `gallery-lightbox__*`, etc.), so they do not collide with the host's existing gallery markup and CSS. When replacing a host-specific gallery implementation with this package, remove the old host-specific classes and import only this package's `gallery.css`.
 
 ## Architecture
 
 ```
 @withwiz/toolkit            (lowest)
    ↑
-@withwiz/pms                (performance-management domain CMS)
+@withwiz/pms                (domain CMS package)
    ↑                        ↑
    │                        │ consumed as a host
-host app (ballet, yeroom)   │
+host app                    │
    ↓                        │
    └─→ @withwiz/gallery ┘  (this package — depends on no host)
 ```
 
-`@withwiz/gallery` depends on no host project (ballet, yeroom, etc.), no domain package (`@withwiz/pms`, etc.), and no host domain model (`User`, `Admin`, `Account`, etc.). Whatever the host uses (Next 16 / Prisma 7 assumed), a single `setGalleryConfig` call integrates it.
+`@withwiz/gallery` depends on no host project, no domain package (`@withwiz/pms`, etc.), and no host domain model (`User`, `Admin`, `Account`, etc.). Whatever the host uses (Next 16 / Prisma 7 assumed), a single `setGalleryConfig` call integrates it.
 
 ## Repository layout
 
@@ -499,7 +497,7 @@ node-packages/withwiz-gallery/
 ├── prisma/
 │   ├── gallery.schema.prisma            # GalleryCategory + Gallery partial models
 │   └── migrations/
-│       └── 2026-05-24-enum-to-table.sql # ballet enum → table backfill
+│       └── 2026-05-24-enum-to-table.sql # enum → table backfill example
 └── src/
     ├── index.ts              # main entry — config, types, errors, utils
     ├── config.ts
@@ -512,15 +510,14 @@ node-packages/withwiz-gallery/
     ├── hooks/                # useGalleryLightbox / useImageDropZone / useScrollReveal
     ├── utils/                # cn / image-variants / api-helpers
     └── presets/
-        ├── mosaic.tsx        # PublicGalleryMosaic
-        └── ballet.tsx        # deprecated alias of mosaic.tsx
+        └── mosaic.tsx        # PublicGalleryMosaic
 ```
 
 ## Scripts
 
 ```bash
-npm run build       # tsup multi-entry CJS/ESM/DTS
-npm test            # vitest run (221 tests, 23 files)
+npm run build       # tsup multi-entry CJS/ESM + type declarations
+npm test            # vitest run (297 tests, 26 files)
 npm run test:watch  # vitest watch
 ```
 

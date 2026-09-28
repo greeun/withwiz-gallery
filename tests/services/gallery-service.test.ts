@@ -83,11 +83,11 @@ describe("createGalleryService", () => {
   it("listPublishedByCategory filters by category.slug", async () => {
     ctx.gal.findMany.mockResolvedValue([]);
     const svc = createGalleryService(ctx.config);
-    await svc.listPublishedByCategory("PERFORMANCE", 3);
+    await svc.listPublishedByCategory("EVENT", 3);
     const arg = ctx.gal.findMany.mock.calls[0]?.[0];
     expect(arg.where).toEqual({
       published: true,
-      category: { slug: "PERFORMANCE" },
+      category: { slug: "EVENT" },
     });
     expect(arg.take).toBe(3);
   });

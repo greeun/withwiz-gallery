@@ -637,10 +637,10 @@ describe("createGalleryRoutes.categoryCollection.POST", () => {
   });
 
   it("creates category 201", async () => {
-    h.cat.create.mockResolvedValue({ id: "c1", slug: "PERFORMANCE" });
+    h.cat.create.mockResolvedValue({ id: "c1", slug: "EVENT" });
     const routes = createGalleryRoutes(h.config);
     const res = await h.callWith(routes.categoryCollection.POST, {
-      body: { slug: "PERFORMANCE", labelKo: "공연" },
+      body: { slug: "EVENT", labelKo: "이벤트" },
     });
     expect(res.status).toBe(201);
     expect(h.revalidate).toHaveBeenCalledTimes(2);
@@ -664,7 +664,7 @@ describe("createGalleryRoutes.categoryItem.GET", () => {
   });
 
   it("returns 200 when category exists", async () => {
-    h.cat.findUnique.mockResolvedValue({ id: "c1", slug: "PERFORMANCE" });
+    h.cat.findUnique.mockResolvedValue({ id: "c1", slug: "EVENT" });
     const routes = createGalleryRoutes(h.config);
     const res = await h.callWith(routes.categoryItem.GET, {
       params: { id: "c1" },

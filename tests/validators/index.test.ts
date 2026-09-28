@@ -258,7 +258,7 @@ describe("BulkUpdateSchema", () => {
 describe("CreateCategorySchema", () => {
   it("accepts minimal valid category", () => {
     const { CreateCategorySchema } = makeSchemas();
-    const r = CreateCategorySchema.safeParse({ slug: "PERFORMANCE", labelKo: "공연" });
+    const r = CreateCategorySchema.safeParse({ slug: "EVENT", labelKo: "이벤트" });
     expect(r.success).toBe(true);
     if (r.success) {
       expect(r.data.sortOrder).toBe(0);
@@ -276,21 +276,21 @@ describe("CreateCategorySchema", () => {
   it("rejects lowercase slug", () => {
     const { CreateCategorySchema } = makeSchemas();
     expect(
-      CreateCategorySchema.safeParse({ slug: "performance", labelKo: "공연" }).success,
+      CreateCategorySchema.safeParse({ slug: "event", labelKo: "이벤트" }).success,
     ).toBe(false);
   });
 
   it("rejects slug starting with digit", () => {
     const { CreateCategorySchema } = makeSchemas();
     expect(
-      CreateCategorySchema.safeParse({ slug: "1ABC", labelKo: "공연" }).success,
+      CreateCategorySchema.safeParse({ slug: "1ABC", labelKo: "이벤트" }).success,
     ).toBe(false);
   });
 
   it("rejects empty labelKo", () => {
     const { CreateCategorySchema } = makeSchemas();
     expect(
-      CreateCategorySchema.safeParse({ slug: "PERFORMANCE", labelKo: "" }).success,
+      CreateCategorySchema.safeParse({ slug: "EVENT", labelKo: "" }).success,
     ).toBe(false);
   });
 

@@ -6,7 +6,7 @@ Next.js 16 + Prisma 7 호스트에 독립적으로 동작하는 갤러리 모듈
 
 ## 상태
 
-**v0.1.0** — Sprint 1–6 완료 (`@withwiz/gallery` 스캐폴딩 + validators + services + server layer + hooks/primitive UI + admin composite UI + Prisma partial + ballet preset + README). ballet 마이그레이션 (Sprint 7) 미실시.
+**v0.1.0** — Sprint 1–6 완료 (`@withwiz/gallery` 스캐폴딩 + validators + services + server layer + hooks/primitive UI + admin composite UI + Prisma partial + 공개 mosaic 프리셋 + README).
 
 ## 주요 기능
 
@@ -14,7 +14,7 @@ Next.js 16 + Prisma 7 호스트에 독립적으로 동작하는 갤러리 모듈
 - **어드민 UI** — 5개 컴포지트 컴포넌트 (`GalleryAdminManager`, `GalleryEditForm`, `GalleryHomePreview`, `GalleryManagerLayout`, `CategoryAdminManager`) + 2개 프리미티브 (`ImageDropZone`, `ToggleSwitch`). 자가완결 3-pane 레이아웃.
 - **API 라우트** — `createGalleryRoutes(config)` 가 6개 엔드포인트 그룹의 Next.js Route Handler 를 반환 (collection / item / publish toggle / bulk / category collection / category item).
 - **RSC 로더** — `getGalleryItems`, `getFeaturedGalleries`, `getRecentGalleries`, `getGalleryCount` — 서버 컴포넌트 / 대시보드 용.
-- **퍼블릭 프리셋** — `PublicGalleryMosaic` (presets/mosaic) — 1~7장 적응형 모자이크 + 라이트박스. `presets/ballet` 은 호환 별칭(deprecated)으로 남아 있다.
+- **퍼블릭 프리셋** — `PublicGalleryMosaic` (presets/mosaic) — 1~7장 적응형 모자이크 + 라이트박스.
 - **헤드리스 라이트박스 훅** — `useGalleryLightbox` — ESC / Arrow 키 자동 바인딩 + wrap-around.
 - **이미지 업로드 프리미티브** — `useImageDropZone` + `<ImageDropZone>` (호스트 측 validate + accept/maxSize).
 - **스토리지 비종속** — R2 / S3 / 로컬 파일시스템 등 어디든 호스트가 `config.storage` 로 주입.
@@ -70,7 +70,7 @@ npx prisma migrate dev --create-only
 
 이 partial 은 `GalleryCategory`, `Gallery` 두 모델 + 인덱스 + `@@map` 을 정의한다. host 의 User 모델 이름과 무관하게 `authorId: String` 컬럼만 두므로 multi-file schema 머지 시 validate 가 통과한다.
 
-ballet 처럼 enum 기반 기존 스키마에서 마이그레이션하는 경우 아래 [Migration from ballet enum-based schema](#migration-from-ballet-enum-based-schema) 섹션 참조.
+카테고리를 enum 컬럼으로 두던 기존 스키마에서 마이그레이션하는 경우 아래 [enum 기반 카테고리 스키마에서 마이그레이션](#enum-기반-카테고리-스키마에서-마이그레이션) 섹션 참조.
 
 ### 2. `setGalleryConfig` (host bootstrap)
 
@@ -411,8 +411,6 @@ function PublicGalleryMosaic(props: {
 
 기본 라벨은 `sectionLabel` "갤러리", `moments` "하이라이트" 이며 `i18n` 으로 바꿀 수 있다.
 
-`@withwiz/gallery/presets/ballet` 은 0.2.x 사용자를 위한 호환 별칭(deprecated)이다. 같은 컴포넌트를 렌더링하고 이전 기본 제목("공연의 순간들")만 유지한다. 새 코드는 `presets/mosaic` 에서 import 하고 `i18n.moments` 로 제목을 지정한다.
-
 ## 호스트 비종속 보증
 
 - **`@withwiz/pms` import 0** — 본 패키지는 도메인 패키지에 의존하지 않는다.
@@ -420,7 +418,7 @@ function PublicGalleryMosaic(props: {
 - **호스트의 User 모델명 가정 없음** — Prisma `Gallery` 모델은 `authorId: String` 컬럼만 두고 `@relation` 정의하지 않는다.
 - **모든 인프라는 `GalleryConfig` 로 주입** — Prisma client / API wrapper / storage / revalidate / i18n / limits 모두 주입.
 - **Storage / auth / revalidate 는 호스트 책임** — 본 패키지는 키/경로만 다루고 실제 R2/S3/로컬 호출은 호스트의 `config.storage.deleteKeys` 등에 위임.
-- **`presets/mosaic`(별칭 `presets/ballet` 포함)에서 `next/image`, `next/navigation`, `useI18n` 직접 의존 없음** — 이미지는 plain `<img>`, 라벨은 props.
+- **`presets/mosaic` 에서 `next/image`, `next/navigation`, `useI18n` 직접 의존 없음** — 이미지는 plain `<img>`, 라벨은 props.
 
 ## 보안 참고
 
@@ -449,12 +447,12 @@ function PublicGalleryMosaic(props: {
 
 추가로 어드민 컴포넌트는 `config.ui.classNames[slot]` / `config.ui.slots[slot]` 으로 slot 별 커스터마이즈 가능.
 
-## ballet enum 기반 스키마에서 마이그레이션
+## enum 기반 카테고리 스키마에서 마이그레이션
 
-ballet 의 기존 schema:
+호스트가 카테고리를 enum 컬럼으로 관리해 왔다면 (예시):
 
 ```prisma
-enum GalleryCategory { PERFORMANCE | REHEARSAL | ACTIVITY | ARTIST }
+enum GalleryCategory { EVENT | NATURE | PEOPLE | TRAVEL }
 model Gallery {
   category GalleryCategory
   // ...
@@ -466,28 +464,28 @@ model Gallery {
 1. host 의 `prisma/` 에 본 패키지의 `gallery.schema.prisma` 를 머지 (복사 또는 symlink).
 2. `npx prisma migrate dev --create-only` 로 마이그레이션 SQL 자동 생성.
 3. 생성된 SQL 에서 `DROP COLUMN category` / `DROP TYPE "GalleryCategory"` 부분을 수동 제거 (별도 후속 마이그레이션으로 분리).
-4. `prisma/migrations/2026-05-24-enum-to-table.sql` (본 패키지가 동봉) 의 내용을 그 위치에 삽입 — 4개 카테고리 seed + `galleries.category_id` 백필 + PL/pgSQL 검증 블록.
+4. `prisma/migrations/2026-05-24-enum-to-table.sql` (본 패키지가 동봉) 의 내용을 그 위치에 삽입 — 카테고리 seed + `galleries.category_id` 백필 + PL/pgSQL 검증 블록. seed row 는 예시이므로 호스트의 enum 값과 같은 slug 로 바꾼다.
 5. `npx prisma migrate dev` 로 적용.
 6. 검증 통과 시 두 번째 마이그레이션 (별도 파일) 에서 enum 컬럼/타입 DROP.
 
-본 패키지의 `prisma/migrations/2026-05-24-enum-to-table.sql` 파일을 그대로 참조하라.
+본 패키지의 `prisma/migrations/2026-05-24-enum-to-table.sql` 파일을 템플릿으로 참조하라.
 
-ballet 코드 (`src/components/sections/Gallery.tsx` 의 `gallery-mosaic` / `lightbox-*` 클래스) 와 본 패키지의 `gallery-public-mosaic` / `gallery-lightbox__*` 클래스는 prefix 가 다르므로 격리된다. ballet 마이그레이션 시 기존 main.css 의 해당 클래스를 제거하고 본 패키지의 `gallery.css` 만 import 하면 된다.
+본 패키지의 CSS 클래스는 모두 `gallery-` prefix (`gallery-public-mosaic`, `gallery-lightbox__*` 등) 를 쓰므로 호스트가 기존에 두던 갤러리 마크업·CSS 와 충돌하지 않는다. 호스트 자체 갤러리 구현을 본 패키지로 교체할 때는 기존 전용 클래스를 제거하고 본 패키지의 `gallery.css` 만 import 하면 된다.
 
 ## 아키텍처
 
 ```
 @withwiz/toolkit            (가장 낮음)
    ↑
-@withwiz/pms                (공연관리 도메인 CMS)
+@withwiz/pms                (도메인 CMS 패키지)
    ↑                        ↑
    │                        │ host 로서 끌어 씀
-host app (ballet, yeroom)   │
+host app                    │
    ↓                        │
    └─→ @withwiz/gallery ┘  (이 패키지 — 어떤 호스트에도 의존하지 않음)
 ```
 
-`@withwiz/gallery` 은 어떤 호스트 프로젝트 (ballet, yeroom 등)에도, 어떤 도메인 패키지 (`@withwiz/pms` 등)에도, 호스트의 도메인 모델 (`User`, `Admin`, `Account` 등) 에도 일절 의존하지 않는다. 호스트가 무엇을 쓰든 (Next 16 / Prisma 7 가정) `setGalleryConfig` 한 번으로 통합 가능하다.
+`@withwiz/gallery` 은 어떤 호스트 프로젝트에도, 어떤 도메인 패키지 (`@withwiz/pms` 등)에도, 호스트의 도메인 모델 (`User`, `Admin`, `Account` 등) 에도 일절 의존하지 않는다. 호스트가 무엇을 쓰든 (Next 16 / Prisma 7 가정) `setGalleryConfig` 한 번으로 통합 가능하다.
 
 ## 저장소 구조
 
@@ -499,7 +497,7 @@ node-packages/withwiz-gallery/
 ├── prisma/
 │   ├── gallery.schema.prisma            # GalleryCategory + Gallery 모델 partial
 │   └── migrations/
-│       └── 2026-05-24-enum-to-table.sql # ballet enum → table backfill
+│       └── 2026-05-24-enum-to-table.sql # enum → table backfill 예시
 └── src/
     ├── index.ts              # main entry — config, types, errors, utils
     ├── config.ts
@@ -512,15 +510,14 @@ node-packages/withwiz-gallery/
     ├── hooks/                # useGalleryLightbox / useImageDropZone / useScrollReveal
     ├── utils/                # cn / image-variants / api-helpers
     └── presets/
-        ├── mosaic.tsx        # PublicGalleryMosaic
-        └── ballet.tsx        # deprecated alias of mosaic.tsx
+        └── mosaic.tsx        # PublicGalleryMosaic
 ```
 
 ## 스크립트
 
 ```bash
-npm run build       # tsup multi-entry CJS/ESM/DTS
-npm test            # vitest run (221 tests, 23 files)
+npm run build       # tsup multi-entry CJS/ESM + 타입 선언
+npm test            # vitest run (297 tests, 26 files)
 npm run test:watch  # vitest watch
 ```
 
