@@ -14,11 +14,11 @@ import { createInMemoryPrisma } from "../helpers/in-memory-prisma";
 import { createRouteFetch, makeTestApiWrapper } from "../helpers/route-fetch";
 
 // 스키마가 categoryId 에 cuid 형식을 요구하므로 저장 요청이 검증을 통과하는 id 를 사용한다.
-const CATEGORY_ID = "cperformance0001";
+const CATEGORY_ID = "cevent0000000001";
 
 function setup() {
   const db = createInMemoryPrisma({
-    categories: [{ id: CATEGORY_ID, slug: "PERFORMANCE", labelKo: "공연" }],
+    categories: [{ id: CATEGORY_ID, slug: "EVENT", labelKo: "이벤트" }],
     galleries: [
       { id: "g1", categoryId: CATEGORY_ID, caption: "A", sortOrder: 1, featured: true, published: true },
       { id: "g2", categoryId: CATEGORY_ID, caption: "B", sortOrder: 2, featured: true, published: true },
